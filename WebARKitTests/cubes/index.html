@@ -1,0 +1,215 @@
+<!--
+/*
+ * Copyright 2017 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+  <script>
+    // Catch any possible error and show an alert. 
+    // Useful for "hacky" debugging.
+     window.addEventListener('error', function(event) {
+      var errorMessage = event.message;
+      var url = event.filename;
+      var lineNumber = event.lineno;
+      var columnNumber = event.colno;
+      alert("ERROR: " + errorMessage + " at " + url + " : " + lineNumber + 
+        " : " + columnNumber);
+    });
+  </script>
+  <title>WebARTango ThreeJS Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no,
+    minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      font-family: Monospace;
+      margin: 0px;
+      overflow: hidden;
+    }
+
+    #info {
+      color: #fff;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 100;
+      display:block;
+
+    }
+
+    a { color: skyblue }
+  </style>
+  </head>
+  <body>
+    <div id="info">
+      <a href="http://threejs.org" target="_blank">three.js</a>
+      WebARTango ThreeJS Example
+      <a href="https://github.com/judax" target="_blank">Iker Jamardo</a>
+    </div>
+
+    <script src="../libs/WebARKit.js"></script>
+
+    <script src="../libs/third_party/three.js"></script>
+    <script src="../libs/third_party/Detector.js"></script>
+    <script src="../libs/third_party/stats.min.js"></script>
+    <script src="../libs/third_party/VRControls.js"></script>
+    <script src="../libs/third_party/dat.gui.min.js"></script>
+
+    <script src="../libs/THREE.WebAR.js"></script>
+
+    <script src="../resources/textures/WebAR.js"></script>
+
+    <script>
+
+    window.addEventListener("load", function() {
+
+      if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+
+      var container, stats;
+      var cameraOrtho, cameraPersp, cameraScene, scene, renderer, cameraMesh;
+      var cubeMaterial;
+      var vrDisplay;
+
+      var MODEL_SIZE_IN_METERS = 0.075;
+
+      // WebAR is currently based on the WebVR API so try to find the right
+      // VRDisplay instance.
+      if (navigator.getVRDisplays) {
+        navigator.getVRDisplays().then(function(vrDisplays) {
+          if (vrDisplays && vrDisplays.length > 0) {
+            for (var i = 0; !vrDisplay && i < vrDisplays.length; i++) {
+              vrDisplay = vrDisplays[i];
+              if (vrDisplay.displayName !== "ARKit VR Device" && vrDisplay.displayName !== "Tango VR Device") {
+                vrDisplay = null;
+              }
+            }
+          }
+          if (!vrDisplay) {
+            alert("No Tango WebAR VRDisplay found. Falling back to a video.");
+          }
+          init(vrDisplay);
+          updateAndRender();  
+        });
+      }
+      else {
+        alert("No navigator.getVRDisplays. Falling back to a video.");
+        init();
+        updateAndRender();
+      }
+
+      function addACubeInFrontOfCamera() {
+        cameraPersp.updateMatrixWorld(true);
+        var mesh = new THREE.Mesh(new THREE.BoxBufferGeometry(MODEL_SIZE_IN_METERS, MODEL_SIZE_IN_METERS, MODEL_SIZE_IN_METERS), cubeMaterial);
+        mesh.matrix.makeTranslation(0, 0, -0.2);
+        mesh.matrix.multiply(cameraPersp.matrixWorld, mesh.matrix);
+        mesh.matrixAutoUpdate = false;
+        scene.add(mesh);
+      }
+
+      function init(vrDisplay) {
+
+        // Initialize everything related to ThreeJS.
+        container = document.createElement( 'div' );
+        document.body.appendChild( container );
+
+        // Create the see through camera scene and camera
+        cameraScene = new THREE.Scene();
+        cameraOrtho = new THREE.OrthographicCamera( -1, 1, 1, -1, 0, 100 );
+        cameraMesh = THREE.WebAR.createVRSeeThroughCameraMesh(vrDisplay);
+        cameraScene.add(cameraMesh);
+
+        // Create the 3D scene and camera
+        scene = new THREE.Scene();
+        // Use the THREE.WebAR utility to create a perspective camera
+        // suited to the actual see through camera parameters.
+        cameraPersp = 
+          THREE.WebAR.createVRSeeThroughCamera(vrDisplay, 0.01, 100);
+
+        var textureLoader = new THREE.TextureLoader();
+        var texture = textureLoader.load("../resources/textures/WebAR.png");
+        cubeMaterial = new THREE.MeshLambertMaterial({map: texture});
+
+        // Control the perspective camera using the VR pose.
+        vrControls = new THREE.VRControls(cameraPersp);
+
+        // Add some lighting
+        var directionalLight = new THREE.DirectionalLight( 0xffffff );
+        directionalLight.position.set( 1, 1, 0);
+        scene.add( directionalLight );
+        var ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        // Create the renderer
+        renderer = new THREE.WebGLRenderer({alpha: true});
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth, window.innerHeight );
+        // It is important to specify that the color buffer should not be
+        // automatically cleared. The see through camera will render the whole
+        // background.
+        renderer.autoClear = false;
+        document.body.appendChild( renderer.domElement );
+
+        // Create a way to measure performance
+        stats = new Stats();
+        container.appendChild( stats.dom );
+
+        // Control the resizing of the window to correctly display the scene.
+        window.addEventListener( 'resize', onWindowResize, false );
+
+        // Wherever the user clicks in the screen, place the model.
+        renderer.domElement.addEventListener("click", function(event) {
+          addACubeInFrontOfCamera();
+        });
+      }
+
+      function onWindowResize() {
+        THREE.WebAR.resizeVRSeeThroughCamera(vrDisplay, cameraPersp);
+        renderer.setSize( window.innerWidth, window.innerHeight );
+      }
+
+      function updateAndRender() {
+        // UPDATE
+
+        stats.update();
+
+        // Update the perspective scene
+        vrControls.update();
+
+        // Make sure that the camera is correctly displayed depending on the
+        // device and camera orientations.
+        THREE.WebAR.updateCameraMeshOrientation(vrDisplay, cameraMesh);
+
+        // RENDER
+
+        // Render the see through camera scene
+        renderer.clear();
+
+        renderer.render( cameraScene, cameraOrtho );
+
+        // Render the perspective scene
+        renderer.clearDepth();
+
+        renderer.render( scene, cameraPersp );
+
+        requestAnimationFrame( updateAndRender );
+      }
+
+    });
+
+    </script>
+  </body>
+</html>

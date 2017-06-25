@@ -1,0 +1,383 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F6161D991EF85CFD00C915FA /* WebARKitTests in Resources */ = {isa = PBXBuildFile; fileRef = F6161D981EF85CFD00C915FA /* WebARKitTests */; };
+		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
+		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
+		F660386E1EF5FCC100385A4C /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = F660386D1EF5FCC100385A4C /* Renderer.m */; };
+		F66038711EF5FCC100385A4C /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038701EF5FCC100385A4C /* ViewController.m */; };
+		F66038741EF5FCC100385A4C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F66038721EF5FCC100385A4C /* Main.storyboard */; };
+		F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F66038751EF5FCC100385A4C /* Assets.xcassets */; };
+		F66038791EF5FCC100385A4C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F66038771EF5FCC100385A4C /* LaunchScreen.storyboard */; };
+		F660387C1EF5FCC100385A4C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F660387B1EF5FCC100385A4C /* main.m */; };
+		F660388B1EF5FD8100385A4C /* WebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */; };
+		F660388C1EF5FD8100385A4C /* WebViewJavascriptBridge_JS.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */; };
+		F660388D1EF5FD8100385A4C /* WebViewJavascriptBridgeBase.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */; };
+		F660388E1EF5FD8100385A4C /* WKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F6161D111EF8408100C915FA /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		F6161D981EF85CFD00C915FA /* WebARKitTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WebARKitTests; path = ../WebARKitTests; sourceTree = "<group>"; };
+		F66038631EF5FCC100385A4C /* WebARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		F66038671EF5FCC100385A4C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		F66038691EF5FCC100385A4C /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
+		F660386B1EF5FCC100385A4C /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
+		F660386C1EF5FCC100385A4C /* Renderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Renderer.h; sourceTree = "<group>"; };
+		F660386D1EF5FCC100385A4C /* Renderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Renderer.m; sourceTree = "<group>"; };
+		F660386F1EF5FCC100385A4C /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		F66038701EF5FCC100385A4C /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		F66038731EF5FCC100385A4C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		F66038751EF5FCC100385A4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		F66038781EF5FCC100385A4C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		F660387A1EF5FCC100385A4C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F660387B1EF5FCC100385A4C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		F66038831EF5FD6500385A4C /* WebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridge.h; sourceTree = "<group>"; };
+		F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridge.m; sourceTree = "<group>"; };
+		F66038851EF5FD6500385A4C /* WebViewJavascriptBridge_JS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridge_JS.h; sourceTree = "<group>"; };
+		F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridge_JS.m; sourceTree = "<group>"; };
+		F66038871EF5FD6500385A4C /* WebViewJavascriptBridgeBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridgeBase.h; sourceTree = "<group>"; };
+		F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridgeBase.m; sourceTree = "<group>"; };
+		F66038891EF5FD6500385A4C /* WKWebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WKWebViewJavascriptBridge.h; sourceTree = "<group>"; };
+		F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WKWebViewJavascriptBridge.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F66038601EF5FCC100385A4C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F660385A1EF5FCC100385A4C = {
+			isa = PBXGroup;
+			children = (
+				F6161D981EF85CFD00C915FA /* WebARKitTests */,
+				F66038821EF5FD6500385A4C /* WebViewJavascriptBridge */,
+				F66038651EF5FCC100385A4C /* WebARKit */,
+				F66038641EF5FCC100385A4C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F66038641EF5FCC100385A4C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F66038631EF5FCC100385A4C /* WebARKit.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F66038651EF5FCC100385A4C /* WebARKit */ = {
+			isa = PBXGroup;
+			children = (
+				F66038661EF5FCC100385A4C /* AppDelegate.h */,
+				F66038671EF5FCC100385A4C /* AppDelegate.m */,
+				F66038691EF5FCC100385A4C /* Shaders.metal */,
+				F660386B1EF5FCC100385A4C /* ShaderTypes.h */,
+				F660386C1EF5FCC100385A4C /* Renderer.h */,
+				F660386D1EF5FCC100385A4C /* Renderer.m */,
+				F660386F1EF5FCC100385A4C /* ViewController.h */,
+				F66038701EF5FCC100385A4C /* ViewController.m */,
+				F66038721EF5FCC100385A4C /* Main.storyboard */,
+				F66038751EF5FCC100385A4C /* Assets.xcassets */,
+				F66038771EF5FCC100385A4C /* LaunchScreen.storyboard */,
+				F660387A1EF5FCC100385A4C /* Info.plist */,
+				F660387B1EF5FCC100385A4C /* main.m */,
+			);
+			path = WebARKit;
+			sourceTree = "<group>";
+		};
+		F66038821EF5FD6500385A4C /* WebViewJavascriptBridge */ = {
+			isa = PBXGroup;
+			children = (
+				F66038831EF5FD6500385A4C /* WebViewJavascriptBridge.h */,
+				F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */,
+				F66038851EF5FD6500385A4C /* WebViewJavascriptBridge_JS.h */,
+				F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */,
+				F66038871EF5FD6500385A4C /* WebViewJavascriptBridgeBase.h */,
+				F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */,
+				F66038891EF5FD6500385A4C /* WKWebViewJavascriptBridge.h */,
+				F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */,
+			);
+			path = WebViewJavascriptBridge;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		F66038621EF5FCC100385A4C /* WebARKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARKit" */;
+			buildPhases = (
+				F660385F1EF5FCC100385A4C /* Sources */,
+				F66038601EF5FCC100385A4C /* Frameworks */,
+				F66038611EF5FCC100385A4C /* Resources */,
+				F6161D111EF8408100C915FA /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WebARKit;
+			productName = WebARKit;
+			productReference = F66038631EF5FCC100385A4C /* WebARKit.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F660385B1EF5FCC100385A4C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0900;
+				ORGANIZATIONNAME = "Iker Jamardo Zugaza";
+				TargetAttributes = {
+					F66038621EF5FCC100385A4C = {
+						CreatedOnToolsVersion = 9.0;
+					};
+				};
+			};
+			buildConfigurationList = F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARKit" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F660385A1EF5FCC100385A4C;
+			productRefGroup = F66038641EF5FCC100385A4C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F66038621EF5FCC100385A4C /* WebARKit */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		F66038611EF5FCC100385A4C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F66038791EF5FCC100385A4C /* LaunchScreen.storyboard in Resources */,
+				F6161D991EF85CFD00C915FA /* WebARKitTests in Resources */,
+				F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */,
+				F66038741EF5FCC100385A4C /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F660385F1EF5FCC100385A4C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F660388B1EF5FD8100385A4C /* WebViewJavascriptBridge.m in Sources */,
+				F660388C1EF5FD8100385A4C /* WebViewJavascriptBridge_JS.m in Sources */,
+				F660388D1EF5FD8100385A4C /* WebViewJavascriptBridgeBase.m in Sources */,
+				F660388E1EF5FD8100385A4C /* WKWebViewJavascriptBridge.m in Sources */,
+				F660387C1EF5FCC100385A4C /* main.m in Sources */,
+				F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */,
+				F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */,
+				F66038711EF5FCC100385A4C /* ViewController.m in Sources */,
+				F660386E1EF5FCC100385A4C /* Renderer.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		F66038721EF5FCC100385A4C /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F66038731EF5FCC100385A4C /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		F66038771EF5FCC100385A4C /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F66038781EF5FCC100385A4C /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		F660387D1EF5FCC100385A4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		F660387E1EF5FCC100385A4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F66038801EF5FCC100385A4C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = ETH8NG5FR9;
+				INFOPLIST_FILE = WebARKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARKit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		F66038811EF5FCC100385A4C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = ETH8NG5FR9;
+				INFOPLIST_FILE = WebARKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARKit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F660387D1EF5FCC100385A4C /* Debug */,
+				F660387E1EF5FCC100385A4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F66038801EF5FCC100385A4C /* Debug */,
+				F66038811EF5FCC100385A4C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F660385B1EF5FCC100385A4C /* Project object */;
+}
