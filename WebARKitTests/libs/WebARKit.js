@@ -184,11 +184,11 @@
           // Make a call to the native side to retrieve a new hit.
           bridge.callHandler("hitTest", "" + x + "," + y, _hitTestCallback);
           // Return whatever hit is available that corresponds to the x,y point
-          var arHit = null;
+          var VRHit = null;
           if (_hits[x] && _hits[x][y]) {
-            arHit = _hits[x][y];
+            VRHit = _hits[x][y];
           }
-          return arHit;
+          return VRHit;
         };
 
         return this;
@@ -260,7 +260,7 @@
       };
 
       // WebAR structures
-      ARHit = function() {
+      VRHit = function() {
         this.point = new Float32Array(3);
         this.plane = new Float32Array(4);
         return this;
