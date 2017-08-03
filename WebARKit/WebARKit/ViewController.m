@@ -148,7 +148,6 @@ void extractQuaternionFromMatrix(const float* m, float* o)
         NSLog(@"Loading a file from resources with path = %@", path);
         if (path)
         {
-            self->decisionHandlerCalled = false;
             NSURL *url = [[NSBundle mainBundle] URLForResource:urlString withExtension:@"html"];
             [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
         }
@@ -159,7 +158,6 @@ void extractQuaternionFromMatrix(const float* m, float* o)
     }
     else
     {
-        self->decisionHandlerCalled = false;
         NSURLRequest* nsrequest=[NSURLRequest requestWithURL:nsurl];
         [self->wkWebView loadRequest:nsrequest];
     }
@@ -457,9 +455,12 @@ void extractQuaternionFromMatrix(const float* m, float* o)
 // TODO - IMPORTANT (Iker Jamardo): There seems to be a bug in the WebViewJavascriptBridge and the decisionHandler is being called multiple times and iOS does not seem to like it. In essence, and AFAIK, this is a correct behavior because different pages need to be loaded (the requested page, the request to inject the JavaScript bridge code, ...) and all require to specify an allow policy. With this hack, I was able to resolve the problm just by calling the decisionHandler only once.
 - (void)webView:(WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
-    if (self->decisionHandlerCalled) return;
+    NSURL *url = navigationAction.request.URL;
+    NSString* urlString = url.absoluteString;
+    bool isABridgeURL = [urlString rangeOfString:@"__bridge_loaded__" options:NSCaseInsensitiveSearch].location != NSNotFound || [urlString rangeOfString:@"__wvjb_" options:NSCaseInsensitiveSearch].location != NSNotFound;
+//    NSLog(@"url = %@, isABridgeURL = %@", urlString, (isABridgeURL ? @"YES" : @"NO"));
+    if (isABridgeURL) return;
     decisionHandler(WKNavigationActionPolicyAllow);
-    self->decisionHandlerCalled = true;
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation

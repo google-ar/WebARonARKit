@@ -27,7 +27,6 @@
     WKWebView* wkWebView;
     WebViewJavascriptBridge* bridge;
     UITextField* urlTextField;
-    bool decisionHandlerCalled;
     bool initialPageLoadedWhenTrackingBegins;
 }
 
