@@ -15,365 +15,358 @@
  */
 
 (function() {
+  // The polyfill is only injected if the code is loaded in the safari webview.
+  var standalone = window.navigator.standalone,
+    userAgent = window.navigator.userAgent.toLowerCase(),
+    safari = /safari/.test(userAgent),
+    ios = /iphone|ipod|ipad/.test(userAgent);
+  if (!ios || standalone || safari) {
+    return;
+  }
 
-	// The polyfill is only injected if the code is loaded in the safari webview.
-	var standalone = window.navigator.standalone,
-	    userAgent = window.navigator.userAgent.toLowerCase(),
-	    safari = /safari/.test( userAgent ),
-	    ios = /iphone|ipod|ipad/.test( userAgent );
-	if (!ios || standalone || safari) {
-		return;
-	}
+  // Polyfill the window.addEventListene to handle the load event. Once the bidge is set, and the page is loaded, the load event can be triggered.
+  var windowLoadEventCallbacks = [];
+  var windowAlreadyLoaded = false;
+  var bridgeAlreadySetup = false;
 
-	// alert("This is the iOS WebView!");
+  function callWindowLoadEventCallbacks() {
+    for (var i = 0; i < windowLoadEventCallbacks.length; i++) {
+      windowLoadEventCallbacks[i].call(window, event);
+    }
+    windowLoadEventCallbacks = [];
+    if (typeof window.onload === "function") {
+      window.onload();
+    }
+  }
 
-	// Polyfill the window.addEventListene to handle the load event. Once the bidge is set, and the page is loaded, the load event can be triggered.
-	var windowLoadEventCallbacks = [];
-	var windowAlreadyLoaded = false;
-	var bridgeAlreadySetup = false;
+  window.addEventListener("load", function() {
+    windowAlreadyLoaded = true;
+    if (bridgeAlreadySetup) {
+      callWindowLoadEventCallbacks();
+    }
+  });
 
-	function callWindowLoadEventCallbacks() {
-		for (var i = 0; i < windowLoadEventCallbacks.length; i++) {
-			windowLoadEventCallbacks[i].call(window, event);
-		}
-		windowLoadEventCallbacks = [];
-		if (typeof(window.onload) === "function") {
-			window.onload();
-		}
-	}
+  var oldWindowAddEventListener = window.addEventListener;
+  window.addEventListener = function(eventName, callback) {
+    var argumentsArray = Array.prototype.slice.call(arguments);
+    if (eventName === "load") {
+      if (windowAlreadyLoaded && bridgeAlreadySetup) {
+        setTimeout(function() {
+          callback.apply(this, argumentsArray);
+        }, 100);
+      } else {
+        windowLoadEventCallbacks.push(callback);
+      }
+    } else {
+      return oldWindowAddEventListener.apply(this, argumentsArray);
+    }
+  };
 
-	window.addEventListener("load", function() {
-		windowAlreadyLoaded = true;
-		if (bridgeAlreadySetup) {
-			callWindowLoadEventCallbacks();
-		}
-	});
+  function setupWebViewJavascriptBridge(callback) {
+    if (window.WebViewJavascriptBridge) {
+      return callback(WebViewJavascriptBridge);
+    }
+    if (window.WVJBCallbacks) {
+      return window.WVJBCallbacks.push(callback);
+    }
+    window.WVJBCallbacks = [callback];
+    var WVJBIframe = document.createElement("iframe");
+    WVJBIframe.style.display = "none";
+    WVJBIframe.src = "https://__bridge_loaded__";
+    document.documentElement.appendChild(WVJBIframe);
+    setTimeout(function() {
+      document.documentElement.removeChild(WVJBIframe);
+    }, 0);
+  }
 
-	var oldWindowAddEventListener = window.addEventListener;
-	window.addEventListener = function(eventName, callback) {
-		var argumentsArray = Array.prototype.slice.call(arguments);
-		if (eventName === "load") {
-			if (windowAlreadyLoaded && bridgeAlreadySetup) {
-				setTimeout(function() {
-					callback.apply(this, argumentsArray);
-				}, 100);
-			}
-			else {
-				windowLoadEventCallbacks.push(callback);
-			}
-		}
-		else {
-			return oldWindowAddEventListener.apply(this, argumentsArray);
-		}
-	};
+  setupWebViewJavascriptBridge(function(bridge) {
+    if (!navigator.getVRDisplays) {
+      function notifyVRDisplayPresentChangeEvent(vrDisplay) {
+        var event = new CustomEvent("vrdisplaypresentchange", {
+          detail: { vrdisplay: self }
+        });
+        window.dispatchEvent(event);
+        if (typeof window.onvrdisplaypresentchange === "function") {
+          window.onvrdisplaypresentchange(event);
+        }
+      }
 
-	function setupWebViewJavascriptBridge(callback) {
-		if (window.WebViewJavascriptBridge) { return callback(WebViewJavascriptBridge); }
-		if (window.WVJBCallbacks) { return window.WVJBCallbacks.push(callback); }
-		window.WVJBCallbacks = [callback];
-		var WVJBIframe = document.createElement('iframe');
-		WVJBIframe.style.display = 'none';
-		WVJBIframe.src = 'https://__bridge_loaded__';
-		document.documentElement.appendChild(WVJBIframe);
-		setTimeout(function() { document.documentElement.removeChild(WVJBIframe) }, 0)
-	}
+      var MAX_NUMBER_OF_POINTS_IN_POINT_CLOUD = 1000;
+      var MAX_FLOAT32_VALUE = 3.4028e38;
 
-	setupWebViewJavascriptBridge(function(bridge) {
-		if (!navigator.getVRDisplays) {
-			function notifyVRDisplayPresentChangeEvent(vrDisplay) {
-				var event = new CustomEvent('vrdisplaypresentchange', {detail: {vrdisplay: self}});
-				window.dispatchEvent(event);
-				if (typeof(window.onvrdisplaypresentchange) === "function") {
-					window.onvrdisplaypresentchange(event);
-				}
-			}
+      VRDisplay = function() {
+        var _layers = null;
+        var _rigthEyeParameters = new VREyeParameters();
+        var _leftEyeParameters = new VREyeParameters();
 
-			var MAX_NUMBER_OF_POINTS_IN_POINT_CLOUD = 1000;
-			var MAX_FLOAT32_VALUE = 3.4028e38;
+        this.isConnected = false;
+        this.isPresenting = false;
+        this.capabilities = new VRDisplayCapabilities();
+        this.capabilities.hasOrientation = true;
+        this.capabilities.canPresent = true;
+        this.capabilities.maxLayers = 1;
+        this.capabilities.hasPosition = true;
+        this.capabilities.hasSeeThroughCamera = true;
+        // this.stageParameters = null; // OculusMobileSDK (Gear VR) does not support room scale VR yet, this attribute is optional.
+        this.getEyeParameters = function(eye) {
+          var eyeParameters = null;
+          // if (vrWebGLRenderingContexts.length > 0) {
+          //  eyeParameters = vrWebGLRenderingContexts[0].getEyeParameters(eye);
+          // }
+          if (eyeParameters !== null && eye === "left") {
+            eyeParameters.offset = -eyeParameters.offset;
+          }
+          return eyeParameters;
+        };
+        this.displayId = nextDisplayId++;
+        this.displayName = "ARKit VR Device";
 
-			VRDisplay = function() {
-				var _layers = null;
-				var _rigthEyeParameters = new VREyeParameters();
-				var _leftEyeParameters = new VREyeParameters();
+        var enableDisable = true;
 
-				this.isConnected = false;
-				this.isPresenting = false;
-				this.capabilities = new VRDisplayCapabilities();
-			    this.capabilities.hasOrientation = true;
-			    this.capabilities.canPresent = true;
-			    this.capabilities.maxLayers = 1;
-			    this.capabilities.hasPosition = true;
-			    this.capabilities.hasSeeThroughCamera = true;
-			    this.capabilities.hasPointCloud = true;
-					// this.stageParameters = null; // OculusMobileSDK (Gear VR) does not support room scale VR yet, this attribute is optional.
-				this.getEyeParameters = function(eye) {
-					var eyeParameters = null;
-					// if (vrWebGLRenderingContexts.length > 0) {
-					// 	eyeParameters = vrWebGLRenderingContexts[0].getEyeParameters(eye);
-					// }
-					if (eyeParameters !== null && eye === 'left') {
-						eyeParameters.offset = -eyeParameters.offset;
-					}
-					return eyeParameters;
-				};
-				this.displayId = nextDisplayId++;
-				this.displayName = 'ARKit VR Device';
+        this.getFrameData = function(frameData) {
+          frameData.timestamp = performance.now();
+          frameData.pose = _pose;
+          frameData.projectionMatrix = _projectionMatrix;
+        };
 
-				var enableDisable = true;
+        this.getPose = function() {
+          // Make a call to the native side to retrieve a new pose.
+          // Commented out for now because the pose is being passed per frame to the window.WebARKitSetPose call.
+          // bridge.callHandler('getPose', _getPoseCallback);
 
-				this.getPose = function() {
-					// Make a call to the native side to retrieve a new pose.
-					// Commented out for now because the pose is being passed per frame to the window.WebARKitSetPose call.
-					// bridge.callHandler('getPose', _getPoseCallback);
+          // Return whatever pose we have.
+          return _pose;
+        };
 
-					// Return whatever pose we have.
-					return _pose;
-				};
-				this.getImmediatePose = function() {
-					return getPose();
-				};
-				this.resetPose = function() {
-					// TODO: Make a call to the native extension to reset the pose.
-				};
-				this.depthNear = 0.01;
-				this.depthFar = 10000.0;
-				this.requestAnimationFrame = function(callback) {
-					return window.requestAnimationFrame(callback);
-				};
-				this.cancelAnimationFrame = function(handle) {
-					return window.cancelAnimationFrame(handle);
-				};
-				this.requestPresent = function(layers) {
-					var self = this;
-					return new Promise(function(resolve, reject) {
-						self.isPresenting = true;
-						notifyVRDisplayPresentChangeEvent(self);
-						_layers = layers;
-						resolve();
-					});
-				};
-				this.exitPresent = function() {
-					var self = this;
-					return new Promise(function(resolve, reject) {
-						self.isPresenting = false;
-						resolve();
-					});
-				};
-				this.getLayers = function() {
-					return _layers;
-				};
-				this.submitFrame = function(pose) {
-					// TODO: Learn fom the WebVR Polyfill how to make the barrel distortion.
-				};
+        this.resetPose = function() {
+          // TODO: Make a call to the native extension to reset the pose.
+        };
 
-				// WebAR API
-				this.getPickingPointAndPlaneInPointCloud = function(x, y) {
-                    var hitResult = prompt("hitTest:" + x + "," + y);
-                    return JSON.parse(hitResult);
-                    /*
-					// Make a call to the native side to retrieve a new hit.
-					bridge.callHandler('hitTest', "" + x + "," + y, _hitTestCallback);
-					// Return whatever hit is available that corresponds to the x,y point
-					var pickingPointAndPlane = null;
-					if (_hits[x] &&_hits[x][y]) {
-						pickingPointAndPlane = _hits[x][y];
-					}
-					return pickingPointAndPlane;
-					*/
-				};
-				this.getPointCloud = function(pointCloud, justUpdatePointCloud, pointsToSkip) {
-					// TODO: pointsToSkip could be implemented by passing it to the native call
-					if (!justUpdatePointCloud) {
-						// Make a call to the native side to retrieve a new point cloud.
-						bridge.callHandler('getPointCloud', null, _getPointCloudCallback);
-					}
-					// Store a reference to the point cloud to store the result of the callback in it.
-					_pointCloud = pointCloud;
-				};
-				this.getSeeThroughCamera = function() {
-					return _seeThoughCamera;
-				};
+        this.depthNear = 0.01;
+        this.depthFar = 10000.0;
 
+        this.requestAnimationFrame = function(callback) {
+          return window.requestAnimationFrame(callback);
+        };
 
-				return this;
-			};
+        this.cancelAnimationFrame = function(handle) {
+          return window.cancelAnimationFrame(handle);
+        };
 
-			VRLayer = function() {
-				this.source = null;
-				this.leftBounds = [];
-				this.rightBounds = [];
-				return this;
-			};
+        this.requestPresent = function(layers) {
+          var self = this;
+          return new Promise(function(resolve, reject) {
+            self.isPresenting = true;
+            notifyVRDisplayPresentChangeEvent(self);
+            _layers = layers;
+            resolve();
+          });
+        };
 
-			VRDisplayCapabilities = function() {
-				this.hasPosition = false;
-				this.hasOrientation = false;
-				this.hasExternalDisplay = false;
-				this.canPresent = false;
-				this.maxLayers = 0;
-				this.hasSeeThroughCamera = false;
-				this.hasPointCloud = false;
-				this.hasMarkerSupport = false;
-				this.hasADFSupport = false;
-				return this;
-			};
+        this.exitPresent = function() {
+          var self = this;
+          return new Promise(function(resolve, reject) {
+            self.isPresenting = false;
+            resolve();
+          });
+        };
 
-			VREye = {
-				left: "left",
-				right: "right"
-			};
+        this.getLayers = function() {
+          return _layers;
+        };
 
-			VRFieldOfView = function() {
-				this.upDegrees = 0;
-				this.rightDegrees = 0;
-				this.downDegrees = 0;
-				this.leftDegrees = 0;
-				return this;
-			};
+        this.submitFrame = function(pose) {
+          // TODO: Learn fom the WebVR Polyfill how to make the barrel distortion.
+        };
 
-			VRPose = function() {
-				this.timeStamp = 0;
-				this.position = null;
-				this.linearVelocity = null;
-				this.linearAcceleration = null;
-				this.orientation = null;
-				this.angularVelocity = null;
-				this.angularAcceleration = null;
-				return this;
-			};
+        // WebAR API
+        this.hitTest = function(x, y) {
+          // Make a call to the native side to retrieve a new hit.
+          bridge.callHandler("hitTest", "" + x + "," + y, _hitTestCallback);
+          // Return whatever hit is available that corresponds to the x,y point
+          var arHit = null;
+          if (_hits[x] && _hits[x][y]) {
+            arHit = _hits[x][y];
+          }
+          return arHit;
+        };
 
-			VREyeParameters = function() {
-				this.offset = 0;
-				this.fieldOfView = new VRFieldOfView();
-				this.renderWidth = 0;
-				this.renderHeight = 0;
-				return this;
-			};
+        return this;
+      };
 
-			VRStageParameters = function() {
-				this.sittingToStandingTransform = null;
-				this.sizeX = 0;
-				this.sizeZ = 0;
-				return this;
-			};
+      VRLayer = function() {
+        this.source = null;
+        this.leftBounds = [];
+        this.rightBounds = [];
+        return this;
+      };
 
-			// WebAR structures
-			VRPickingPointAndPlane = function() {
-				this.point = new Float32Array(3);
-				this.plane = new Float32Array(4);
-				return this;
-			};
+      VRDisplayCapabilities = function() {
+        this.hasPosition = false;
+        this.hasOrientation = false;
+        this.hasExternalDisplay = false;
+        this.canPresent = false;
+        this.maxLayers = 0;
+        this.hasSeeThroughCamera = false;
+        return this;
+      };
 
-			VRPointCloud = function() {
-				this.numberOfPoints = 0;
-				// The default max number of points in point cloud
-				this.points = new Float32Array(MAX_NUMBER_OF_POINTS_IN_POINT_CLOUD * 3);
-				for (var i = 0; i < this.points.length; i++) {
-					this.points[i] = MAX_FLOAT32_VALUE;
-				}
-				return this;
-			};
+      VREye = {
+        left: "left",
+        right: "right"
+      };
 
-			VRSeeThroughCamera = function() {
-				this.projectionMatrix = new Float32Array(16);
-				return this;
-			};
+      VRFieldOfView = function() {
+        this.upDegrees = 0;
+        this.rightDegrees = 0;
+        this.downDegrees = 0;
+        this.leftDegrees = 0;
+        return this;
+      };
 
-			// As the bridge is asynchronous we need a structure to hold the information while it is retrieved.
-			var _pose = new VRPose();
-			_pose.orientation = new Float32Array(4);
-			_pose.position = new Float32Array(3);
+      VRPose = function() {
+        this.position = null;
+        this.linearVelocity = null;
+        this.linearAcceleration = null;
+        this.orientation = null;
+        this.angularVelocity = null;
+        this.angularAcceleration = null;
+        return this;
+      };
 
-			// This is the callback for the bridge call to the native side.
-			function _getPoseCallback(poseString) {
-				var pose = JSON.parse(poseString);
-				_pose.position[0] = pose.position[0];
-				_pose.position[1] = pose.position[1];
-				_pose.position[2] = pose.position[2];
-				_pose.orientation[0] = pose.orientation[0];
-				_pose.orientation[1] = pose.orientation[1];
-				_pose.orientation[2] = pose.orientation[2];
-				_pose.orientation[3] = pose.orientation[3];
-			}
+      VRFrameData = function() {
+        this.timestamp = null;
+        this.leftProjectionMatrix = null;
+        this.leftViewMatrix = null;
+        this.rightProjectionMatrix = null;
+        this.rightViewMatrix = null;
+        this.pose = null;
+        this.projectionMatrix = null;
+      };
 
-			window.WebARKitSetPose = function(pose) {
-				_pose.position[0] = pose.position[0];
-				_pose.position[1] = pose.position[1];
-				_pose.position[2] = pose.position[2];
-				_pose.orientation[0] = pose.orientation[0];
-				_pose.orientation[1] = pose.orientation[1];
-				_pose.orientation[2] = pose.orientation[2];
-				_pose.orientation[3] = pose.orientation[3];
-			};
+      VREyeParameters = function() {
+        this.offset = 0;
+        this.fieldOfView = new VRFieldOfView();
+        this.renderWidth = 0;
+        this.renderHeight = 0;
+        return this;
+      };
 
-			var _seeThoughCamera = new VRSeeThroughCamera();
-			function _getProjectionMatrixCallback(projectionMatrixString) {
-				var projectionMatrix = JSON.parse(projectionMatrixString);
-				for (var i = 0; i < 16; i++) {
-					_seeThoughCamera.projectionMatrix[i] = projectionMatrix[i];
-				}
-				// We can finally say that the bidge setup has ended!
-				bridgeAlreadySetup = true;
-				if (windowAlreadyLoaded) {
-					callWindowLoadEventCallbacks();
-				}
-			}
-			bridge.callHandler("getProjectionMatrix", null, _getProjectionMatrixCallback);
+      VRStageParameters = function() {
+        this.sittingToStandingTransform = null;
+        this.sizeX = 0;
+        this.sizeZ = 0;
+        return this;
+      };
 
-			var _hits = {};
-			function _hitTestCallback(dataString) {
-				if (!dataString) return;
-				var data = JSON.parse(dataString);
-				var x = data.p[0];
-				var y = data.p[1];
-				if (_hits[x]) {
-					if (_hits[x][y]) {
-						_hits[x][y].point[0] = data.point[0];
-						_hits[x][y].point[1] = data.point[1];
-						_hits[x][y].point[2] = data.point[2];
-						_hits[x][y].plane[0] = data.plane[0];
-						_hits[x][y].plane[1] = data.plane[1];
-						_hits[x][y].plane[2] = data.plane[2];
-						_hits[x][y].plane[3] = data.plane[3];
-					}
-					else {
-						_hits[x][y] = { point: data.point, plane: data.plane };
-					}
-				}
-				else {
-					_hits[x] = {};
-					_hits[x][y] = { point: data.point, plane: data.plane };
-				}
-			}
+      // WebAR structures
+      ARHit = function() {
+        this.point = new Float32Array(3);
+        this.plane = new Float32Array(4);
+        return this;
+      };
 
-			var _pointCloud = null;
-			function _getPointCloudCallback(dataString) {
-				if (!_pointCloud || !dataString) return;
-				var data = JSON.parse(dataString);
-				for (var i = 0; i < data.points.length; i++) {
-					_pointCloud.points[i] = data.points[i];
-				}
-				if (data.numberOfPoints < _pointCloud.numberOfPoints) {
-					for (var i = data.numberOfPoints * 3; i < _pointCloud.numberOfPoints * 3; i++) {
-						_pointCloud.points[i] = MAX_FLOAT32_VALUE;
-					}
-				}
-				_pointCloud.numberOfPoints = data.numberOfPoints;
-			}
+      // As the bridge is asynchronous we need a structure to hold the information while it is retrieved.
+      var _pose = new VRPose();
+      _pose.orientation = new Float32Array(4);
+      _pose.position = new Float32Array(3);
 
-			var nextDisplayId = 1000;
+      // This is the callback for the bridge call to the native side.
+      function _getPoseCallback(poseString) {
+        var pose = JSON.parse(poseString);
+        _pose.position[0] = pose.position[0];
+        _pose.position[1] = pose.position[1];
+        _pose.position[2] = pose.position[2];
+        _pose.orientation[0] = pose.orientation[0];
+        _pose.orientation[1] = pose.orientation[1];
+        _pose.orientation[2] = pose.orientation[2];
+        _pose.orientation[3] = pose.orientation[3];
+      }
 
-			// The VR displayes
-			var displays = [ new VRDisplay() ];
-			// The promise resolvers for those promises created before the start event is received === devices are created.
-			var resolvers = [];
+      window.WebARKitSetPose = function(pose) {
+        _pose.position[0] = pose.position[0];
+        _pose.position[1] = pose.position[1];
+        _pose.position[2] = pose.position[2];
+        _pose.orientation[0] = pose.orientation[0];
+        _pose.orientation[1] = pose.orientation[1];
+        _pose.orientation[2] = pose.orientation[2];
+        _pose.orientation[3] = pose.orientation[3];
+      };
 
-			navigator.getVRDisplays = function() {
-				return new Promise(
-					function(resolve, reject) {
-						resolve(displays);
-					});
-			};
-		}
-	});
+      var _projectionMatrix = new Float32Array(16);
+      window.WebARKitSetProjectionMatrix = function(projectionMatrix) {
+        _projectionMatrix[0] = projectionMatrix[0];
+        _projectionMatrix[1] = projectionMatrix[1];
+        _projectionMatrix[2] = projectionMatrix[2];
+        _projectionMatrix[3] = projectionMatrix[3];
+        _projectionMatrix[4] = projectionMatrix[4];
+        _projectionMatrix[5] = projectionMatrix[5];
+        _projectionMatrix[6] = projectionMatrix[6];
+        _projectionMatrix[7] = projectionMatrix[7];
+        _projectionMatrix[8] = projectionMatrix[8];
+        _projectionMatrix[9] = projectionMatrix[9];
+        _projectionMatrix[10] = projectionMatrix[10];
+        _projectionMatrix[11] = projectionMatrix[11];
+        _projectionMatrix[12] = projectionMatrix[12];
+        _projectionMatrix[13] = projectionMatrix[13];
+        _projectionMatrix[14] = projectionMatrix[14];
+        _projectionMatrix[15] = projectionMatrix[15];
+      };
+
+      function _getProjectionMatrixCallback(projectionMatrixString) {
+        var projectionMatrix = JSON.parse(projectionMatrixString);
+        for (var i = 0; i < 16; i++) {
+          _projectionMatrix[i] = projectionMatrix[i];
+        }
+        // We can finally say that the bidge setup has ended!
+        bridgeAlreadySetup = true;
+        if (windowAlreadyLoaded) {
+          callWindowLoadEventCallbacks();
+        }
+      }
+
+      bridge.callHandler(
+        "getProjectionMatrix",
+        null,
+        _getProjectionMatrixCallback
+      );
+
+      var _hits = {};
+      function _hitTestCallback(dataString) {
+        if (!dataString) return;
+        var data = JSON.parse(dataString);
+        var x = data.p[0];
+        var y = data.p[1];
+        if (_hits[x]) {
+          if (_hits[x][y]) {
+            _hits[x][y].point[0] = data.point[0];
+            _hits[x][y].point[1] = data.point[1];
+            _hits[x][y].point[2] = data.point[2];
+            _hits[x][y].plane[0] = data.plane[0];
+            _hits[x][y].plane[1] = data.plane[1];
+            _hits[x][y].plane[2] = data.plane[2];
+            _hits[x][y].plane[3] = data.plane[3];
+          } else {
+            _hits[x][y] = { point: data.point, plane: data.plane };
+          }
+        } else {
+          _hits[x] = {};
+          _hits[x][y] = { point: data.point, plane: data.plane };
+        }
+      }
+
+      var nextDisplayId = 1000;
+
+      // The VR displayes
+      var displays = [new VRDisplay()];
+      // The promise resolvers for those promises created before the start event is received === devices are created.
+      var resolvers = [];
+
+      navigator.getVRDisplays = function() {
+        return new Promise(function(resolve, reject) {
+          resolve(displays);
+        });
+      };
+    }
+  });
 })();
