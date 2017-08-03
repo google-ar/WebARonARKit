@@ -418,6 +418,40 @@ void extractQuaternionFromMatrix(const float* m, float* o)
     [self showAlertDialog:message completionHandler:completionHandler];
 }
 
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable result))completionHandler
+{
+    NSArray* values = [prompt componentsSeparatedByString:@":"];
+    NSString* method = values[0];
+    NSArray* params = [values[1] componentsSeparatedByString:@","];
+    NSString* result = nil;
+    if ([method isEqualToString:@"hitTest"]) {
+        float x = [params[0] floatValue];
+        float y = [params[1] floatValue];
+        CGPoint point = CGPointMake(x, y);
+        ARFrame *currentFrame = [self.session currentFrame];
+        // TODO: Play with the different types of hit tests to see what corresponds best with what tango already provides.
+        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlaneUsingExtent];
+        //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
+        if (hits.count > 0)
+        {
+            matrix_float4x4 m = hits[0].worldTransform;
+            const float* matrix = (const float*)(&m);
+            float plane[4];
+            plane[0] = matrix[ 4];
+            plane[1] = matrix[ 5];
+            plane[2] = matrix[ 6];
+            plane[3] = 1;
+            float point[3];
+            point[0] = matrix[12];
+            point[1] = matrix[13];
+            point[2] = matrix[14];
+            result = [NSString stringWithFormat:@"{\"point\":[%f,%f,%f],\"plane\":[%f,%f,%f,%f]}", point[0], point[1], point[2], plane[0], plane[1], plane[2], plane[3]];
+        }
+        //        NSLog(@"WebARKit: hitTest hits count for (%f, %f) = %ld - %@", x, y, hits.count, data);
+    }
+    completionHandler(result);
+}
+
 #pragma mark - WKNavigationDelegate
 
 // TODO - IMPORTANT (Iker Jamardo): There seems to be a bug in the WebViewJavascriptBridge and the decisionHandler is being called multiple times and iOS does not seem to like it. In essence, and AFAIK, this is a correct behavior because different pages need to be loaded (the requested page, the request to inject the JavaScript bridge code, ...) and all require to specify an allow policy. With this hack, I was able to resolve the problm just by calling the decisionHandler only once.

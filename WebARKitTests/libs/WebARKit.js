@@ -168,6 +168,9 @@
 
 				// WebAR API
 				this.getPickingPointAndPlaneInPointCloud = function(x, y) {
+                    var hitResult = prompt("hitTest:" + x + "," + y);
+                    return JSON.parse(hitResult);
+                    /*
 					// Make a call to the native side to retrieve a new hit.
 					bridge.callHandler('hitTest', "" + x + "," + y, _hitTestCallback);
 					// Return whatever hit is available that corresponds to the x,y point
@@ -176,6 +179,7 @@
 						pickingPointAndPlane = _hits[x][y];
 					}
 					return pickingPointAndPlane;
+					*/
 				};
 				this.getPointCloud = function(pointCloud, justUpdatePointCloud, pointsToSkip) {
 					// TODO: pointsToSkip could be implemented by passing it to the native call
