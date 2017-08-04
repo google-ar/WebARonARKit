@@ -192,10 +192,25 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
                                              modifiedSince:dateFrom
                                          completionHandler:^{
                                          }];
-  // Add the WKWebView on top of the Metal view
+  // Make sure that WebARKit.js is injected at the beginning of any webpage
+  // Load the WebARKit.js file
+  NSString* webARKitJSPath = [[NSBundle mainBundle] pathForResource:@"WebARKit" ofType:@"js"];
+  NSLog(webARKitJSPath);
+  NSString* webARKitJSContent = [NSString stringWithContentsOfFile:webARKitJSPath encoding:NSUTF8StringEncoding error:NULL];
+  NSLog(webARKitJSContent);
+  // Setup the script injection
+  WKUserScript* webARKitJSUserScript = [[WKUserScript alloc] initWithSource:webARKitJSContent
+                                                            injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+                                                         forMainFrameOnly:true];
+  WKUserContentController* userContentController = [[WKUserContentController alloc] init];
+  [userContentController addUserScript:webARKitJSUserScript];
+  WKWebViewConfiguration* wkWebViewConfig = [[WKWebViewConfiguration alloc] init];
+  wkWebViewConfig.userContentController = userContentController;
+  // Create the WKWebView using the configuration/script injection and add it to the top of the view graph
   self->wkWebView = [[WKWebView alloc]
-      initWithFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                               self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+                     initWithFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
+                                              self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+                     configuration:wkWebViewConfig];
   self->wkWebView.opaque = false;
   self->wkWebView.backgroundColor = [UIColor clearColor];
   self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];

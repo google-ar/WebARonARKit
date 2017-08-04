@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BD61CF8C1F33FB1700733763 /* WebARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARKit.js */; };
 		F6161D991EF85CFD00C915FA /* WebARKitTests in Resources */ = {isa = PBXBuildFile; fileRef = F6161D981EF85CFD00C915FA /* WebARKitTests */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
@@ -35,6 +36,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BD61CF8B1F33FA0A00733763 /* WebARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARKit.js; sourceTree = "<group>"; };
 		F6161D981EF85CFD00C915FA /* WebARKitTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WebARKitTests; path = ../WebARKitTests; sourceTree = "<group>"; };
 		F66038631EF5FCC100385A4C /* WebARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 		F660385A1EF5FCC100385A4C = {
 			isa = PBXGroup;
 			children = (
+				BD61CF8B1F33FA0A00733763 /* WebARKit.js */,
 				F6161D981EF85CFD00C915FA /* WebARKitTests */,
 				F66038821EF5FD6500385A4C /* WebViewJavascriptBridge */,
 				F66038651EF5FCC100385A4C /* WebARKit */,
@@ -186,6 +189,7 @@
 				F6161D991EF85CFD00C915FA /* WebARKitTests in Resources */,
 				F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */,
 				F66038741EF5FCC100385A4C /* Main.storyboard in Resources */,
+				BD61CF8C1F33FB1700733763 /* WebARKit.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
