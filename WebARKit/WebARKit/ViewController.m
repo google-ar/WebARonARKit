@@ -455,7 +455,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
     if( [values count] > 1 ) {
     NSString* method = values[0];
     NSArray* params = [values[1] componentsSeparatedByString:@","];
-    NSString* result = nil;
+    NSString* result;
         if ([method isEqualToString:@"hitTest"]) {
             float x = [params[0] floatValue];
             float y = [params[1] floatValue];
@@ -463,15 +463,16 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
             ARFrame *currentFrame = [self.session currentFrame];
             // TODO: Play with the different types of hit tests to see what corresponds best with what tango already provides.
             NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlaneUsingExtent];
+
             //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
             if (hits.count > 0)
             {
                 matrix_float4x4 m = hits[0].worldTransform;
                 const float* matrix = (const float*)(&m);
                 float plane[4];
-                plane[0] = matrix[ 4];
-                plane[1] = matrix[ 5];
-                plane[2] = matrix[ 6];
+                plane[0] = matrix[4];
+                plane[1] = matrix[5];
+                plane[2] = matrix[6];
                 plane[3] = 1;
                 float point[3];
                 point[0] = matrix[12];
