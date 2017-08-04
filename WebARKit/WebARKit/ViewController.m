@@ -235,80 +235,6 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   // of the decisionHandler here. Check the code of the decidePolicyForNavigationAction method to
   // further understand the fix.
   [self->bridge setWebViewDelegate:self];
-  // TODO: Change the inline functions for methods in this class to make the code clearer/cleaner.
-  [self->bridge
-      registerHandler:@"getPose"
-              handler:^(id data, WVJBResponseCallback responseCallback) {
-                ARFrame *currentFrame = [self.session currentFrame];
-                matrix_float4x4 m = currentFrame.camera.transform;
-                const float *matrix = (const float *)(&m);
-                float orientation[4];
-                extractQuaternionFromMatrix(matrix, orientation);
-                float position[3];
-                position[0] = matrix[12];
-                position[1] = matrix[13];
-                position[2] = matrix[14];
-                data = [NSString
-                    stringWithFormat:@"{\"position\":[%f,%f,%f],\"orientation\":[%f,%f,%f,%f]}",
-                                     position[0], position[1], position[2], orientation[0],
-                                     orientation[1], orientation[2], orientation[3]];
-                responseCallback(data);
-              }];
-  [self->bridge registerHandler:@"getProjectionMatrix"
-                        handler:^(id data, WVJBResponseCallback responseCallback) {
-                          ARFrame *currentFrame = [self.session currentFrame];
-                          matrix_float4x4 m4x4 = [currentFrame.camera
-                              projectionMatrixWithViewportSize:self.renderer->viewportSize
-                                                   orientation:UIInterfaceOrientationLandscapeRight
-                                                         zNear:0.001
-                                                          zFar:1000];
-                          //        matrix_float4x4 m4x4 = currentFrame.camera.projectionMatrix;
-                          const float *m = (const float *)(&m4x4);
-                          data = [NSString
-                              stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
-                                               m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
-                                               m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
-                          responseCallback(data);
-                        }];
-  [self->bridge
-      registerHandler:@"hitTest"
-              handler:^(id data, WVJBResponseCallback responseCallback) {
-                NSString *dataString = data;
-                NSArray *values = [dataString componentsSeparatedByString:@","];
-                float x = [values[0] floatValue];
-                float y = [values[1] floatValue];
-                CGPoint point = CGPointMake(x, y);
-                ARFrame *currentFrame = [self.session currentFrame];
-                // TODO: Play with the different types of hit tests to see what corresponds best
-                // with what tango already provides.
-                NSArray<ARHitTestResult *> *hits = [currentFrame
-                    hitTest:point
-                      types:(ARHitTestResultType)ARHitTestResultTypeExistingPlaneUsingExtent];
-                //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point
-                //        types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
-                if (hits.count > 0) {
-                  matrix_float4x4 m = hits[0].worldTransform;
-                  const float *matrix = (const float *)(&m);
-                  float plane[4];
-                  plane[0] = matrix[4];
-                  plane[1] = matrix[5];
-                  plane[2] = matrix[6];
-                  plane[3] = 1;
-                  float point[3];
-                  point[0] = matrix[12];
-                  point[1] = matrix[13];
-                  point[2] = matrix[14];
-                  data = [NSString
-                      stringWithFormat:@"{\"p\":[%@],\"point\":[%f,%f,%f],\"plane\":[%f,%f,%f,%f]}",
-                                       data, point[0], point[1], point[2], plane[0], plane[1],
-                                       plane[2], plane[3]];
-                } else {
-                  data = nil;
-                }
-                //        NSLog(@"WebARKit: hitTest hits count for (%f, %f) = %ld - %@", x, y,
-                //        hits.count, data);
-                responseCallback(data);
-              }];
 
   // Add a textfield for the URL on top of the webview
   self->urlTextField = [[UITextField alloc]
@@ -453,9 +379,9 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 {
     NSArray* values = [prompt componentsSeparatedByString:@":"];
     if( [values count] > 1 ) {
-    NSString* method = values[0];
-    NSArray* params = [values[1] componentsSeparatedByString:@","];
-    NSString* result;
+        NSString* method = values[0];
+        NSArray* params = [values[1] componentsSeparatedByString:@","];
+        NSString* result = nil;
         if ([method isEqualToString:@"hitTest"]) {
             float x = [params[0] floatValue];
             float y = [params[1] floatValue];
@@ -467,22 +393,49 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
             //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
             if (hits.count > 0)
             {
-                matrix_float4x4 m = hits[0].worldTransform;
-                const float* matrix = (const float*)(&m);
-                float plane[4];
-                plane[0] = matrix[4];
-                plane[1] = matrix[5];
-                plane[2] = matrix[6];
-                plane[3] = 1;
-                float point[3];
-                point[0] = matrix[12];
-                point[1] = matrix[13];
-                point[2] = matrix[14];
-                result = [NSString stringWithFormat:@"{\"point\":[%f,%f,%f],\"plane\":[%f,%f,%f,%f]}", point[0], point[1], point[2], plane[0], plane[1], plane[2], plane[3]];
+                result = @"{\"hits\":[";
+                for (int i = 0; i < hits.count; i++) {
+                    matrix_float4x4 m4x4 = hits[i].worldTransform;
+                    const float* m = (const float*)(&m4x4);
+                    NSString* hit = [NSString
+                        stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
+                                         m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
+                                         m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
+                    result = [result stringByAppendingString:hit];
+                    if (i < hits.count - 1) {
+                      result = [result stringByAppendingString:@","];
+                    }
+                }
+                result = [result stringByAppendingString:@"]}"];
             }
-            //        NSLog(@"WebARKit: hitTest hits count for (%f, %f) = %ld - %@", x, y, hits.count, data);
-            completionHandler(result);
+        } else if ([method isEqualToString:@"getProjectionMatrix"]) {
+            ARFrame *currentFrame = [self.session currentFrame];
+            matrix_float4x4 m4x4 = [currentFrame.camera
+                projectionMatrixWithViewportSize:self.renderer->viewportSize
+                orientation:UIInterfaceOrientationLandscapeRight
+                zNear:0.001
+                zFar:1000];
+            const float *m = (const float *)(&m4x4);
+            result = [NSString
+              stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
+                               m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
+                               m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
+        } else if ([method isEqualToString:@"getPose"]) {
+            ARFrame *currentFrame = [self.session currentFrame];
+            matrix_float4x4 m4x4 = currentFrame.camera.transform;
+            const float *m = (const float *)(&m4x4);
+            float orientation[4];
+            extractQuaternionFromMatrix(m, orientation);
+            float position[3];
+            position[0] = m[12];
+            position[1] = m[13];
+            position[2] = m[14];
+            result = [NSString
+                stringWithFormat:@"{\"position\":[%f,%f,%f],\"orientation\":[%f,%f,%f,%f]}",
+                                 position[0], position[1], position[2], orientation[0],
+                                 orientation[1], orientation[2], orientation[3]];
         }
+        completionHandler(result);
     }
     else
     {
