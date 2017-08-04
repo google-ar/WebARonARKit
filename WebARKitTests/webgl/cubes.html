@@ -17,441 +17,439 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>WebAR - WebGL Cubes Example</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no,
-    minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body {
-            font-family: Monospace;
-            margin: 0px;
-            overflow: hidden;
-        }
-        #info {
-            color: #fff;
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            z-index: 100;
-            display:block;
-        }
-        a {
-            color: skyblue
-        }
-    </style>
+  <title>WebAR - WebGL Cubes Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no,
+  minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      font-family: Monospace;
+      margin: 0px;
+      overflow: hidden;
+    }
+    #info {
+      color: #fff;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 100;
+      display:block;
+    }
+    a {
+      color: skyblue
+    }
+  </style>
 </head>
 <body>
 <div id="info"> WebAR - WebGL Example
-    <a href="http://www.syedrezaali.com">Reza Ali</a>
+  <a href="http://www.syedrezaali.com">Reza Ali</a>
 </div>
 <script src="../libs/third_party/gl-matrix-min.js"></script>
 <script id="cube-frag" type="x-shader/x-fragment">
-    precision mediump float;
+  precision mediump float;
 
-    varying vec4 vColor;
+  varying vec4 vColor;
 
-    void main(void) {
-        gl_FragColor = vColor;
-    }
+  void main(void) {
+    gl_FragColor = vColor;
+  }
 </script>
 <script id="cube-vert" type="x-shader/x-vertex">
-    attribute vec3 position;
-    attribute vec4 color;
+  attribute vec3 position;
+  attribute vec4 color;
 
-    uniform mat4 projectionMatrix;
-    uniform mat4 viewMatrix;
-    uniform mat4 modelMatrix;
+  uniform mat4 projectionMatrix;
+  uniform mat4 viewMatrix;
+  uniform mat4 modelMatrix;
 
-    varying vec4 vColor;
+  varying vec4 vColor;
 
-    void main(void) {
-        gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
-        vColor = color;
-    }
+  void main(void) {
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
+    vColor = color;
+  }
 </script>
 <script>
 window.addEventListener("load", function() {
-    var gl, canvas;
+  var gl, canvas;
 
-    var arDisplay;
-    var arFrameData;
+  var arDisplay;
+  var arFrameData;
 
-    var arProjectionMatrix = mat4.create();
-    var arViewMatrix = mat4.create();
-    var arViewOrientation = -1;
+  var arProjectionMatrix = mat4.create();
+  var arViewMatrix = mat4.create();
+  var arViewOrientation = -1;
 
-    var cubeShader;
-    var cubePositionBuffer;
-    var cubeColorBuffer;
-    var cubeIndexBuffer;
+  var cubeShader;
+  var cubePositionBuffer;
+  var cubeColorBuffer;
+  var cubeIndexBuffer;
 
-    var cubeMatricies = [];
+  var cubeMatricies = [];
 
-    function combineOrientations(screenOrientation, seeThroughCameraOrientation) {
-        var seeThroughCameraOrientationIndex = 0;
-        switch (seeThroughCameraOrientation) {
-          case 90:
-            seeThroughCameraOrientationIndex = 1;
-            break;
-          case 180:
-            seeThroughCameraOrientationIndex = 2;
-            break;
-          case 270:
-            seeThroughCameraOrientationIndex = 3;
-            break;
-          default:
-            seeThroughCameraOrientationIndex = 0;
-            break;
-        }
-        var screenOrientationIndex = 0;
-        switch (screenOrientation) {
-          case 90:
-            screenOrientationIndex = 1;
-            break;
-          case 180:
-            screenOrientationIndex = 2;
-            break;
-          case 270:
-            screenOrientationIndex = 3;
-            break;
-          default:
-            screenOrientationIndex = 0;
-            break;
-        }
-        ret = screenOrientationIndex - seeThroughCameraOrientationIndex;
-        if (ret < 0) {
-          ret += 4;
-        }
-        return (ret % 4);
+  function combineOrientations(screenOrientation, seeThroughCameraOrientation) {
+    var seeThroughCameraOrientationIndex = 0;
+    switch (seeThroughCameraOrientation) {
+      case 90:
+        seeThroughCameraOrientationIndex = 1;
+        break;
+      case 180:
+        seeThroughCameraOrientationIndex = 2;
+        break;
+      case 270:
+        seeThroughCameraOrientationIndex = 3;
+        break;
+      default:
+        seeThroughCameraOrientationIndex = 0;
+        break;
+    }
+    var screenOrientationIndex = 0;
+    switch (screenOrientation) {
+      case 90:
+        screenOrientationIndex = 1;
+        break;
+      case 180:
+        screenOrientationIndex = 2;
+        break;
+      case 270:
+        screenOrientationIndex = 3;
+        break;
+      default:
+        screenOrientationIndex = 0;
+        break;
+    }
+    ret = screenOrientationIndex - seeThroughCameraOrientationIndex;
+    if (ret < 0) {
+      ret += 4;
+    }
+    return (ret % 4);
+  }
+
+  function updateARPose()
+  {
+    if( arDisplay ) {
+      arDisplay.getFrameData(arFrameData);
+    }
+  }
+
+  function updateARProjectionMatrix()
+  {
+    if( arDisplay ) {
+      mat4.copy( arProjectionMatrix, arFrameData.projectionMatrix );
+    }
+    else {
+      mat4.perspective(arProjectionMatrix, 45, window.innerWidth/window.innerHeight, 0.1, 100.0 );
+    }
+  }
+
+  function updateARViewMatrix() {
+    if( arDisplay && arFrameData ) {
+      pose = arFrameData.pose;
+
+      var ori = quat.fromValues(
+        pose.orientation[0],
+        pose.orientation[1],
+        pose.orientation[2],
+        pose.orientation[3]
+      );
+
+      var pos = vec3.fromValues(
+        pose.position[0],
+        pose.position[1],
+        pose.position[2]
+      );
+
+      mat4.fromRotationTranslation( arViewMatrix, ori, pos );
+      mat4.invert( arViewMatrix, arViewMatrix );
+    }
+    else{
+      mat4.identity(arViewMatrix);
+      var trans = vec3.create();
+      vec3.set( trans, 0, 0, -4 );
+      mat4.translate(arViewMatrix, arViewMatrix, trans);
+    }
+  }
+
+  function getShader(gl, id) {
+    var shaderScript = document.getElementById(id);
+    if (!shaderScript) {
+      return null;
     }
 
-    function updateARPose()
-    {
-        if( arDisplay ) {
-            arDisplay.getFrameData(arFrameData);
-        }
+    var str = "";
+    var k = shaderScript.firstChild;
+    while (k) {
+      if (k.nodeType == 3) {
+          str += k.textContent;
+      }
+      k = k.nextSibling;
     }
 
-    function updateARProjectionMatrix()
-    {
-        if( arDisplay ) {
-            mat4.copy( arProjectionMatrix, arFrameData.projectionMatrix );
-        }
-        else {
-            mat4.perspective(arProjectionMatrix, 45, window.innerWidth/window.innerHeight, 0.1, 100.0 );
-        }
+    var shader;
+    if (shaderScript.type == "x-shader/x-fragment") {
+      shader = gl.createShader(gl.FRAGMENT_SHADER);
+    } else if (shaderScript.type == "x-shader/x-vertex") {
+      shader = gl.createShader(gl.VERTEX_SHADER);
+    } else {
+      return null;
     }
 
-    function updateARViewMatrix() {
-        if( arDisplay && arFrameData ) {
-            pose = arFrameData.pose;
+    gl.shaderSource(shader, str);
+    gl.compileShader(shader);
 
-            var ori = quat.fromValues(
-                pose.orientation[0],
-                pose.orientation[1],
-                pose.orientation[2],
-                pose.orientation[3]
-            );
-
-            var pos = vec3.fromValues(
-                pose.position[0],
-                pose.position[1],
-                pose.position[2]
-            );
-
-            mat4.fromRotationTranslation( arViewMatrix, ori, pos );
-            mat4.invert( arViewMatrix, arViewMatrix );
-        }
-        else{
-            mat4.identity(arViewMatrix);
-            var trans = vec3.create();
-            vec3.set( trans, 0, 0, -4 );
-            mat4.translate(arViewMatrix, arViewMatrix, trans);
-        }
+    if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+      alert(gl.getShaderInfoLog(shader));
+      return null;
     }
 
-    function getShader(gl, id) {
-        var shaderScript = document.getElementById(id);
-        if (!shaderScript) {
-            return null;
-        }
+    return shader;
+  }
 
-        var str = "";
-        var k = shaderScript.firstChild;
-        while (k) {
-            if (k.nodeType == 3) {
-                str += k.textContent;
+  function setupCanvas()
+  {
+    canvas = document.createElement('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    document.body.appendChild(canvas);
+    return canvas;
+  }
+
+  function setupWebGL(canvas) {
+    try {
+      gl = canvas.getContext("experimental-webgl");
+      gl.viewportWidth = canvas.width;
+      gl.viewportHeight = canvas.height;
+    } catch(e) {}
+    if (!gl) {
+      alert("WebGL isn't avaliable, :/");
+    }
+  }
+
+  function setupCube()
+  {
+    setupCubeShader();
+    setupCubeBuffers();
+  }
+
+  function setupCubeShader()
+  {
+    var vert = getShader(gl, "cube-vert");
+    var frag = getShader(gl, "cube-frag");
+
+    cubeShader = gl.createProgram();
+    gl.attachShader(cubeShader, vert);
+    gl.attachShader(cubeShader, frag);
+    gl.linkProgram(cubeShader);
+
+    if (!gl.getProgramParameter(cubeShader, gl.LINK_STATUS)) {
+      alert("Could not initialise shaders");
+    }
+
+    gl.useProgram(cubeShader);
+
+    cubeShader.vertexPositionAttribute = gl.getAttribLocation(cubeShader, "position");
+    gl.enableVertexAttribArray(cubeShader.vertexPositionAttribute);
+
+    cubeShader.vertexColorAttribute = gl.getAttribLocation(cubeShader, "color");
+    gl.enableVertexAttribArray(cubeShader.vertexColorAttribute);
+
+    cubeShader.projectionMatrix = gl.getUniformLocation(cubeShader, "projectionMatrix");
+    cubeShader.viewMatrix = gl.getUniformLocation(cubeShader, "viewMatrix");
+    cubeShader.modelMatrix = gl.getUniformLocation(cubeShader, "modelMatrix");
+  }
+
+  function setupCubeBuffers()
+  {
+    cubePositionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
+    var vertices = [
+      -1.0, -1.0, -1.0,
+      1.0, -1.0, -1.0,
+      1.0, -1.0, 1.0,
+      -1.0, -1.0, 1.0,
+      -1.0, 1.0, -1.0,
+      1.0, 1.0, -1.0,
+      1.0, 1.0, 1.0,
+      -1.0, 1.0, 1.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+    cubePositionBuffer.itemSize = 3;
+    cubePositionBuffer.numItems = 8;
+
+    cubeColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, cubeColorBuffer);
+    colors = [
+      0.0, 0.0, 0.0, 1.0,
+      0.0, 0.0, 1.0, 1.0,
+      0.0, 1.0, 0.0, 1.0,
+      0.0, 1.0, 1.0, 1.0,
+      1.0, 0.0, 0.0, 1.0,
+      1.0, 0.0, 1.0, 1.0,
+      1.0, 1.0, 0.0, 1.0,
+      1.0, 1.0, 1.0, 1.0
+    ];
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    cubeColorBuffer.itemSize = 4;
+    cubeColorBuffer.numItems = 8;
+
+    cubeIndexBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
+    var cubeVertexIndices = [
+      // TOP
+      7, 4, 5,
+      6, 7, 5,
+      // BOTTOM
+      2, 1, 0,
+      3, 2, 0,
+      // FRONT
+      3, 7, 6,
+      2, 3, 6,
+      // BACK
+      1, 5, 4,
+      0, 1, 4,
+      // LEFT
+      0, 4, 7,
+      3, 0, 7,
+      // RIGHT
+      2, 6, 5,
+      1, 2, 5
+    ];
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
+    cubeIndexBuffer.itemSize = 1;
+    cubeIndexBuffer.numItems = 36;
+  }
+
+  function drawCube()
+  {
+    var numCubes = cubeMatricies.length;
+    if( numCubes > 0 ) {
+      gl.useProgram(cubeShader);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
+      gl.vertexAttribPointer(cubeShader.vertexPositionAttribute, cubePositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, cubeColorBuffer);
+      gl.vertexAttribPointer(cubeShader.vertexColorAttribute, cubeColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
+
+      for( var i = 0; i < numCubes; i++) {
+        gl.uniformMatrix4fv(cubeShader.projectionMatrix, false, arProjectionMatrix);
+        gl.uniformMatrix4fv(cubeShader.viewMatrix, false, arViewMatrix);
+        gl.uniformMatrix4fv(cubeShader.modelMatrix, false, cubeMatricies[i]);
+        gl.drawElements(gl.TRIANGLES, cubeIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
+      }
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, null);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+      gl.useProgram(null);
+    }
+  }
+
+  function init() {
+    if (navigator.getVRDisplays) {
+      navigator.getVRDisplays().then(function(vrDisplays) {
+        if (vrDisplays && vrDisplays.length > 0) {
+          for (var i = 0; i < vrDisplays.length; i++) {
+            arDisplay = vrDisplays[i];
+            if (arDisplay.displayName === "Tango VR Device" || arDisplay.displayName === "ARKit VR Device") {
+              arFrameData = new VRFrameData();
+              setup();
+              break;
             }
-            k = k.nextSibling;
+          }
         }
-
-        var shader;
-        if (shaderScript.type == "x-shader/x-fragment") {
-            shader = gl.createShader(gl.FRAGMENT_SHADER);
-        } else if (shaderScript.type == "x-shader/x-vertex") {
-            shader = gl.createShader(gl.VERTEX_SHADER);
-        } else {
-            return null;
-        }
-
-        gl.shaderSource(shader, str);
-        gl.compileShader(shader);
-
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-            alert(gl.getShaderInfoLog(shader));
-            return null;
-        }
-
-        return shader;
+      });
     }
-
-    function setupCanvas()
-    {
-        canvas = document.createElement('canvas');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        document.body.appendChild(canvas);
-        return canvas;
+    else {
+      setup();
     }
+  }
 
-    function setupWebGL(canvas) {
-        try {
-            gl = canvas.getContext("experimental-webgl");
-            gl.viewportWidth = canvas.width;
-            gl.viewportHeight = canvas.height;
-        } catch(e) {}
-        if (!gl) {
-            alert("WebGL isn't avaliable, :/");
-        }
+  function setup()
+  {
+    setupWebGL( setupCanvas() );
+    setupCube();
+
+    gl.clearColor(0.0, 0.0, 0.0, 0.0);
+    gl.enable(gl.DEPTH_TEST);
+
+    window.addEventListener('resize', onWindowResize, false);
+    canvas.addEventListener('touchstart', onClick, false);
+
+    update();
+  }
+
+  function update()
+  {
+    updateARPose();
+    updateARProjectionMatrix();
+    updateARViewMatrix();
+    draw();
+    window.requestAnimationFrame(update);
+  }
+
+  function draw()
+  {
+    gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+    gl.clear(gl.DEPTH_BUFFER_BIT);
+    drawCube();
+  }
+
+  function onWindowResize()
+  {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    gl.viewportWidth = canvas.width;
+    gl.viewportHeight = canvas.height;
+  }
+
+  function onClick()
+  {
+    if( arFrameData ) {
+      var pose = arFrameData.pose;
+
+      var ori = quat.fromValues(
+        pose.orientation[0],
+        pose.orientation[1],
+        pose.orientation[2],
+        pose.orientation[3]
+      );
+
+      var pos = vec3.fromValues(
+        pose.position[0],
+        pose.position[1],
+        pose.position[2]
+      );
+
+      var scale = vec3.fromValues(
+        0.05,
+        0.05,
+        0.05
+      );
+
+      var dirMtx = mat4.create();
+      mat4.fromQuat(dirMtx, ori);
+
+      var pushMtx = mat4.create();
+      mat4.fromTranslation(pushMtx, [0, 0, 1]);
+      mat4.multiply(pushMtx, pushMtx, dirMtx);
+
+      var push = vec3.create();
+      mat4.getTranslation(push, pushMtx);
+      vec3.scale(push, push, -5.0);
+
+      var model = mat4.create();
+      mat4.fromRotationTranslationScale(model, ori, pos, scale);
+      mat4.translate(model, model, push);
+
+      cubeMatricies.push(model);
     }
+  }
 
-    function setupCube()
-    {
-        setupCubeShader();
-        setupCubeBuffers();
-    }
+  init();
 
-    function setupCubeShader()
-    {
-        var vert = getShader(gl, "cube-vert");
-        var frag = getShader(gl, "cube-frag");
-
-        cubeShader = gl.createProgram();
-        gl.attachShader(cubeShader, vert);
-        gl.attachShader(cubeShader, frag);
-        gl.linkProgram(cubeShader);
-
-        if (!gl.getProgramParameter(cubeShader, gl.LINK_STATUS)) {
-            alert("Could not initialise shaders");
-        }
-
-        gl.useProgram(cubeShader);
-
-        cubeShader.vertexPositionAttribute = gl.getAttribLocation(cubeShader, "position");
-        gl.enableVertexAttribArray(cubeShader.vertexPositionAttribute);
-
-        cubeShader.vertexColorAttribute = gl.getAttribLocation(cubeShader, "color");
-        gl.enableVertexAttribArray(cubeShader.vertexColorAttribute);
-
-        cubeShader.projectionMatrix = gl.getUniformLocation(cubeShader, "projectionMatrix");
-        cubeShader.viewMatrix = gl.getUniformLocation(cubeShader, "viewMatrix");
-        cubeShader.modelMatrix = gl.getUniformLocation(cubeShader, "modelMatrix");
-    }
-
-    function setupCubeBuffers()
-    {
-        cubePositionBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
-        var vertices = [
-            -1.0, -1.0, -1.0,
-            1.0, -1.0, -1.0,
-            1.0, -1.0, 1.0,
-            -1.0, -1.0, 1.0,
-            -1.0, 1.0, -1.0,
-            1.0, 1.0, -1.0,
-            1.0, 1.0, 1.0,
-            -1.0, 1.0, 1.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-        cubePositionBuffer.itemSize = 3;
-        cubePositionBuffer.numItems = 8;
-
-        cubeColorBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, cubeColorBuffer);
-        colors = [
-            0.0, 0.0, 0.0, 1.0,
-            0.0, 0.0, 1.0, 1.0,
-            0.0, 1.0, 0.0, 1.0,
-            0.0, 1.0, 1.0, 1.0,
-            1.0, 0.0, 0.0, 1.0,
-            1.0, 0.0, 1.0, 1.0,
-            1.0, 1.0, 0.0, 1.0,
-            1.0, 1.0, 1.0, 1.0
-        ];
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
-        cubeColorBuffer.itemSize = 4;
-        cubeColorBuffer.numItems = 8;
-
-        cubeIndexBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-        var cubeVertexIndices = [
-            // TOP
-            7, 4, 5,
-            6, 7, 5,
-            // BOTTOM
-            2, 1, 0,
-            3, 2, 0,
-            // FRONT
-            3, 7, 6,
-            2, 3, 6,
-            // BACK
-            1, 5, 4,
-            0, 1, 4,
-            // LEFT
-            0, 4, 7,
-            3, 0, 7,
-            // RIGHT
-            2, 6, 5,
-            1, 2, 5,
-        ];
-        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeVertexIndices), gl.STATIC_DRAW);
-        cubeIndexBuffer.itemSize = 1;
-        cubeIndexBuffer.numItems = 36;
-    }
-
-    function drawCube()
-    {
-        var numCubes = cubeMatricies.length;
-        if( numCubes > 0 ) {
-            gl.useProgram(cubeShader);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, cubePositionBuffer);
-            gl.vertexAttribPointer(cubeShader.vertexPositionAttribute, cubePositionBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, cubeColorBuffer);
-            gl.vertexAttribPointer(cubeShader.vertexColorAttribute, cubeColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
-
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, cubeIndexBuffer);
-
-            for( var i = 0; i < numCubes; i++) {
-                gl.uniformMatrix4fv(cubeShader.projectionMatrix, false, arProjectionMatrix);
-                gl.uniformMatrix4fv(cubeShader.viewMatrix, false, arViewMatrix);
-                gl.uniformMatrix4fv(cubeShader.modelMatrix, false, cubeMatricies[i]);
-                gl.drawElements(gl.TRIANGLES, cubeIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
-            }
-
-            gl.bindBuffer(gl.ARRAY_BUFFER, null);
-            gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
-            gl.useProgram(null);
-        }
-    }
-
-    function init() {
-        if (navigator.getVRDisplays) {
-            navigator.getVRDisplays().then(function(vrDisplays) {
-                if (vrDisplays && vrDisplays.length > 0) {
-                    for (var i = 0; i < vrDisplays.length; i++) {
-                        arDisplay = vrDisplays[i];
-                        if (arDisplay.displayName === "Tango VR Device" ||
-                            arDisplay.displayName === "ARKit VR Device") {
-                            arFrameData = new VRFrameData();
-                            setup();
-                            break;
-                        }
-                    }
-                }
-            });
-        }
-        else
-        {
-            setup();
-        }
-    }
-
-    function setup()
-    {
-        setupWebGL( setupCanvas() );
-        setupCube();
-
-        gl.clearColor(0.0, 0.0, 0.0, 0.0);
-        gl.enable(gl.DEPTH_TEST);
-
-        window.addEventListener('resize', onWindowResize, false);
-        canvas.addEventListener('touchstart', onClick, false);
-
-        update();
-    }
-
-    function update()
-    {
-        updateARPose();
-        updateARProjectionMatrix();
-        updateARViewMatrix();
-        draw();
-        window.requestAnimationFrame(update);
-    }
-
-    function draw()
-    {
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.DEPTH_BUFFER_BIT);
-        drawCube();
-    }
-
-    function onWindowResize()
-    {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        gl.viewportWidth = canvas.width;
-        gl.viewportHeight = canvas.height;
-    }
-
-    function onClick()
-    {
-        if( arFrameData ) {
-
-            var pose = arFrameData.pose;
-
-            var ori = quat.fromValues(
-                pose.orientation[0],
-                pose.orientation[1],
-                pose.orientation[2],
-                pose.orientation[3]
-            );
-
-            var pos = vec3.fromValues(
-                pose.position[0],
-                pose.position[1],
-                pose.position[2]
-            );
-
-            var scale = vec3.fromValues(
-                0.05,
-                0.05,
-                0.05
-            );
-
-            var dirMtx = mat4.create();
-            mat4.fromQuat(dirMtx, ori);
-
-            var pushMtx = mat4.create();
-            mat4.fromTranslation(pushMtx, [0, 0, 1]);
-            mat4.multiply(pushMtx, pushMtx, dirMtx);
-
-            var push = vec3.create();
-            mat4.getTranslation(push, pushMtx);
-            vec3.scale(push, push, -5.0);
-
-            var model = mat4.create();
-            mat4.fromRotationTranslationScale(model, ori, pos, scale);
-            mat4.translate(model, model, push);
-
-            cubeMatricies.push(model);
-        }
-    }
-
-    init();
 });
 </script>
 </body>

@@ -17,166 +17,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>WebAR - ThreeJS Cubes Example</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no,
-    minimum-scale=1.0, maximum-scale=1.0">
-    <style>
-        body {
-            font-family: Monospace;
-            margin: 0px;
-            overflow: hidden;
-        }
-        #info {
-            color: #fff;
-            position: absolute;
-            bottom: 10px;
-            width: 100%;
-            text-align: center;
-            z-index: 100;
-            display:block;
-        }
-        a {
-            color: skyblue
-        }
+  <title>WebAR - ThreeJS Cubes Example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no,
+  minimum-scale=1.0, maximum-scale=1.0">
+  <style>
+    body {
+      font-family: Monospace;
+      margin: 0px;
+      overflow: hidden;
+    }
+    #info {
+      color: #fff;
+      position: absolute;
+      bottom: 10px;
+      width: 100%;
+      text-align: center;
+      z-index: 100;
+      display:block;
+    }
+    a {
+      color: skyblue
+    }
   </style>
 </head>
 <body>
-    <div id="info"> WebAR - ThreeJS Cubes Example
-        <a href="https://github.com/judax" target="_blank">Iker Jamardo</a> &
-        <a href="http://www.syedrezaali.com"> Reza Ali</a>
-    </div>
-    <script src="../libs/WebARKit.js"></script>
-    <script src="../libs/third_party/three.js"></script>
-    <script src="../libs/third_party/VRControls.js"></script>
-    <script>
-        window.addEventListener("load", function() {
-            var arDisplay;
-            var arFrameData;
-            var arControls;
+<div id="info"> WebAR - ThreeJS Cubes Example
+    <a href="https://github.com/judax" target="_blank">Iker Jamardo</a> &
+    <a href="http://www.syedrezaali.com"> Reza Ali</a>
+</div>
+<script src="../libs/WebARKit.js"></script>
+<script src="../libs/third_party/three.js"></script>
+<script src="../libs/third_party/VRControls.js"></script>
+<script>
+window.addEventListener("load", function() {
+  var arDisplay;
+  var arFrameData;
+  var arControls;
 
-            var canvas;
-            var camera;
-            var scene;
-            var renderer;
-            var cube;
+  var canvas;
+  var camera;
+  var scene;
+  var renderer;
+  var cube;
 
-            var colors = [
-                new THREE.Color( 0xffffff ),
-                new THREE.Color( 0xffff00 ),
-                new THREE.Color( 0xff00ff ),
-                new THREE.Color( 0xff0000 ),
-                new THREE.Color( 0x00ffff ),
-                new THREE.Color( 0x00ff00 ),
-                new THREE.Color( 0x0000ff ),
-                new THREE.Color( 0x000000 )
-            ];
+  var colors = [
+    new THREE.Color( 0xffffff ),
+    new THREE.Color( 0xffff00 ),
+    new THREE.Color( 0xff00ff ),
+    new THREE.Color( 0xff0000 ),
+    new THREE.Color( 0x00ffff ),
+    new THREE.Color( 0x00ff00 ),
+    new THREE.Color( 0x0000ff ),
+    new THREE.Color( 0x000000 )
+  ];
 
-            if (navigator.getVRDisplays) {
-                navigator.getVRDisplays().then(function(vrDisplays) {
-                    if (vrDisplays && vrDisplays.length > 0) {
-                        for (var i = 0; i < vrDisplays.length; i++) {
-                            var vrDisplay = vrDisplays[i];
-                            if (vrDisplay.displayName === "ARKit VR Device" ||
-                                vrDisplay.displayName === "Tango VR Device") {
-                                arDisplay = vrDisplay;
-                                arFrameData = new VRFrameData();
-                                init(arDisplay);
-                                break;
-                            }
-                        }
-                    }
-                });
-            }
-            else {
-                alert("Looks like you don't have a WebAR Capable device!");
-            }
+  if (navigator.getVRDisplays) {
+    navigator.getVRDisplays().then(function(vrDisplays) {
+      if (vrDisplays && vrDisplays.length > 0) {
+        for (var i = 0; i < vrDisplays.length; i++) {
+          var vrDisplay = vrDisplays[i];
+          if (vrDisplay.displayName === "ARKit VR Device" ||
+            vrDisplay.displayName === "Tango VR Device") {
+            arDisplay = vrDisplay;
+            arFrameData = new VRFrameData();
+            init(arDisplay);
+            break;
+          }
+        }
+      }
+    });
+  }
+  else {
+    alert("Looks like you don't have a WebAR capable device!");
+  }
 
-            function init() {
-                camera = new THREE.PerspectiveCamera();
+  function init() {
+    camera = new THREE.PerspectiveCamera();
 
-                scene = new THREE.Scene();
+    scene = new THREE.Scene();
 
-                var geometry = new THREE.BoxGeometry( 0.05, 0.05, 0.05 );
+    var geometry = new THREE.BoxGeometry( 0.05, 0.05, 0.05 );
 
-                var faceIndices = [ 'a', 'b', 'c' ];
-                for ( var i = 0; i < geometry.faces.length; i++ ) {
-                    var f  = geometry.faces[ i ];
-                    for( var j = 0; j < 3; j++ ) {
-                        var vertexIndex = f[ faceIndices[ j ] ];
-                        f.vertexColors[ j ] = colors[vertexIndex];
-                    }
-                }
+    var faceIndices = [ 'a', 'b', 'c' ];
+    for ( var i = 0; i < geometry.faces.length; i++ ) {
+      var f  = geometry.faces[ i ];
+      for( var j = 0; j < 3; j++ ) {
+        var vertexIndex = f[ faceIndices[ j ] ];
+        f.vertexColors[ j ] = colors[vertexIndex];
+      }
+    }
 
-                var material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
-                cube = new THREE.Mesh( geometry, material );
+    var material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
+    cube = new THREE.Mesh( geometry, material );
 
-                arControls = new THREE.VRControls( camera );
+    arControls = new THREE.VRControls( camera );
 
-                renderer = new THREE.WebGLRenderer( { alpha: true } );
-                renderer.setPixelRatio( window.devicePixelRatio );
-                renderer.setSize( window.innerWidth, window.innerHeight );
-                renderer.autoClear = false;
+    renderer = new THREE.WebGLRenderer( { alpha: true } );
+    renderer.setPixelRatio( window.devicePixelRatio );
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.autoClear = false;
 
-                canvas = renderer.domElement;
-                document.body.appendChild( canvas );
+    canvas = renderer.domElement;
+    document.body.appendChild( canvas );
 
-                window.addEventListener( 'resize', onWindowResize, false );
-                canvas.addEventListener( 'touchstart', onClick, false );
+    window.addEventListener( 'resize', onWindowResize, false );
+    canvas.addEventListener( 'touchstart', onClick, false );
 
-                update();
-            }
+    update();
+  }
 
-            function update()
-            {
-                if( arDisplay ) {
-                    arDisplay.getFrameData(arFrameData);
-                }
-                arControls.update();
-                camera.projectionMatrix.fromArray( arFrameData.projectionMatrix );
-                renderer.clearDepth();
-                renderer.render( scene, camera );
-                requestAnimationFrame( update );
-            }
+  function update()
+  {
+    if( arDisplay ) {
+      arDisplay.getFrameData(arFrameData);
+    }
+    arControls.update();
+    camera.projectionMatrix.fromArray( arFrameData.projectionMatrix );
+    renderer.clearDepth();
+    renderer.render( scene, camera );
+    requestAnimationFrame( update );
+  }
 
-            function onWindowResize()
-            {
-              renderer.setSize( window.innerWidth, window.innerHeight );
-            }
+  function onWindowResize()
+  {
+    renderer.setSize( window.innerWidth, window.innerHeight );
+  }
 
-            function onClick()
-            {
-                if( arFrameData ) {
+  function onClick()
+  {
+    if( arFrameData ) {
+      var pose = arFrameData.pose;
 
-                    var pose = arFrameData.pose;
+      var ori = new THREE.Quaternion(
+        pose.orientation[0],
+        pose.orientation[1],
+        pose.orientation[2],
+        pose.orientation[3]
+      );
 
-                    var ori = new THREE.Quaternion(
-                        pose.orientation[0],
-                        pose.orientation[1],
-                        pose.orientation[2],
-                        pose.orientation[3]
-                    );
+      var pos = new THREE.Vector3(
+        pose.position[0],
+        pose.position[1],
+        pose.position[2]
+      );
 
-                    var pos = new THREE.Vector3(
-                        pose.position[0],
-                        pose.position[1],
-                        pose.position[2]
-                    );
+      var dirMtx = new THREE.Matrix4();
+      dirMtx.makeRotationFromQuaternion( ori );
 
-                    var dirMtx = new THREE.Matrix4();
-                    dirMtx.makeRotationFromQuaternion( ori );
+      var push = new THREE.Vector3( 0, 0, -1.0 );
+      push.transformDirection( dirMtx );
+      pos.addScaledVector( push, 0.125 );
 
-                    var push = new THREE.Vector3( 0, 0, -1.0 );
-                    push.transformDirection( dirMtx );
-                    pos.addScaledVector( push, 0.125 );
-
-                    var clone = cube.clone();
-                    scene.add(clone);
-                    clone.position.copy(pos);
-                    clone.quaternion.copy(ori);
-                }
-            }
-        });
-    </script>
-  </body>
+      var clone = cube.clone();
+      scene.add(clone);
+      clone.position.copy(pos);
+      clone.quaternion.copy(ori);
+    }
+  }
+});
+</script>
+</body>
 </html>
