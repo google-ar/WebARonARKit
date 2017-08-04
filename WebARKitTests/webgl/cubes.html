@@ -71,7 +71,6 @@
   }
 </script>
 <script>
-window.addEventListener("load", function() {
   var gl, canvas;
 
   var arDisplay;
@@ -347,23 +346,16 @@ window.addEventListener("load", function() {
     }
   }
 
-  function init() {
-    if (navigator.getVRDisplays) {
-      navigator.getVRDisplays().then(function(vrDisplays) {
-        if (vrDisplays && vrDisplays.length > 0) {
-          for (var i = 0; i < vrDisplays.length; i++) {
-            arDisplay = vrDisplays[i];
-            if (arDisplay.displayName === "Tango VR Device" || arDisplay.displayName === "ARKit VR Device") {
-              arFrameData = new VRFrameData();
-              setup();
-              break;
-            }
-          }
+  function init(vrDisplays) {
+    if (vrDisplays && vrDisplays.length > 0) {
+      for (var i = 0; i < vrDisplays.length; i++) {
+        arDisplay = vrDisplays[i];
+        if (arDisplay.displayName === "Tango VR Device" || arDisplay.displayName === "ARKit VR Device") {
+          arFrameData = new VRFrameData();
+          setup();
+          break;
         }
-      });
-    }
-    else {
-      setup();
+      }
     }
   }
 
@@ -448,9 +440,12 @@ window.addEventListener("load", function() {
     }
   }
 
-  init();
+  if (navigator.getVRDisplays) {
+    navigator.getVRDisplays().then(init);
+  } else {
+    setup();
+  }
 
-});
 </script>
 </body>
 </html>
