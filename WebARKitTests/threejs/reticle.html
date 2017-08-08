@@ -94,7 +94,10 @@ function init() {
   var innerRadius = 0.025;
   var outerRadius = innerRadius + 0.005;
   var geometry = new THREE.RingGeometry( innerRadius, outerRadius, 36, 64 );
-  var material = new THREE.MeshBasicMaterial({ color: 0xff0077 });
+  var material = new THREE.MeshBasicMaterial({
+    color: 0xff0077,
+    side: THREE.DoubleSide
+  });
   reticle = new THREE.Mesh( geometry, material );
   scene.add( reticle );
 
@@ -102,6 +105,7 @@ function init() {
   tempPlaneDir = new THREE.Vector3();
   tempPos = new THREE.Vector3();
   planeQuat = new THREE.Quaternion();
+  planeQuat.setFromAxisAngle( new THREE.Vector3(0, 0, 1), Math.PI );
   easing = 0.25;
 
   arControls = new THREE.VRControls( camera );
@@ -140,25 +144,16 @@ function onWindowResize()
 function updateRecticle() {
   if( arDisplay ) {
     var hit = arDisplay.hitTest( 0.5, 0.5 );
-    if( hit ) {
-      prompt("got a hit", hit.length);
-    }
-    if( hit && hit.length > 0 && hit[0].modelMatrix ) {
+    if( hit && hit.length > 0 ) {
 
-      var m = hit[0].modelMatrix;
-      for( var i = 0; i < 16; i++ ) {
-        model.elements[i] = m[i];
-      }
-
+      model.fromArray( hit[0].modelMatrix );
       tempPos.setFromMatrixPosition( model );
       reticle.position.lerp(tempPos, easing);
 
-      tempPlaneDir.set(0, 0, 1);
-      planeQuat.setFromRotationMatrix( model );
-      tempPlaneDir.applyQuaternion( planeQuat );
-
-      planeDir.lerp(tempPlaneDir, easing);
+      planeDir.set(0, 1, 0);
+      planeDir.transformDirection( model );
       tempPos.addVectors(planeDir, reticle.position);
+
       reticle.lookAt(tempPos);
     }
   }
