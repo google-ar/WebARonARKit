@@ -25,6 +25,10 @@
     WKWebView* wkWebView;
     UITextField* urlTextField;
     bool initialPageLoadedWhenTrackingBegins;
+    
+    UIDeviceOrientation deviceOrientation;
+    UIInterfaceOrientation interfaceOrientation;
+    bool updateWindowSize; 
 }
 
 @end

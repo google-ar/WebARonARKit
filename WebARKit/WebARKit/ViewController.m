@@ -269,8 +269,51 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   [self.view addSubview:self->urlTextField];
 
   self->initialPageLoadedWhenTrackingBegins = false;
+    
+    UIDevice *device = [UIDevice currentDevice];
+    [device beginGeneratingDeviceOrientationNotifications];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:) name:UIDeviceOrientationDidChangeNotification object:nil];
+    deviceOrientation = [device orientation];
+    [self updateOrientation];
 }
 
+- (void)deviceOrientationDidChange:(NSNotification *)notification
+{    
+    [self->urlTextField setFrame:CGRectMake(0, 0, self.view.frame.size.width, URL_TEXTFIELD_HEIGHT)];
+    [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+    updateWindowSize = true;
+    [self updateOrientation]; 
+}
+
+-(void) updateOrientation
+{
+    deviceOrientation = [[UIDevice currentDevice] orientation];
+    switch (deviceOrientation) {
+        case UIDeviceOrientationPortrait:{
+            interfaceOrientation = UIInterfaceOrientationPortrait;
+        }
+        break;
+        
+        case UIDeviceOrientationPortraitUpsideDown:{
+            interfaceOrientation = UIInterfaceOrientationPortraitUpsideDown;
+        }
+        break;
+        
+        case UIDeviceOrientationLandscapeLeft:{
+            interfaceOrientation = UIInterfaceOrientationLandscapeRight;
+        }
+        break;
+        
+        case UIDeviceOrientationLandscapeRight:{
+            interfaceOrientation = UIInterfaceOrientationLandscapeLeft;
+        }
+        break;
+        
+        default:
+        break;
+    }
+    [self->_renderer setInterfaceOrientation:interfaceOrientation];
+}
 - (void)restartSession {
   ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
   configuration.planeDetection = ARPlaneDetectionHorizontal;
@@ -280,12 +323,21 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
+    UIDevice *device = [UIDevice currentDevice];
+    if( ![device isGeneratingDeviceOrientationNotifications] ) {
+        [device beginGeneratingDeviceOrientationNotifications];
+    }
+    
   [self restartSession];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 
+    UIDevice *device = [UIDevice currentDevice];
+    if( [device isGeneratingDeviceOrientationNotifications] ) {
+        [device endGeneratingDeviceOrientationNotifications];
+    }
   [self.session pause];
 }
 
@@ -337,59 +389,79 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 }
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
-    matrix_float4x4 m = frame.camera.transform;
-    matrix_float4x4 p = [frame.camera
-                    projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
-                    viewportSize:self.renderer->viewportSize
-                    zNear:0.001
-                    zFar:1000];
+//    matrix_float4x4 m = frame.camera.transform;
+//    matrix_float4x4 p = [frame.camera
+//                    projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
+//                    viewportSize:self.renderer->viewportSize
+//                    zNear:0.001
+//                    zFar:1000];
+//
+//  const float *matrix = (const float *)(&m);
+//  const float *pMatrix = (const float *)(&p);
+//
+//  float orientation[4];
+//  extractQuaternionFromMatrix(matrix, orientation);
+//  float position[3];
+//  position[0] = matrix[12];
+//  position[1] = matrix[13];
+//  position[2] = matrix[14];
+//  NSString *updatePoseJsCode =
+//      [NSString stringWithFormat:@"if (window.WebARKitSetPose) "
+//                                 @"window.WebARKitSetPose({\"position\":[%f,%f,%f],"
+//                                 @"\"orientation\":[%f,%f,%f,%f]});",
+//                                 position[0], position[1], position[2], orientation[0],
+//                                 orientation[1], orientation[2], orientation[3]];
+//
+//    [self->wkWebView
+//      evaluateJavaScript:updatePoseJsCode
+//       completionHandler:^(id data, NSError *error) {
+//         if (error) {
+//           [self showAlertDialog:
+//                     [NSString
+//                         stringWithFormat:@"ERROR: Evaluating jscode to provide pose: %@", error]
+//               completionHandler:^{
+//               }];
+//         }
+//       }];
+//
+//  NSString *updateProjectionMatrixJsCode = [NSString
+//      stringWithFormat:@"if (window.WebARKitSetProjectionMatrix) "
+//                       @"WebARKitSetProjectionMatrix([%f,%f,%f,%f,%f,%f,%f,%"
+//                       @"f,%f,%f,%f,%f,%f,%f,%f,%f]);",
+//                       pMatrix[0], pMatrix[1], pMatrix[2], pMatrix[3], pMatrix[4], pMatrix[5],
+//                       pMatrix[6], pMatrix[7], pMatrix[8], pMatrix[9], pMatrix[10], pMatrix[11],
+//                       pMatrix[12], pMatrix[13], pMatrix[14], pMatrix[15]];
+//  [self->wkWebView
+//      evaluateJavaScript:updateProjectionMatrixJsCode
+//       completionHandler:^(id data, NSError *error) {
+//         if (error) {
+//           [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
+//                                                            @"projection matrix: %@",
+//                                                            error]
+//               completionHandler:^{
+//               }];
+//         }
+//       }];
     
-  const float *matrix = (const float *)(&m);
-  const float *pMatrix = (const float *)(&p);
-
-  float orientation[4];
-  extractQuaternionFromMatrix(matrix, orientation);
-  float position[3];
-  position[0] = matrix[12];
-  position[1] = matrix[13];
-  position[2] = matrix[14];
-  NSString *updatePoseJsCode =
-      [NSString stringWithFormat:@"if (window.WebARKitSetPose) "
-                                 @"window.WebARKitSetPose({\"position\":[%f,%f,%f],"
-                                 @"\"orientation\":[%f,%f,%f,%f]});",
-                                 position[0], position[1], position[2], orientation[0],
-                                 orientation[1], orientation[2], orientation[3]];
-    
-    [self->wkWebView
-      evaluateJavaScript:updatePoseJsCode
-       completionHandler:^(id data, NSError *error) {
-         if (error) {
-           [self showAlertDialog:
-                     [NSString
-                         stringWithFormat:@"ERROR: Evaluating jscode to provide pose: %@", error]
-               completionHandler:^{
-               }];
-         }
-       }];
-
-  NSString *updateProjectionMatrixJsCode = [NSString
-      stringWithFormat:@"if (window.WebARKitSetProjectionMatrix) "
-                       @"WebARKitSetProjectionMatrix([%f,%f,%f,%f,%f,%f,%f,%"
-                       @"f,%f,%f,%f,%f,%f,%f,%f,%f]);",
-                       pMatrix[0], pMatrix[1], pMatrix[2], pMatrix[3], pMatrix[4], pMatrix[5],
-                       pMatrix[6], pMatrix[7], pMatrix[8], pMatrix[9], pMatrix[10], pMatrix[11],
-                       pMatrix[12], pMatrix[13], pMatrix[14], pMatrix[15]];
-  [self->wkWebView
-      evaluateJavaScript:updateProjectionMatrixJsCode
-       completionHandler:^(id data, NSError *error) {
-         if (error) {
-           [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
-                                                            @"projection matrix: %@",
-                                                            error]
-               completionHandler:^{
-               }];
-         }
-       }];
+    if(updateWindowSize) {
+        int width = self.view.frame.size.width;
+        int height = self.view.frame.size.height - URL_TEXTFIELD_HEIGHT;
+        NSString *updateWindowSizeJsCode = [NSString
+                                                  stringWithFormat:@"if(window.WebARKitSetWindowSize)"
+                                            @"WebARKitSetWindowSize({\"width\":%i,\"height\":%i});", width, height];
+        [self->wkWebView
+         evaluateJavaScript:updateWindowSizeJsCode
+         completionHandler:^(id data, NSError *error) {
+             if (error) {
+                 [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
+                                        @"window size: %@",
+                                        error]
+                     completionHandler:^{
+                     }];
+             }
+         }];
+        updateWindowSize = false;
+    }
 }
 
 #pragma mark - WKUIDelegate
@@ -438,7 +510,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
             ARFrame *currentFrame = [self.session currentFrame];
             matrix_float4x4 m4x4 = [currentFrame.camera
                 projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
-                viewportSize:self.renderer->viewportSize
+                viewportSize:CGSizeMake(self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
                 zNear:0.001
                 zFar:1000];
             const float *m = (const float *)(&m4x4);
@@ -448,7 +520,8 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
                                m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
         } else if ([method isEqualToString:@"getPose"]) {
             ARFrame *currentFrame = [self.session currentFrame];
-            matrix_float4x4 m4x4 = currentFrame.camera.transform;
+            matrix_float4x4 m4x4 = [currentFrame.camera viewMatrixForOrientation:interfaceOrientation];
+            m4x4 = matrix_invert(m4x4);
             const float *m = (const float *)(&m4x4);
             float orientation[4];
             extractQuaternionFromMatrix(m, orientation);

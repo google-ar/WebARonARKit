@@ -42,6 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 {
 @public
     CGSize viewportSize;
+    UIInterfaceOrientation interfaceOrientation;
 }
 
 @property (atomic) bool cameraRenderEnabled;
@@ -51,6 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)drawRectResized:(CGSize)size;
 
 - (void)update;
+
+- (void)setInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation;
 
 @end
 

@@ -17,16 +17,16 @@
 (function() {
   // The polyfill is only injected if the code is loaded in the safari webview.
   var standalone = window.navigator.standalone,
-      userAgent = window.navigator.userAgent.toLowerCase(),
-      safari = /safari/.test(userAgent),
-      ios = /iphone|ipod|ipad/.test(userAgent);
+    userAgent = window.navigator.userAgent.toLowerCase(),
+    safari = /safari/.test(userAgent),
+    ios = /iphone|ipod|ipad/.test(userAgent);
   if (!ios || standalone || safari) {
     return;
   }
 
   var nextDisplayId = 1000;
 
-  VRDisplay = function () {
+  VRDisplay = function() {
     var _layers = null;
 
     this.isConnected = false;
@@ -38,7 +38,7 @@
     this.capabilities.hasPosition = true;
     this.capabilities.hasSeeThroughCamera = true;
     // this.stageParameters = null; // OculusMobileSDK (Gear VR) does not support room scale VR yet, this attribute is optional.
-    this.getEyeParameters = function (eye) {
+    this.getEyeParameters = function(eye) {
       var eyeParameters = null;
       // if (vrWebGLRenderingContexts.length > 0) {
       //  eyeParameters = vrWebGLRenderingContexts[0].getEyeParameters(eye);
@@ -53,7 +53,7 @@
 
     var enableDisable = true;
 
-    this.getFrameData = function (frameData) {
+    this.getFrameData = function(frameData) {
       frameData.timestamp = performance.now();
       frameData.pose = this.getPose();
       frameData.projectionMatrix = this.getProjectionMatrix();
@@ -78,24 +78,24 @@
       return this._projectionMatrix;
     };
 
-    this.resetPose = function () {
+    this.resetPose = function() {
       prompt("resetPose:");
     };
 
     this.depthNear = 0.01;
     this.depthFar = 10000.0;
 
-    this.requestAnimationFrame = function (callback) {
+    this.requestAnimationFrame = function(callback) {
       return window.requestAnimationFrame(callback);
     };
 
-    this.cancelAnimationFrame = function (handle) {
+    this.cancelAnimationFrame = function(handle) {
       return window.cancelAnimationFrame(handle);
     };
 
-    this.requestPresent = function (layers) {
+    this.requestPresent = function(layers) {
       var self = this;
-      return new Promise(function (resolve, reject) {
+      return new Promise(function(resolve, reject) {
         self.isPresenting = true;
         notifyVRDisplayPresentChangeEvent(self);
         _layers = layers;
@@ -103,24 +103,24 @@
       });
     };
 
-    this.exitPresent = function () {
+    this.exitPresent = function() {
       var self = this;
-      return new Promise(function (resolve, reject) {
+      return new Promise(function(resolve, reject) {
         self.isPresenting = false;
         resolve();
       });
     };
 
-    this.getLayers = function () {
+    this.getLayers = function() {
       return _layers;
     };
 
-    this.submitFrame = function (pose) {
+    this.submitFrame = function(pose) {
       // TODO: Learn fom the WebVR Polyfill how to make the barrel distortion.
     };
 
     // WebAR API
-    this.hitTest = function (x, y) {
+    this.hitTest = function(x, y) {
       var result = prompt("hitTest:" + x + "," + y);
       if (!result) {
         return null;
@@ -141,14 +141,14 @@
     return this;
   };
 
-  VRLayer = function () {
+  VRLayer = function() {
     this.source = null;
     this.leftBounds = [];
     this.rightBounds = [];
     return this;
   };
 
-  VRDisplayCapabilities = function () {
+  VRDisplayCapabilities = function() {
     this.hasPosition = false;
     this.hasOrientation = false;
     this.hasExternalDisplay = false;
@@ -163,7 +163,7 @@
     right: "right"
   };
 
-  VRFieldOfView = function () {
+  VRFieldOfView = function() {
     this.upDegrees = 0;
     this.rightDegrees = 0;
     this.downDegrees = 0;
@@ -171,7 +171,7 @@
     return this;
   };
 
-  VRPose = function () {
+  VRPose = function() {
     this.position = null;
     this.linearVelocity = null;
     this.linearAcceleration = null;
@@ -181,7 +181,7 @@
     return this;
   };
 
-  VRFrameData = function () {
+  VRFrameData = function() {
     this.timestamp = null;
     this.leftProjectionMatrix = null;
     this.leftViewMatrix = null;
@@ -191,7 +191,7 @@
     this.projectionMatrix = null;
   };
 
-  VREyeParameters = function () {
+  VREyeParameters = function() {
     this.offset = 0;
     this.fieldOfView = new VRFieldOfView();
     this.renderWidth = 0;
@@ -199,7 +199,7 @@
     return this;
   };
 
-  VRStageParameters = function () {
+  VRStageParameters = function() {
     this.sittingToStandingTransform = null;
     this.sizeX = 0;
     this.sizeZ = 0;
@@ -207,18 +207,24 @@
   };
 
   // WebAR structures
-  VRHit = function () {
+  VRHit = function() {
     this.modelMatrix = new Float32Array(16);
     return this;
+  };
+
+  window.WebARKitSetWindowSize = function(size) {
+    window.innerWidth = size.width;
+    window.innerHeight = size.height;
+    window.dispatchEvent(new Event("resize"));
   };
 
   navigator.getVRDisplays = function() {
     if (window.getVRDisplaysPromise != null) {
       return window.getVRDisplaysPromise;
     }
-    window.getVRDisplaysPromise = new Promise(function (resolve, reject) {
+    window.getVRDisplaysPromise = new Promise(function(resolve, reject) {
       resolve([new VRDisplay()]);
     });
     return window.getVRDisplaysPromise;
-  }
+  };
 })();

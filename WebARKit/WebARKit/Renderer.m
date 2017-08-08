@@ -164,6 +164,11 @@ static const float kImagePlaneVertexData[16] = {
     [commandBuffer commit];
 }
 
+- (void)setInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
+{
+    self->interfaceOrientation = interfaceOrientation; 
+}
+
 #pragma mark - Private
 
 - (void)_loadMetal {
@@ -387,7 +392,7 @@ static const float kImagePlaneVertexData[16] = {
     SharedUniforms *uniforms = (SharedUniforms *)_sharedUniformBufferAddress;
     
     uniforms->viewMatrix = matrix_invert(frame.camera.transform);
-    uniforms->projectionMatrix = [frame.camera projectionMatrixWithViewportSize:self->viewportSize orientation:UIInterfaceOrientationLandscapeRight zNear:0.001 zFar:1000];
+    uniforms->projectionMatrix = [frame.camera projectionMatrixWithViewportSize:self->viewportSize orientation:interfaceOrientation zNear:0.001 zFar:1000];
     
     // Set up lighting for the scene using the ambient intensity if provided
     float ambientIntensity = 1.0;
@@ -464,7 +469,7 @@ static const float kImagePlaneVertexData[16] = {
 - (void)_updateImagePlaneWithFrame:(ARFrame *)frame {
     // Update the texture coordinates of our image plane to aspect fill the viewport
     CGAffineTransform displayToCameraTransform = CGAffineTransformInvert(
-      [frame displayTransformForOrientation:UIInterfaceOrientationLandscapeRight viewportSize:self->viewportSize]);
+      [frame displayTransformForOrientation:interfaceOrientation viewportSize:self->viewportSize]);
     
     float *vertexData = [_imagePlaneVertexBuffer contents];
     for (NSInteger index = 0; index < 4; index++) {
