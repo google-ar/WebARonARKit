@@ -248,13 +248,17 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   self->initialPageLoadedWhenTrackingBegins = false;
 }
 
-- (void)viewWillAppear:(BOOL)animated {
-  [super viewWillAppear:animated];
-
+- (void)restartSession {
   ARWorldTrackingSessionConfiguration *configuration = [ARWorldTrackingSessionConfiguration new];
   configuration.planeDetection = ARPlaneDetectionHorizontal;
 
-  [self.session runWithConfiguration:configuration];
+  [self.session runWithConfiguration:configuration options:ARSessionRunOptionResetTracking];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  [self restartSession];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -464,6 +468,11 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
     didFailNavigation:(WKNavigation *)navigation
             withError:(NSError *)error {
   NSLog(@"ERROR: webview didFailNavigation with error %@", error);
+}
+
+- (void)webViewDidFinishLoad:(UIWebView *)webView
+{
+  [self restartSession];
 }
 
 #pragma mark - UITextFieldDelegate
