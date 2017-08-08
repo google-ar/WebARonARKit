@@ -79,7 +79,7 @@
     };
 
     this.resetPose = function () {
-      // TODO: Make a call to the native extension to reset the pose.
+      prompt("resetPose:");
     };
 
     this.depthNear = 0.01;

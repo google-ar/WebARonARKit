@@ -273,6 +273,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 
 - (void)restartSession {
   ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
+  configuration.planeDetection = ARPlaneDetectionHorizontal;
   [self.session runWithConfiguration:configuration options:ARSessionRunOptionResetTracking];
 }
 
@@ -459,6 +460,8 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
                 stringWithFormat:@"{\"position\":[%f,%f,%f],\"orientation\":[%f,%f,%f,%f]}",
                                  position[0], position[1], position[2], orientation[0],
                                  orientation[1], orientation[2], orientation[3]];
+        } else if ([method isEqualToString:@"resetPose"]) {
+            [self restartSession];
         }
         completionHandler(result);
     }
@@ -483,6 +486,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(WKNavigation *)navigation {
+  [self restartSession];
 }
 
 - (void)webView:(WKWebView *)webView
