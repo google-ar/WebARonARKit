@@ -31,32 +31,15 @@
                                 });
         </script>
 <script>
-  function setupWebViewJavascriptBridge(callback) {
-    if (window.WebViewJavascriptBridge) {
-      return callback(WebViewJavascriptBridge);
-    }
-    if (window.WVJBCallbacks) {
-      return window.WVJBCallbacks.push(callback);
-    }
-    window.WVJBCallbacks = [callback];
-    var WVJBIframe = document.createElement('iframe');
-    WVJBIframe.style.display = 'none';
-    WVJBIframe.src = 'https://__bridge_loaded__';
-    document.documentElement.appendChild(WVJBIframe);
-    setTimeout(function () {
-      document.documentElement.removeChild(WVJBIframe)
-    }, 0)
+  if (navigator.getVRDisplays) {
+    navigator.getVRDisplays().then(function() {
+      setInterval(function() {
+        var result = prompt("hitTest:0.5,0.5");
+        var hits = document.getElementById("hits");
+        hits.innerHTML = result;
+        }, 16);
+    });
   }
-
-  setupWebViewJavascriptBridge(function (bridge) {
-    setInterval(function() {
-      var result = prompt("hitTest:0.5,0.5");
-      var hits = document.getElementById("hits");
-      hits.innerHTML = result;
-      }, 16);
-  });
-
-  // http://arx.mono.hm
 
 </script>
 </body>
