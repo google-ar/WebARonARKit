@@ -59,7 +59,12 @@ var scene;
 var renderer;
 
 var reticle;
-var planeDir, tempPos, tempPlaneDir, easing;
+var planeDir;
+var planeQuat;
+var tempPos;
+var tempPlaneDir;
+var easing;
+var model = new THREE.Matrix4();
 
 if (navigator.getVRDisplays) {
   navigator.getVRDisplays().then(function(vrDisplays) {
@@ -96,6 +101,7 @@ function init() {
   planeDir = new THREE.Vector3();
   tempPlaneDir = new THREE.Vector3();
   tempPos = new THREE.Vector3();
+  planeQuat = new THREE.Quaternion();
   easing = 0.25;
 
   arControls = new THREE.VRControls( camera );
@@ -134,16 +140,24 @@ function onWindowResize()
 function updateRecticle() {
   if( arDisplay ) {
     var hit = arDisplay.hitTest( 0.5, 0.5 );
-    if( hit && hit.point && hit.plane ) {
-      var point = hit.point;
-      var plane = hit.plane;
+    if( hit ) {
+      prompt("got a hit", hit.length);
+    }
+    if( hit && hit.length > 0 && hit[0].modelMatrix ) {
 
-      tempPos.set(point[0], point[1], point[2]);
+      var m = hit[0].modelMatrix;
+      for( var i = 0; i < 16; i++ ) {
+        model.elements[i] = m[i];
+      }
+
+      tempPos.setFromMatrixPosition( model );
       reticle.position.lerp(tempPos, easing);
 
-      tempPlaneDir.set(plane[0], plane[1], plane[2]);
-      planeDir.lerp(tempPlaneDir, easing);
+      tempPlaneDir.set(0, 0, 1);
+      planeQuat.setFromRotationMatrix( model );
+      tempPlaneDir.applyQuaternion( planeQuat );
 
+      planeDir.lerp(tempPlaneDir, easing);
       tempPos.addVectors(planeDir, reticle.position);
       reticle.lookAt(tempPos);
     }
