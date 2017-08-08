@@ -184,6 +184,9 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self->near = 0.01f;
+  self->far = 10000.0f;
+
   // Create an ARSession
   self.session = [ARSession new];
   self.session.delegate = self;
@@ -240,6 +243,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
                                                             injectionTime:WKUserScriptInjectionTimeAtDocumentStart
                                                          forMainFrameOnly:true];
   WKUserContentController* userContentController = [[WKUserContentController alloc] init];
+  [userContentController addScriptMessageHandler:self name:@"WebARKit"];
   [userContentController addUserScript:webARKitJSUserScript];
   WKWebViewConfiguration* wkWebViewConfig = [[WKWebViewConfiguration alloc] init];
   wkWebViewConfig.userContentController = userContentController;
@@ -389,79 +393,81 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 }
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
-//    matrix_float4x4 m = frame.camera.transform;
-//    matrix_float4x4 p = [frame.camera
-//                    projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
-//                    viewportSize:self.renderer->viewportSize
-//                    zNear:0.001
-//                    zFar:1000];
-//
-//  const float *matrix = (const float *)(&m);
-//  const float *pMatrix = (const float *)(&p);
-//
-//  float orientation[4];
-//  extractQuaternionFromMatrix(matrix, orientation);
-//  float position[3];
-//  position[0] = matrix[12];
-//  position[1] = matrix[13];
-//  position[2] = matrix[14];
-//  NSString *updatePoseJsCode =
-//      [NSString stringWithFormat:@"if (window.WebARKitSetPose) "
-//                                 @"window.WebARKitSetPose({\"position\":[%f,%f,%f],"
-//                                 @"\"orientation\":[%f,%f,%f,%f]});",
-//                                 position[0], position[1], position[2], orientation[0],
-//                                 orientation[1], orientation[2], orientation[3]];
-//
-//    [self->wkWebView
-//      evaluateJavaScript:updatePoseJsCode
-//       completionHandler:^(id data, NSError *error) {
-//         if (error) {
-//           [self showAlertDialog:
-//                     [NSString
-//                         stringWithFormat:@"ERROR: Evaluating jscode to provide pose: %@", error]
-//               completionHandler:^{
-//               }];
-//         }
-//       }];
-//
-//  NSString *updateProjectionMatrixJsCode = [NSString
-//      stringWithFormat:@"if (window.WebARKitSetProjectionMatrix) "
-//                       @"WebARKitSetProjectionMatrix([%f,%f,%f,%f,%f,%f,%f,%"
-//                       @"f,%f,%f,%f,%f,%f,%f,%f,%f]);",
-//                       pMatrix[0], pMatrix[1], pMatrix[2], pMatrix[3], pMatrix[4], pMatrix[5],
-//                       pMatrix[6], pMatrix[7], pMatrix[8], pMatrix[9], pMatrix[10], pMatrix[11],
-//                       pMatrix[12], pMatrix[13], pMatrix[14], pMatrix[15]];
-//  [self->wkWebView
-//      evaluateJavaScript:updateProjectionMatrixJsCode
-//       completionHandler:^(id data, NSError *error) {
-//         if (error) {
-//           [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
-//                                                            @"projection matrix: %@",
-//                                                            error]
-//               completionHandler:^{
-//               }];
-//         }
-//       }];
-    
-    if(updateWindowSize) {
-        int width = self.view.frame.size.width;
-        int height = self.view.frame.size.height - URL_TEXTFIELD_HEIGHT;
-        NSString *updateWindowSizeJsCode = [NSString
-                                                  stringWithFormat:@"if(window.WebARKitSetWindowSize)"
-                                            @"WebARKitSetWindowSize({\"width\":%i,\"height\":%i});", width, height];
-        [self->wkWebView
-         evaluateJavaScript:updateWindowSizeJsCode
-         completionHandler:^(id data, NSError *error) {
-             if (error) {
-                 [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
-                                        @"window size: %@",
-                                        error]
-                     completionHandler:^{
-                     }];
-             }
-         }];
-        updateWindowSize = false;
-    }
+  // If the window size has changed, notify the JS side about it.
+  // This is a hack due to the WKWebView not handling the window.innerWidth/Height
+  // correctly in the window.onresize events.
+  // TODO: Remove this hack once the WKWebView has fixed the issue.
+  if(updateWindowSize) {
+      int width = self.view.frame.size.width;
+      int height = self.view.frame.size.height - URL_TEXTFIELD_HEIGHT;
+      NSString *updateWindowSizeJsCode = [NSString
+                                                stringWithFormat:@"if(window.WebARKitSetWindowSize)"
+                                          @"WebARKitSetWindowSize({\"width\":%i,\"height\":%i});", width, height];
+      [self->wkWebView
+       evaluateJavaScript:updateWindowSizeJsCode
+       completionHandler:^(id data, NSError *error) {
+           if (error) {
+               [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode to provide "
+                                      @"window size: %@",
+                                      error]
+                   completionHandler:^{
+                   }];
+           }
+       }];
+      updateWindowSize = false;
+  }
+
+  // Send the per frame data needed in the JS side
+  matrix_float4x4 m = frame.camera.transform;
+  matrix_float4x4 p = [frame.camera
+                       projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
+                       viewportSize:self.renderer->viewportSize
+                       zNear:self->near
+                       zFar:self->far];
+
+  const float *matrix = (const float *)(&m);
+  const float *pMatrix = (const float *)(&p);
+
+  float orientation[4];
+  extractQuaternionFromMatrix(matrix, orientation);
+  float position[3];
+  position[0] = matrix[12];
+  position[1] = matrix[13];
+  position[2] = matrix[14];
+
+  // TODO: Testing to see if we can pass the whole frame to JS...
+  //  size_t width = CVPixelBufferGetWidth(frame.capturedImage);
+  //  size_t height = CVPixelBufferGetHeight(frame.capturedImage);
+  //  size_t bytesPerRow = CVPixelBufferGetBytesPerRow(frame.capturedImage);
+  //  void* pixels = CVPixelBufferGetBaseAddress(frame.capturedImage);
+  //  OSType pixelFormatType = CVPixelBufferGetPixelFormatType(frame.capturedImage);
+  //  NSLog(@"width = %d, height = %d, bytesPerRow = %d, ostype = %d", width, height, bytesPerRow, pixelFormatType);
+
+  NSString *jsCode =
+  [NSString stringWithFormat:@"if (window.WebARKitSetData) "
+   @"window.WebARKitSetData({"
+   @"\"position\":[%f,%f,%f],"
+   @"\"orientation\":[%f,%f,%f,%f],"
+   @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
+     @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
+   @"});",
+   position[0], position[1], position[2], orientation[0],
+   orientation[1], orientation[2], orientation[3],
+   pMatrix[0], pMatrix[1], pMatrix[2], pMatrix[3], pMatrix[4], pMatrix[5],
+   pMatrix[6], pMatrix[7], pMatrix[8], pMatrix[9], pMatrix[10], pMatrix[11],
+   pMatrix[12], pMatrix[13], pMatrix[14], pMatrix[15]
+   ];
+
+  [self->wkWebView
+   evaluateJavaScript:jsCode
+   completionHandler:^(id data, NSError *error) {
+     if (error) {
+       [self showAlertDialog:[NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+                              error]
+           completionHandler:^{
+           }];
+     }
+   }];
 }
 
 #pragma mark - WKUIDelegate
@@ -475,74 +481,44 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 
 - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable result))completionHandler
 {
-    NSArray* values = [prompt componentsSeparatedByString:@":"];
-    if( [values count] > 1 ) {
-        NSString* method = values[0];
-        NSArray* params = [values[1] componentsSeparatedByString:@","];
-        NSString* result = nil;
-        if ([method isEqualToString:@"hitTest"]) {
-            float x = [params[0] floatValue];
-            float y = [params[1] floatValue];
-            CGPoint point = CGPointMake(x, y);
-            ARFrame *currentFrame = [self.session currentFrame];
-            // TODO: Play with the different types of hit tests to see what corresponds best with what tango already provides.
-            NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlaneUsingExtent];
+  NSString* result = @"";
+  NSArray* values = [prompt componentsSeparatedByString:@":"];
+  if( [values count] > 1 ) {
+    NSString* method = values[0];
+    NSArray* params = [values[1] componentsSeparatedByString:@","];
+    if ([method isEqualToString:@"hitTest"]) {
+      float x = [params[0] floatValue];
+      float y = [params[1] floatValue];
+      CGPoint point = CGPointMake(x, y);
+      ARFrame *currentFrame = [self.session currentFrame];
+      // TODO: Play with the different types of hit tests to see what corresponds best with what tango already provides.
+      NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlaneUsingExtent];
 
-            //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
-            if (hits.count > 0)
-            {
-                result = @"{\"hits\":[";
-                for (int i = 0; i < hits.count; i++) {
-                    matrix_float4x4 m4x4 = hits[i].worldTransform;
-                    const float* m = (const float*)(&m4x4);
-                    NSString* hit = [NSString
-                        stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
-                                         m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
-                                         m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
-                    result = [result stringByAppendingString:hit];
-                    if (i < hits.count - 1) {
-                      result = [result stringByAppendingString:@","];
-                    }
-                }
-                result = [result stringByAppendingString:@"]}"];
-            }
-        } else if ([method isEqualToString:@"getProjectionMatrix"]) {
-            ARFrame *currentFrame = [self.session currentFrame];
-            matrix_float4x4 m4x4 = [currentFrame.camera
-                projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
-                viewportSize:CGSizeMake(self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
-                zNear:0.001
-                zFar:1000];
-            const float *m = (const float *)(&m4x4);
-            result = [NSString
-              stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
-                               m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
-                               m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
-        } else if ([method isEqualToString:@"getPose"]) {
-            ARFrame *currentFrame = [self.session currentFrame];
-            matrix_float4x4 m4x4 = [currentFrame.camera viewMatrixForOrientation:interfaceOrientation];
-            m4x4 = matrix_invert(m4x4);
-            const float *m = (const float *)(&m4x4);
-            float orientation[4];
-            extractQuaternionFromMatrix(m, orientation);
-            float position[3];
-            position[0] = m[12];
-            position[1] = m[13];
-            position[2] = m[14];
-            result = [NSString
-                stringWithFormat:@"{\"position\":[%f,%f,%f],\"orientation\":[%f,%f,%f,%f]}",
-                                 position[0], position[1], position[2], orientation[0],
-                                 orientation[1], orientation[2], orientation[3]];
-        } else if ([method isEqualToString:@"resetPose"]) {
-            [self restartSession];
+      //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
+      if (hits.count > 0)
+      {
+        result = @"{\"hits\":[";
+        for (int i = 0; i < hits.count; i++) {
+          matrix_float4x4 m4x4 = hits[i].worldTransform;
+          const float* m = (const float*)(&m4x4);
+          NSString* hit = [NSString
+                           stringWithFormat:@"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]",
+                           m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8],
+                           m[9], m[10], m[11], m[12], m[13], m[14], m[15]];
+          result = [result stringByAppendingString:hit];
+          if (i < hits.count - 1) {
+            result = [result stringByAppendingString:@","];
+          }
         }
-        completionHandler(result);
+        result = [result stringByAppendingString:@"]}"];
+      }
     }
-    else
-    {
-        NSLog(@"%@", prompt);
-        completionHandler(@"");
+    // TODO: This could actually be a message. It does not have to be synchronous...
+    else if ([method isEqualToString:@"resetPose"]) {
+      [self restartSession];
     }
+  }
+  completionHandler(result);
 }
 
 #pragma mark - WKNavigationDelegate
@@ -621,6 +597,30 @@ didFailProvisionalNavigation:(WKNavigation *)navigation
       self->urlTextField.text = urlString;
     }
     self->initialPageLoadedWhenTrackingBegins = true;
+  }
+}
+
+#pragma mark - WKScriptMessageHandler
+
+- (void)userContentController:(WKUserContentController *)userContentController
+      didReceiveScriptMessage:(WKScriptMessage *)message
+{
+  NSString* messageString = message.body;
+  NSArray* values = [messageString componentsSeparatedByString:@":"];
+  if( [values count] > 1 ) {
+    NSString* method = values[0];
+    NSArray* params = [values[1] componentsSeparatedByString:@","];
+    if ([method isEqualToString:@"setDepthNear"]) {
+      self->near = [params[0] floatValue];
+    }
+    else if ([method isEqualToString:@"setDepthFar"]) {
+      self->far = [params[0] floatValue];
+    }
+    else if ([method isEqualToString:@"log"]) {
+      // As a log command can have colons in its content, just get rid of the 'log:' string and show the rest.
+      NSRange range = NSMakeRange(4, messageString.length - 4);
+      NSLog(@"%@", [message.body substringWithRange:range]);
+    }
   }
 }
 

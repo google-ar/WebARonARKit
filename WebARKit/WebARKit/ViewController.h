@@ -20,15 +20,16 @@
 #import <ARKit/ARKit.h>
 #import <WebKit/WebKit.h>
 
-@interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver>
+@interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver, WKScriptMessageHandler>
 {
     WKWebView* wkWebView;
     UITextField* urlTextField;
     bool initialPageLoadedWhenTrackingBegins;
-    
     UIDeviceOrientation deviceOrientation;
     UIInterfaceOrientation interfaceOrientation;
-    bool updateWindowSize; 
+    bool updateWindowSize;
+    float near;
+    float far;
 }
 
 @end
