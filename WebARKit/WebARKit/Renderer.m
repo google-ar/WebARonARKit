@@ -464,7 +464,7 @@ static const float kImagePlaneVertexData[16] = {
 - (void)_updateImagePlaneWithFrame:(ARFrame *)frame {
     // Update the texture coordinates of our image plane to aspect fill the viewport
     CGAffineTransform displayToCameraTransform = CGAffineTransformInvert(
-        [frame displayTransformWithViewportSize:self->viewportSize orientation:UIInterfaceOrientationLandscapeRight]);
+      [frame displayTransformForOrientation:UIInterfaceOrientationLandscapeRight viewportSize:self->viewportSize]);
     
     float *vertexData = [_imagePlaneVertexBuffer contents];
     for (NSInteger index = 0; index < 4; index++) {

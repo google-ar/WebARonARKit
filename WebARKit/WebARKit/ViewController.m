@@ -109,16 +109,53 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 - (bool)loadURLInWKWebView:(NSString*)urlString
 {
     bool result = true;
+    // Try to create a url with the provided string
     NSURL* nsurl = [NSURL URLWithString:urlString];
-    if (!nsurl || !nsurl.scheme || !nsurl.host)
+    bool fileScheme = nsurl && nsurl.scheme && [[nsurl.scheme lowercaseString] isEqualToString:@"file"];
+    // If the string did not represent a url or is a filescheme url, the way the page is loaded is different
+    if (!nsurl || !nsurl.scheme || !nsurl.host || fileScheme)
     {
-        // The string is not a URL. Is it a local path?
-        NSString* path = [[NSBundle mainBundle] pathForResource:urlString ofType:@"html"];
-        NSLog(@"Loading a file from resources with path = %@", path);
-        if (path)
+        NSString* nsurlPath = urlString;
+        NSString* pathExtension = @"html";
+        // If the file:// scheme was provided, get the right path and trim the extension if included.
+        if (fileScheme)
         {
-            NSURL *url = [[NSBundle mainBundle] URLForResource:urlString withExtension:@"html"];
-            [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
+            nsurlPath = [NSString stringWithFormat:@"%@%@", nsurl.host, nsurl.path];
+            if ([[nsurl.pathExtension lowercaseString] isEqualToString:pathExtension])
+            {
+              NSRange range = [[nsurlPath lowercaseString] rangeOfString:@".html" options:NSBackwardsSearch];
+              nsurlPath = [nsurlPath stringByReplacingCharactersInRange:range withString:@""];
+            }
+        }
+//        NSLog(@"nsurlPath = %@", nsurlPath);
+        // Is the URL string a path to a file?
+        NSString* path = [[NSBundle mainBundle] pathForResource:nsurlPath ofType:pathExtension];
+        // If the path is incorrect, it could be because is a path to a folder instead of a file
+        if (!path)
+        {
+          path = [[NSBundle mainBundle] pathForResource:nsurlPath ofType:nil];
+        }
+        bool isDirectory = false;
+//        NSLog(@"Loading a file from resources with path = %@", path);
+        // Make sure that the path exists and get a flag to indicate if the path represents a directory
+        if (path && [[NSFileManager defaultManager] fileExistsAtPath:path isDirectory:&isDirectory])
+        {
+            // If the path is to a directory, add the index at the end (try to load index.html).
+            if (isDirectory)
+            {
+              nsurlPath = [NSString stringWithFormat:@"%@/index", nsurlPath];
+            }
+            NSURL *url = [[NSBundle mainBundle] URLForResource:nsurlPath withExtension:pathExtension];
+            // The final URL to the resource may fail so just in case...
+            if (!url)
+            {
+                result = false;
+            }
+            else
+            {
+//                NSLog(@"Loading a file from resources with url = %@", url.absoluteString);
+                [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
+            }
         }
         else
         {
@@ -195,9 +232,9 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   // Make sure that WebARKit.js is injected at the beginning of any webpage
   // Load the WebARKit.js file
   NSString* webARKitJSPath = [[NSBundle mainBundle] pathForResource:@"WebARKit" ofType:@"js"];
-  NSLog(webARKitJSPath);
+//  NSLog(webARKitJSPath);
   NSString* webARKitJSContent = [NSString stringWithContentsOfFile:webARKitJSPath encoding:NSUTF8StringEncoding error:NULL];
-  NSLog(webARKitJSContent);
+//  NSLog(webARKitJSContent);
   // Setup the script injection
   WKUserScript* webARKitJSUserScript = [[WKUserScript alloc] initWithSource:webARKitJSContent
                                                             injectionTime:WKUserScriptInjectionTimeAtDocumentStart
@@ -467,12 +504,21 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 - (void)webView:(WKWebView *)webView
     didFailNavigation:(WKNavigation *)navigation
             withError:(NSError *)error {
+  [self showAlertDialog:error.localizedDescription completionHandler:nil];
   NSLog(@"ERROR: webview didFailNavigation with error %@", error);
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
   [self restartSession];
+}
+
+- (void)webView:(WKWebView *)webView
+didFailProvisionalNavigation:(WKNavigation *)navigation
+      withError:(NSError *)error
+{
+  [self showAlertDialog:error.localizedDescription completionHandler:nil];
+  NSLog(@"ERROR: webview didFailProvisionalNavigation with error %@", error);
 }
 
 #pragma mark - UITextFieldDelegate
@@ -518,7 +564,10 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
     if (urlString) {
       // As the code bellow does not allow to store invalid URLs, we will assume that the URL is
       // correct.
-      [self loadURLInWKWebView:urlString];
+      if (![self loadURLInWKWebView:urlString])
+      {
+        [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
+      }
       self->urlTextField.text = urlString;
     }
     self->initialPageLoadedWhenTrackingBegins = true;
