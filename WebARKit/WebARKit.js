@@ -212,31 +212,12 @@
     return this;
   };
 
-  function setupWebViewJavascriptBridge(callback) {
-    if (window.WebViewJavascriptBridge) {
-      return callback(WebViewJavascriptBridge);
-    }
-    if (window.WVJBCallbacks) {
-      return window.WVJBCallbacks.push(callback);
-    }
-    window.WVJBCallbacks = [callback];
-    var WVJBIframe = document.createElement("iframe");
-    WVJBIframe.style.display = "none";
-    WVJBIframe.src = "https://__bridge_loaded__";
-    document.documentElement.appendChild(WVJBIframe);
-    setTimeout(function() {
-      document.documentElement.removeChild(WVJBIframe);
-    }, 0);
-  }
-
   navigator.getVRDisplays = function() {
     if (window.getVRDisplaysPromise != null) {
       return window.getVRDisplaysPromise;
     }
     window.getVRDisplaysPromise = new Promise(function (resolve, reject) {
-      setupWebViewJavascriptBridge(function(bridge) {
-        resolve([new VRDisplay()]);
-      });
+      resolve([new VRDisplay()]);
     });
     return window.getVRDisplaysPromise;
   }

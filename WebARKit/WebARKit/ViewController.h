@@ -20,12 +20,9 @@
 #import <ARKit/ARKit.h>
 #import <WebKit/WebKit.h>
 
-#import "WebViewJavascriptBridge.h"
-
 @interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver>
 {
     WKWebView* wkWebView;
-    WebViewJavascriptBridge* bridge;
     UITextField* urlTextField;
     bool initialPageLoadedWhenTrackingBegins;
 }

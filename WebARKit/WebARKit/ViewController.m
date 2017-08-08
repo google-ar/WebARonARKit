@@ -256,22 +256,8 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   // Needed to show alerts. Check the WKUIDelegate protocol and the
   // runJavaScriptAlertPanelWithMessage method in this file :(
   self->wkWebView.UIDelegate = self;
+  self->wkWebView.navigationDelegate = self;
   [self.view addSubview:self->wkWebView];
-
-  // Create the bidge to communicate the ObjectiveC code with the JavaScript code in the WKWebView
-  // The bridge will log all the communications (useful during development). Comment it out for a
-  // cleaner console (production).
-  //    [WebViewJavascriptBridge enableLogging];
-  self->bridge = [WebViewJavascriptBridge bridgeForWebView:self->wkWebView];
-  // TODO - IMPORTANT (Iker Jamardo): There seems to be a bug in the WebViewJavascriptBridge and the
-  // decisionHandler of one of the delegat methods is being called multiple times and iOS does not
-  // seem to like it. In essence, and AFAIK, this is a correct behavior because different pages need
-  // to be loaded (the requested page, the request to inject the JavaScript bridge code, ...) and
-  // all require to specify an allow policy. In order to fix it with a hack (without modifying
-  // WebViewJavascriptBridge) it is mandatory to listen to the webview delegate and handle the call
-  // of the decisionHandler here. Check the code of the decidePolicyForNavigationAction method to
-  // further understand the fix.
-  [self->bridge setWebViewDelegate:self];
 
   // Add a textfield for the URL on top of the webview
   self->urlTextField = [[UITextField alloc]
@@ -286,9 +272,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 }
 
 - (void)restartSession {
-  ARWorldTrackingSessionConfiguration *configuration = [ARWorldTrackingSessionConfiguration new];
-  configuration.planeDetection = ARPlaneDetectionHorizontal;
-
+  ARWorldTrackingConfiguration *configuration = [ARWorldTrackingConfiguration new];
   [self.session runWithConfiguration:configuration options:ARSessionRunOptionResetTracking];
 }
 
@@ -354,8 +338,8 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
     matrix_float4x4 m = frame.camera.transform;
     matrix_float4x4 p = [frame.camera
-                    projectionMatrixWithViewportSize:self.renderer->viewportSize
-                    orientation:UIInterfaceOrientationLandscapeRight
+                    projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
+                    viewportSize:self.renderer->viewportSize
                     zNear:0.001
                     zFar:1000];
     
@@ -452,8 +436,8 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
         } else if ([method isEqualToString:@"getProjectionMatrix"]) {
             ARFrame *currentFrame = [self.session currentFrame];
             matrix_float4x4 m4x4 = [currentFrame.camera
-                projectionMatrixWithViewportSize:self.renderer->viewportSize
-                orientation:UIInterfaceOrientationLandscapeRight
+                projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
+                viewportSize:self.renderer->viewportSize
                 zNear:0.001
                 zFar:1000];
             const float *m = (const float *)(&m4x4);

@@ -17,10 +17,6 @@
 		F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F66038751EF5FCC100385A4C /* Assets.xcassets */; };
 		F66038791EF5FCC100385A4C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F66038771EF5FCC100385A4C /* LaunchScreen.storyboard */; };
 		F660387C1EF5FCC100385A4C /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F660387B1EF5FCC100385A4C /* main.m */; };
-		F660388B1EF5FD8100385A4C /* WebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */; };
-		F660388C1EF5FD8100385A4C /* WebViewJavascriptBridge_JS.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */; };
-		F660388D1EF5FD8100385A4C /* WebViewJavascriptBridgeBase.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */; };
-		F660388E1EF5FD8100385A4C /* WKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -52,14 +48,6 @@
 		F66038781EF5FCC100385A4C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		F660387A1EF5FCC100385A4C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F660387B1EF5FCC100385A4C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		F66038831EF5FD6500385A4C /* WebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridge.h; sourceTree = "<group>"; };
-		F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridge.m; sourceTree = "<group>"; };
-		F66038851EF5FD6500385A4C /* WebViewJavascriptBridge_JS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridge_JS.h; sourceTree = "<group>"; };
-		F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridge_JS.m; sourceTree = "<group>"; };
-		F66038871EF5FD6500385A4C /* WebViewJavascriptBridgeBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WebViewJavascriptBridgeBase.h; sourceTree = "<group>"; };
-		F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WebViewJavascriptBridgeBase.m; sourceTree = "<group>"; };
-		F66038891EF5FD6500385A4C /* WKWebViewJavascriptBridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WKWebViewJavascriptBridge.h; sourceTree = "<group>"; };
-		F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WKWebViewJavascriptBridge.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,7 +66,6 @@
 			children = (
 				BD61CF8B1F33FA0A00733763 /* WebARKit.js */,
 				F6161D981EF85CFD00C915FA /* WebARKitTests */,
-				F66038821EF5FD6500385A4C /* WebViewJavascriptBridge */,
 				F66038651EF5FCC100385A4C /* WebARKit */,
 				F66038641EF5FCC100385A4C /* Products */,
 			);
@@ -110,21 +97,6 @@
 				F660387B1EF5FCC100385A4C /* main.m */,
 			);
 			path = WebARKit;
-			sourceTree = "<group>";
-		};
-		F66038821EF5FD6500385A4C /* WebViewJavascriptBridge */ = {
-			isa = PBXGroup;
-			children = (
-				F66038831EF5FD6500385A4C /* WebViewJavascriptBridge.h */,
-				F66038841EF5FD6500385A4C /* WebViewJavascriptBridge.m */,
-				F66038851EF5FD6500385A4C /* WebViewJavascriptBridge_JS.h */,
-				F66038861EF5FD6500385A4C /* WebViewJavascriptBridge_JS.m */,
-				F66038871EF5FD6500385A4C /* WebViewJavascriptBridgeBase.h */,
-				F66038881EF5FD6500385A4C /* WebViewJavascriptBridgeBase.m */,
-				F66038891EF5FD6500385A4C /* WKWebViewJavascriptBridge.h */,
-				F660388A1EF5FD6500385A4C /* WKWebViewJavascriptBridge.m */,
-			);
-			path = WebViewJavascriptBridge;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -200,10 +172,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F660388B1EF5FD8100385A4C /* WebViewJavascriptBridge.m in Sources */,
-				F660388C1EF5FD8100385A4C /* WebViewJavascriptBridge_JS.m in Sources */,
-				F660388D1EF5FD8100385A4C /* WebViewJavascriptBridgeBase.m in Sources */,
-				F660388E1EF5FD8100385A4C /* WKWebViewJavascriptBridge.m in Sources */,
 				F660387C1EF5FCC100385A4C /* main.m in Sources */,
 				F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */,
 				F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */,
