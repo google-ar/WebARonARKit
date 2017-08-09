@@ -426,12 +426,13 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   }
 
   // Send the per frame data needed in the JS side
-  matrix_float4x4 m = frame.camera.transform;
-  matrix_float4x4 p = [frame.camera
-                       projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
-                       viewportSize:self.renderer->viewportSize
-                       zNear:self->near
-                       zFar:self->far];
+    matrix_float4x4 m = [frame.camera viewMatrixForOrientation:interfaceOrientation];
+    m = matrix_invert(m);
+    matrix_float4x4 p = [frame.camera
+                         projectionMatrixForOrientation:UIInterfaceOrientationLandscapeRight
+                         viewportSize:CGSizeMake(self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+                         zNear:self->near
+                         zFar:self->far];
 
   const float *matrix = (const float *)(&m);
   const float *pMatrix = (const float *)(&p);

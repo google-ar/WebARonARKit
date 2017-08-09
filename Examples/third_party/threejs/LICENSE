@@ -1,17 +1,3 @@
-===============================================================================
-This file includes the license for the following library files in this folder.
-
-CSS3DRenderer.js,
-ColladaLoader.js
-Detector.js,
-OrbitControls.js,
-VRControls.js,
-VREffect.js,
-WebVR.js,
-stats.min.js
-three.js
-TeapotBufferGeometry.js
-
 The MIT License
 
 Copyright © 2010-2017 three.js authors
@@ -33,5 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-===============================================================================
-

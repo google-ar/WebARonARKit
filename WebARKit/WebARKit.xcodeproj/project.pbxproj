@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BD61CF8C1F33FB1700733763 /* WebARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARKit.js */; };
-		BDBA64F81F3B94ED00DB0003 /* WebARKitTests in Resources */ = {isa = PBXBuildFile; fileRef = BDBA64F71F3B90A600DB0003 /* WebARKitTests */; };
+		E1BCE3211F3BC71000F75803 /* Examples in Resources */ = {isa = PBXBuildFile; fileRef = E1BCE3201F3BC70800F75803 /* Examples */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
 		F660386E1EF5FCC100385A4C /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = F660386D1EF5FCC100385A4C /* Renderer.m */; };
@@ -33,7 +33,7 @@
 
 /* Begin PBXFileReference section */
 		BD61CF8B1F33FA0A00733763 /* WebARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARKit.js; sourceTree = "<group>"; };
-		BDBA64F71F3B90A600DB0003 /* WebARKitTests */ = {isa = PBXFileReference; lastKnownFileType = folder; name = WebARKitTests; path = ../WebARKitTests; sourceTree = "<group>"; };
+		E1BCE3201F3BC70800F75803 /* Examples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Examples; path = ../Examples; sourceTree = "<group>"; };
 		F66038631EF5FCC100385A4C /* WebARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F66038671EF5FCC100385A4C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -65,7 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				BD61CF8B1F33FA0A00733763 /* WebARKit.js */,
-				BDBA64F71F3B90A600DB0003 /* WebARKitTests */,
+				E1BCE3201F3BC70800F75803 /* Examples */,
 				F66038651EF5FCC100385A4C /* WebARKit */,
 				F66038641EF5FCC100385A4C /* Products */,
 			);
@@ -157,11 +157,11 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E1BCE3211F3BC71000F75803 /* Examples in Resources */,
 				F66038791EF5FCC100385A4C /* LaunchScreen.storyboard in Resources */,
 				F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */,
 				F66038741EF5FCC100385A4C /* Main.storyboard in Resources */,
 				BD61CF8C1F33FB1700733763 /* WebARKit.js in Resources */,
-				BDBA64F81F3B94ED00DB0003 /* WebARKitTests in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
