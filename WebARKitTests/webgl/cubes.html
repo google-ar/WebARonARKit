@@ -17,6 +17,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Catch any possible error and show an alert.
+    // Useful for "hacky" debugging.
+    window.addEventListener('error', function(event) {
+                            var errorMessage = event.message;
+                            var url = event.filename;
+                            var lineNumber = event.lineno;
+                            var columnNumber = event.colno;
+                            alert("ERROR: " + errorMessage + " at " + url + " : " + lineNumber +
+                                  " : " + columnNumber);
+                            });
+  </script>
   <title>WebAR - WebGL Cubes Example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no,
@@ -135,7 +147,7 @@
   function updateARProjectionMatrix()
   {
     if( arDisplay ) {
-      mat4.copy( arProjectionMatrix, arFrameData.projectionMatrix );
+      mat4.copy( arProjectionMatrix, arFrameData.leftProjectionMatrix );
     }
     else {
       mat4.perspective(arProjectionMatrix, 45, window.innerWidth/window.innerHeight, 0.1, 100.0 );
@@ -352,10 +364,18 @@
         arDisplay = vrDisplays[i];
         if (arDisplay.displayName === "Tango VR Device" || arDisplay.displayName === "ARKit VR Device") {
           arFrameData = new VRFrameData();
+          arDisplay.depthNear = 0.1;
+          arDisplay.depthFar = 1000.0;
           setup();
           break;
         }
+        else {
+          arDisplay = null;
+        }
       }
+    }
+    if (!arDisplay) {
+      alert("Could not find the right VRDisplay for this app.");
     }
   }
 
@@ -370,7 +390,7 @@
     window.addEventListener('resize', onWindowResize, false);
     canvas.addEventListener('touchstart', onClick, false);
 
-    update();
+    window.requestAnimationFrame(update);
   }
 
   function update()
@@ -443,6 +463,7 @@
   if (navigator.getVRDisplays) {
     navigator.getVRDisplays().then(init);
   } else {
+    alert("This browser does not support WebVR.");
     setup();
   }
 

@@ -37,12 +37,9 @@
     this.capabilities.maxLayers = 1;
     this.capabilities.hasPosition = true;
     this.capabilities.hasSeeThroughCamera = true;
-    // this.stageParameters = null; // OculusMobileSDK (Gear VR) does not support room scale VR yet, this attribute is optional.
+    this.stageParameters = null;
     this.getEyeParameters = function(eye) {
       var eyeParameters = null;
-      // if (vrWebGLRenderingContexts.length > 0) {
-      //  eyeParameters = vrWebGLRenderingContexts[0].getEyeParameters(eye);
-      // }
       if (eyeParameters !== null && eye === "left") {
         eyeParameters.offset = -eyeParameters.offset;
       }
@@ -56,34 +53,43 @@
     this.getFrameData = function(frameData) {
       frameData.timestamp = performance.now();
       frameData.pose = this.getPose();
-      frameData.projectionMatrix = this.getProjectionMatrix();
+      // TODO: leftViewMatrix and rightViewMatrix and FieldOfView.
+      frameData.leftProjectionMatrix =
+        frameData.rightProjectionMatrix =
+        this._projectionMatrix;
     };
 
     this._pose = new VRPose();
     this.getPose = function() {
-      var result = prompt("getPose:");
-      var data = JSON.parse(result);
-      this._pose.position = data.position;
-      this._pose.orientation = data.orientation;
       return this._pose;
     };
 
     this._projectionMatrix = new Float32Array(16);
-    this.getProjectionMatrix = function() {
-      var result = prompt("getProjectionMatrix:");
-      var data = JSON.parse(result);
-      for (var i = 0; i < 16; i++) {
-        this._projectionMatrix[i] = data[i];
-      }
-      return this._projectionMatrix;
-    };
 
     this.resetPose = function() {
       prompt("resetPose:");
     };
 
-    this.depthNear = 0.01;
-    this.depthFar = 10000.0;
+    var depthNear = 0.01;
+    Object.defineProperty(this, "depthNear", {
+      get: function() {
+        return depthNear
+      },
+      set: function(value) {
+        depthNear = value;
+        window.webkit.messageHandlers.WebARKit.postMessage("setDepthNear:" + depthNear);
+      }
+    });
+    var depthFar = 10000.0;
+    Object.defineProperty(this, "depthFar", {
+      get: function() {
+        return depthFar
+      },
+      set: function(value) {
+        depthFar = value;
+        window.webkit.messageHandlers.WebARKit.postMessage("setDepthFar:" + depthFar);
+      }
+    });
 
     this.requestAnimationFrame = function(callback) {
       return window.requestAnimationFrame(callback);
@@ -97,7 +103,6 @@
       var self = this;
       return new Promise(function(resolve, reject) {
         self.isPresenting = true;
-        notifyVRDisplayPresentChangeEvent(self);
         _layers = layers;
         resolve();
       });
@@ -154,7 +159,7 @@
     this.hasExternalDisplay = false;
     this.canPresent = false;
     this.maxLayers = 0;
-    this.hasSeeThroughCamera = false;
+    this.hasPassThroughCamera = false;
     return this;
   };
 
@@ -171,11 +176,11 @@
     return this;
   };
 
-  VRPose = function() {
-    this.position = null;
+  VRPose = function () {
+    this.position = new Float32Array(3);
     this.linearVelocity = null;
     this.linearAcceleration = null;
-    this.orientation = null;
+    this.orientation = new Float32Array(4);
     this.angularVelocity = null;
     this.angularAcceleration = null;
     return this;
@@ -183,12 +188,12 @@
 
   VRFrameData = function() {
     this.timestamp = null;
-    this.leftProjectionMatrix = null;
-    this.leftViewMatrix = null;
-    this.rightProjectionMatrix = null;
-    this.rightViewMatrix = null;
+    this.leftProjectionMatrix = new Float32Array(16);
+    this.leftViewMatrix = new Float32Array(16);
+    this.rightProjectionMatrix = new Float32Array(16);
+    this.rightViewMatrix = new Float32Array(16);
     this.pose = null;
-    this.projectionMatrix = null;
+    return this;
   };
 
   VREyeParameters = function() {
@@ -206,10 +211,27 @@
     return this;
   };
 
-  // WebAR structures
-  VRHit = function() {
+  VRHit = function () {
     this.modelMatrix = new Float32Array(16);
     return this;
+  };
+
+  var webarkitVRDisplay = new VRDisplay();
+
+  window.WebARKitSetData = function(data) {
+    webarkitVRDisplay._pose.position[0] = data.position[0];
+    webarkitVRDisplay._pose.position[1] = data.position[1];
+    webarkitVRDisplay._pose.position[2] = data.position[2];
+    webarkitVRDisplay._pose.orientation[0] = data.orientation[0];
+    webarkitVRDisplay._pose.orientation[1] = data.orientation[1];
+    webarkitVRDisplay._pose.orientation[2] = data.orientation[2];
+    webarkitVRDisplay._pose.orientation[3] = data.orientation[3];
+    for (var i = 0; i < 16; i++) {
+      webarkitVRDisplay._projectionMatrix[i] = data.projectionMatrix[i];
+    }
+   if (window.UPDATE) {
+     window.UPDATE();
+   }
   };
 
   window.WebARKitSetWindowSize = function(size) {
@@ -223,8 +245,15 @@
       return window.getVRDisplaysPromise;
     }
     window.getVRDisplaysPromise = new Promise(function(resolve, reject) {
-      resolve([new VRDisplay()]);
+      resolve([webarkitVRDisplay]);
     });
     return window.getVRDisplaysPromise;
+  };
+
+  var oldConsoleLog = console.log;
+  console.log = function() {
+    var argumentsArray = Array.prototype.slice.call(arguments);
+    window.webkit.messageHandlers.WebARKit.postMessage("log:" + argumentsArray.join(" "));
+    oldConsoleLog.apply(this, argumentsArray);
   };
 })();

@@ -17,6 +17,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script>
+    // Catch any possible error and show an alert.
+    // Useful for "hacky" debugging.
+    window.addEventListener('error', function(event) {
+                            var errorMessage = event.message;
+                            var url = event.filename;
+                            var lineNumber = event.lineno;
+                            var columnNumber = event.colno;
+                            alert("ERROR: " + errorMessage + " at " + url + " : " + lineNumber +
+                                  " : " + columnNumber);
+                            });
+    </script>
   <title>WebAR - ThreeJS Reticle Example</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no,
@@ -129,7 +141,7 @@ function update()
     arDisplay.getFrameData( arFrameData );
   }
   arControls.update();
-  camera.projectionMatrix.fromArray( arFrameData.projectionMatrix );
+  camera.projectionMatrix.fromArray( arFrameData.leftProjectionMatrix );
   updateRecticle();
   renderer.clearDepth();
   renderer.render( scene, camera );
