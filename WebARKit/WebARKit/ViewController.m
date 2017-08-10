@@ -117,7 +117,7 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
     {
         NSString* nsurlPath = urlString;
         NSString* pathExtension = @"html";
-        // If the file:// scheme was provided, get the right path and trim the extension if included.
+        // If the file:// scheme was provided, remove the scheme and trim the extension if included.
         if (fileScheme)
         {
             nsurlPath = [NSString stringWithFormat:@"%@%@", nsurl.host, nsurl.path];
@@ -126,6 +126,14 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
               NSRange range = [[nsurlPath lowercaseString] rangeOfString:@".html" options:NSBackwardsSearch];
               nsurlPath = [nsurlPath stringByReplacingCharactersInRange:range withString:@""];
             }
+        }
+        else {
+          // If the file:// was not provided, trim the extension if included.
+          NSRange range = [[nsurlPath lowercaseString] rangeOfString:@".html" options:NSBackwardsSearch];
+          if (range.location != NSNotFound && range.location == nsurlPath.length - 5)
+          {
+            nsurlPath = [nsurlPath stringByReplacingCharactersInRange:range withString:@""];
+          }
         }
 //        NSLog(@"nsurlPath = %@", nsurlPath);
         // Is the URL string a path to a file?
