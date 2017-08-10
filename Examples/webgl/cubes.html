@@ -108,6 +108,9 @@
   function updateARProjectionMatrix()
   {
     if( vrDisplay ) {
+      // WebVR currently does not non stereo matrix retrieval but
+      // both left and right eye projection matrices contain the same
+      // correct single projection matrix.
       mat4.copy( arProjectionMatrix, arFrameData.leftProjectionMatrix );
     }
     else {
@@ -117,6 +120,8 @@
 
   function updateARViewMatrix() {
     if( vrDisplay && arFrameData ) {
+/*
+      // A different way to obtain the pose for the camera view matrix.
       pose = arFrameData.pose;
 
       var ori = quat.fromValues(
@@ -134,6 +139,14 @@
 
       mat4.fromRotationTranslation( arViewMatrix, ori, pos );
       mat4.invert( arViewMatrix, arViewMatrix );
+ */
+      // It is easier to just use the provided view matrix.
+      // WebVR currently does not non stereo matrix retrieval but
+      // both left and right eye view matrices contain the same
+      // correct single pose view matrix.
+      for (var i = 0; i < 16; i++) {
+        arViewMatrix[i] = arFrameData.leftViewMatrix[i];
+      }
     }
     else{
       mat4.identity( arViewMatrix );

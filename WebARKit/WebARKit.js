@@ -15,15 +15,6 @@
  */
 
 (function() {
-  // The polyfill is only injected if the code is loaded in the safari webview.
-  var standalone = window.navigator.standalone,
-    userAgent = window.navigator.userAgent.toLowerCase(),
-    safari = /safari/.test(userAgent),
-    ios = /iphone|ipod|ipad/.test(userAgent);
-  if (!ios || standalone || safari) {
-    return;
-  }
-
   var nextDisplayId = 1000;
 
   VRDisplay = function() {
@@ -53,10 +44,13 @@
     this.getFrameData = function(frameData) {
       frameData.timestamp = performance.now();
       frameData.pose = this.getPose();
-      // TODO: leftViewMatrix and rightViewMatrix and FieldOfView.
+      // TODO: FieldOfView does not have the correct values. Not important for now as devs should not rely on it
       frameData.leftProjectionMatrix =
         frameData.rightProjectionMatrix =
         this._projectionMatrix;
+      frameData.leftViewMatrix =
+        frameData.rightViewMatrix =
+        this.viewMatrix_;
     };
 
     this._pose = new VRPose();
@@ -65,6 +59,7 @@
     };
 
     this._projectionMatrix = new Float32Array(16);
+    this.viewMatrix_ = new Float32Array(16);
 
     this.resetPose = function() {
       prompt("resetPose:");
@@ -192,6 +187,7 @@
     this.leftViewMatrix = new Float32Array(16);
     this.rightProjectionMatrix = new Float32Array(16);
     this.rightViewMatrix = new Float32Array(16);
+    // TODO: Initialize matrices to identity
     this.pose = null;
     return this;
   };
@@ -218,6 +214,8 @@
 
   var webarkitVRDisplay = new VRDisplay();
 
+ // This function will be called from the native side every frame/pose
+ // update.
   window.WebARKitSetData = function(data) {
     webarkitVRDisplay._pose.position[0] = data.position[0];
     webarkitVRDisplay._pose.position[1] = data.position[1];
@@ -227,13 +225,18 @@
     webarkitVRDisplay._pose.orientation[2] = data.orientation[2];
     webarkitVRDisplay._pose.orientation[3] = data.orientation[3];
     for (var i = 0; i < 16; i++) {
+      webarkitVRDisplay.viewMatrix_[i] = data.viewMatrix[i];
+    }
+    for (var i = 0; i < 16; i++) {
       webarkitVRDisplay._projectionMatrix[i] = data.projectionMatrix[i];
     }
-   if (window.UPDATE) {
-     window.UPDATE();
-   }
+    callRafCallbacks();
   };
 
+ // If the window size has changed, the native side will call this function.
+ // This is a hack due to the WKWebView not handling the window.innerWidth/Height
+ // correctly in the window.onresize events.
+ // TODO: Remove this hack once the WKWebView has fixed the issue.
   window.WebARKitSetWindowSize = function(size) {
     window.innerWidth = size.width;
     window.innerHeight = size.height;
@@ -250,10 +253,43 @@
     return window.getVRDisplaysPromise;
   };
 
+ // TODO: MacOS Safari and iOS 11 seem to have some kind of disagreement
+ // and it is to possible to debug the WKWebView (or a Safari iOS page).
+ // As console.log calls are not being shown in the XCode console, this
+ // reimplementation of console.log does the trick.
+ // This could be removed in case the Safari debugging tool is restored.
   var oldConsoleLog = console.log;
   console.log = function() {
     var argumentsArray = Array.prototype.slice.call(arguments);
     window.webkit.messageHandlers.WebARKit.postMessage("log:" + argumentsArray.join(" "));
     oldConsoleLog.apply(this, argumentsArray);
   };
+
+ // TODO: Reimplement window.requestAnimationFrame because it seems
+ // camera and pose synchronization improves noticeably on iPhones.
+ // If at some point the original raf is performant enough, remove this.
+  var oldRequestAnimationFrame = window.requestAnimationFrame;
+  var rafCallbacks = [];
+  window.requestAnimationFrame = function(callback) {
+    if (typeof(callback) !== "function") {
+      throw new TypeError("Failed to execute 'requestAnimationFrame' on 'Window':" +
+                          "The callback provided as parameter 1 is not a function.");
+    }
+    rafCallbacks.push(callback);
+  };
+
+  function callRafCallbacks() {
+    var rafCallbacksCopy = new Array(rafCallbacks.length);
+    for (var i = 0; i < rafCallbacks.length; i++) {
+      rafCallbacksCopy[i] = rafCallbacks[i];
+    }
+    rafCallbacks = [];
+    for (var i = 0; i < rafCallbacksCopy.length; i++) {
+      rafCallbacksCopy[i]();
+    }
+  }
+ 
+// TODO: Implement cancelAnimationFrame. raf needs to return a unique
+// identifier and use it to cancel the call (remove it from the array).
+
 })();

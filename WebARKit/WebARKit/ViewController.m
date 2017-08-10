@@ -17,6 +17,7 @@
 #import "ViewController.h"
 #import "Renderer.h"
 
+// TODO: Should this be a percentage?
 #define URL_TEXTFIELD_HEIGHT 30
 
 @interface ViewController ()<MTKViewDelegate, ARSessionDelegate>
@@ -29,56 +30,6 @@
 @interface MTKView ()<RenderDestinationProvider>
 
 @end
-
-void extractQuaternionFromMatrix(const float *m, float *o) {
-  assert(m != o);
-
-  // Code from
-  // http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
-
-  // 2 dimensional matrix conversion:
-
-  // FROM
-
-  // 0,0  1,0  2,0
-  // 0,1  1,1  2,1
-  // 0,2  1,2  2,2
-
-  // TO
-
-  // 0    1    2
-  // 4    5    6
-  // 8    9    10
-
-  float trace = m[0] + m[5] + m[10];  // I removed + 1.0f; see discussion with Ethan
-  if (trace > 0) {                    // I changed M_EPSILON to 0
-    float s = 0.5f / sqrtf(trace + 1.0f);
-    o[3] = 0.25f / s;
-    o[0] = (m[6] - m[9]) * s;
-    o[1] = (m[8] - m[2]) * s;
-    o[2] = (m[1] - m[4]) * s;
-  } else {
-    if (m[0] > m[5] && m[0] > m[10]) {
-      float s = 2.0f * sqrtf(1.0f + m[0] - m[5] - m[10]);
-      o[3] = (m[6] - m[9]) / s;
-      o[0] = 0.25f * s;
-      o[1] = (m[4] + m[1]) / s;
-      o[2] = (m[8] + m[2]) / s;
-    } else if (m[5] > m[10]) {
-      float s = 2.0f * sqrtf(1.0f + m[5] - m[0] - m[10]);
-      o[3] = (m[8] - m[2]) / s;
-      o[0] = (m[4] + m[1]) / s;
-      o[1] = 0.25f * s;
-      o[2] = (m[9] + m[6]) / s;
-    } else {
-      float s = 2.0f * sqrtf(1.0f + m[10] - m[0] - m[5]);
-      o[3] = (m[1] - m[4]) / s;
-      o[0] = (m[8] + m[2]) / s;
-      o[1] = (m[9] + m[6]) / s;
-      o[2] = 0.25f * s;
-    }
-  }
-}
 
 @implementation ViewController
 
@@ -426,23 +377,24 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
   }
 
   // Send the per frame data needed in the JS side
-    matrix_float4x4 m = [frame.camera viewMatrixForOrientation:interfaceOrientation];
-    m = matrix_invert(m);
-    matrix_float4x4 p = [frame.camera
-                         projectionMatrixForOrientation:interfaceOrientation
-                         viewportSize:CGSizeMake(self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
-                         zNear:self->near
-                         zFar:self->far];
+  matrix_float4x4 viewMatrix = [frame.camera viewMatrixForOrientation:interfaceOrientation];
+  matrix_float4x4 modelMatrix = matrix_invert(viewMatrix);
+  matrix_float4x4 projectionMatrix = [frame.camera
+                       projectionMatrixForOrientation:interfaceOrientation
+                       viewportSize:CGSizeMake(self.view.frame.size.width, self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+                       zNear:self->near
+                       zFar:self->far];
 
-  const float *matrix = (const float *)(&m);
-  const float *pMatrix = (const float *)(&p);
+  const float* pModelMatrix = (const float *)(&modelMatrix);
+  const float* pViewMatrix = (const float*)(&viewMatrix);
+  const float *pProjectionMatrix = (const float *)(&projectionMatrix);
 
-  float orientation[4];
-  extractQuaternionFromMatrix(matrix, orientation);
+  simd_quatf orientationQuat = simd_quaternion(modelMatrix);
+  const float* pOrientationQuat = (const float*)(&orientationQuat);
   float position[3];
-  position[0] = matrix[12];
-  position[1] = matrix[13];
-  position[2] = matrix[14];
+  position[0] = pModelMatrix[12];
+  position[1] = pModelMatrix[13];
+  position[2] = pModelMatrix[14];
 
   // TODO: Testing to see if we can pass the whole frame to JS...
   //  size_t width = CVPixelBufferGetWidth(frame.capturedImage);
@@ -457,14 +409,21 @@ void extractQuaternionFromMatrix(const float *m, float *o) {
    @"window.WebARKitSetData({"
    @"\"position\":[%f,%f,%f],"
    @"\"orientation\":[%f,%f,%f,%f],"
+   @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
+     @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
    @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
      @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
    @"});",
-   position[0], position[1], position[2], orientation[0],
-   orientation[1], orientation[2], orientation[3],
-   pMatrix[0], pMatrix[1], pMatrix[2], pMatrix[3], pMatrix[4], pMatrix[5],
-   pMatrix[6], pMatrix[7], pMatrix[8], pMatrix[9], pMatrix[10], pMatrix[11],
-   pMatrix[12], pMatrix[13], pMatrix[14], pMatrix[15]
+   position[0], position[1], position[2],
+   pOrientationQuat[0], pOrientationQuat[1], pOrientationQuat[2], pOrientationQuat[3],
+   pViewMatrix[0], pViewMatrix[1], pViewMatrix[2], pViewMatrix[3],
+   pViewMatrix[4], pViewMatrix[5], pViewMatrix[6], pViewMatrix[7],
+   pViewMatrix[8], pViewMatrix[9], pViewMatrix[10], pViewMatrix[11],
+   pViewMatrix[12], pViewMatrix[13], pViewMatrix[14], pViewMatrix[15],
+   pProjectionMatrix[0], pProjectionMatrix[1], pProjectionMatrix[2], pProjectionMatrix[3],
+   pProjectionMatrix[4], pProjectionMatrix[5], pProjectionMatrix[6], pProjectionMatrix[7],
+   pProjectionMatrix[8], pProjectionMatrix[9], pProjectionMatrix[10], pProjectionMatrix[11],
+   pProjectionMatrix[12], pProjectionMatrix[13], pProjectionMatrix[14], pProjectionMatrix[15]
    ];
 
   [self->wkWebView
