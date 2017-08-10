@@ -392,7 +392,7 @@ static const float kImagePlaneVertexData[16] = {
     SharedUniforms *uniforms = (SharedUniforms *)_sharedUniformBufferAddress;
     
     uniforms->viewMatrix = matrix_invert(frame.camera.transform);
-    uniforms->projectionMatrix = [frame.camera projectionMatrixWithViewportSize:self->viewportSize orientation:interfaceOrientation zNear:0.001 zFar:1000];
+    uniforms->projectionMatrix = [frame.camera projectionMatrixForOrientation:interfaceOrientation viewportSize:self->viewportSize zNear:0.001 zFar:1000];
     
     // Set up lighting for the scene using the ambient intensity if provided
     float ambientIntensity = 1.0;
