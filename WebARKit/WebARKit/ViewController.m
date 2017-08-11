@@ -63,6 +63,12 @@
     // Try to create a url with the provided string
     NSURL* nsurl = [NSURL URLWithString:urlString];
     bool fileScheme = nsurl && nsurl.scheme && [[nsurl.scheme lowercaseString] isEqualToString:@"file"];
+    // Quick hack: If the url string is not a proper URL, try to add http to it to see if it is an actual URL
+    if (!nsurl || !nsurl.scheme || !nsurl.host)
+    {
+        NSString* urlStringWithHTTP = [NSString stringWithFormat:@"http://%@", urlString];
+        nsurl = [NSURL URLWithString:urlStringWithHTTP];
+    }
     // If the string did not represent a url or is a filescheme url, the way the page is loaded is different
     if (!nsurl || !nsurl.scheme || !nsurl.host || fileScheme)
     {
