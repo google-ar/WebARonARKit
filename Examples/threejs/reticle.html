@@ -61,9 +61,9 @@
 <script src="../third_party/threejs/VRControls.js"></script>
 <script>
 
-var arDisplay;
-var arFrameData;
-var arControls;
+var vrDisplay;
+var vrFrameData;
+var vrControls;
 
 var canvas;
 var camera;
@@ -82,20 +82,24 @@ if (navigator.getVRDisplays) {
   navigator.getVRDisplays().then(function(vrDisplays) {
     if( vrDisplays && vrDisplays.length > 0 ) {
       for( var i = 0; i < vrDisplays.length; i++ ) {
-        var vrDisplay = vrDisplays[i];
-        if ( vrDisplay.displayName === "ARKit VR Device" ||
-          vrDisplay.displayName === "Tango VR Device") {
-          arDisplay = vrDisplay;
-          arFrameData = new VRFrameData();
-          init(arDisplay);
+        vrDisplay = vrDisplays[i];
+        if ( vrDisplay.capabilities.hasPassThroughCamera ) {
+          vrFrameData = new VRFrameData();
+          init(vrDisplay);
           break;
         }
+        else {
+          vrDisplay = null;
+        }
+      }
+      if (!vrDisplay) {
+        alert( "Could not find a VRDisplay with AR capabilities." );
       }
     }
   });
 }
 else {
-  alert("Looks like you don't have a WebAR capable device!");
+  alert( "This browser does not support WebVR." );
 }
 
 function init() {
@@ -120,7 +124,7 @@ function init() {
   planeQuat.setFromAxisAngle( new THREE.Vector3(0, 0, 1), Math.PI );
   easing = 0.25;
 
-  arControls = new THREE.VRControls( camera );
+  vrControls = new THREE.VRControls( camera );
 
   renderer = new THREE.WebGLRenderer( { alpha: true } );
   renderer.setPixelRatio( window.devicePixelRatio );
@@ -137,11 +141,11 @@ function init() {
 
 function update()
 {
-  if( arDisplay ) {
-    arDisplay.getFrameData( arFrameData );
+  if( vrDisplay ) {
+    vrDisplay.getFrameData( vrFrameData );
   }
-  arControls.update();
-  camera.projectionMatrix.fromArray( arFrameData.leftProjectionMatrix );
+  vrControls.update();
+  camera.projectionMatrix.fromArray( vrFrameData.leftProjectionMatrix );
   updateRecticle();
   renderer.clearDepth();
   renderer.render( scene, camera );
@@ -154,8 +158,8 @@ function onWindowResize()
 }
 
 function updateRecticle() {
-  if( arDisplay ) {
-    var hit = arDisplay.hitTest( 0.5, 0.5 );
+  if( vrDisplay ) {
+    var hit = vrDisplay.hitTest( 0.5, 0.5 );
     if( hit && hit.length > 0 ) {
 
       model.fromArray( hit[0].modelMatrix );

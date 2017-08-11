@@ -62,9 +62,9 @@
 <script src="../third_party/threejs/VRControls.js"></script>
 <script>
 
-var arDisplay;
-var arFrameData;
-var arControls;
+var vrDisplay;
+var vrFrameData;
+var vrControls;
 
 var canvas;
 var camera;
@@ -85,22 +85,26 @@ var colors = [
 
 if (navigator.getVRDisplays) {
   navigator.getVRDisplays().then(function(vrDisplays) {
-    if (vrDisplays && vrDisplays.length > 0) {
-      for (var i = 0; i < vrDisplays.length; i++) {
-        var vrDisplay = vrDisplays[i];
-        if (vrDisplay.displayName === "ARKit VR Device" ||
-          vrDisplay.displayName === "Tango VR Device") {
-          arDisplay = vrDisplay;
-          arFrameData = new VRFrameData();
-          init(arDisplay);
+    if( vrDisplays && vrDisplays.length > 0 ) {
+      for( var i = 0; i < vrDisplays.length; i++ ) {
+        vrDisplay = vrDisplays[i];
+        if ( vrDisplay.capabilities.hasPassThroughCamera ) {
+          vrFrameData = new VRFrameData();
+          init(vrDisplay);
           break;
         }
+        else {
+          vrDisplay = null;
+        }
+      }
+      if (!vrDisplay) {
+        alert( "Could not find a VRDisplay with AR capabilities." );
       }
     }
   });
 }
 else {
-  alert("Looks like you don't have a WebAR capable device!");
+  alert( "This browser does not support WebVR." );
 }
 
 function init() {
@@ -122,7 +126,7 @@ function init() {
   var material = new THREE.MeshBasicMaterial({ vertexColors: THREE.VertexColors });
   cube = new THREE.Mesh( geometry, material );
 
-  arControls = new THREE.VRControls( camera );
+  vrControls = new THREE.VRControls( camera );
 
   renderer = new THREE.WebGLRenderer( { alpha: true } );
   renderer.setPixelRatio( window.devicePixelRatio );
@@ -140,11 +144,11 @@ function init() {
 
 function update()
 {
-  if( arDisplay ) {
-    arDisplay.getFrameData(arFrameData);
+  if( vrDisplay ) {
+    vrDisplay.getFrameData(vrFrameData);
   }
-  arControls.update();
-  camera.projectionMatrix.fromArray( arFrameData.leftProjectionMatrix );
+  vrControls.update();
+  camera.projectionMatrix.fromArray( vrFrameData.leftProjectionMatrix );
   renderer.clearDepth();
   renderer.render( scene, camera );
   requestAnimationFrame( update );
@@ -157,8 +161,8 @@ function onWindowResize()
 
 function onClick()
 {
-  if( arFrameData ) {
-    var pose = arFrameData.pose;
+  if( vrFrameData ) {
+    var pose = vrFrameData.pose;
 
     var ori = new THREE.Quaternion(
       pose.orientation[0],

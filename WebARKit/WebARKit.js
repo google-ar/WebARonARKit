@@ -27,7 +27,7 @@
     this.capabilities.canPresent = true;
     this.capabilities.maxLayers = 1;
     this.capabilities.hasPosition = true;
-    this.capabilities.hasSeeThroughCamera = true;
+    this.capabilities.hasPassThroughCamera = true;
     this.stageParameters = null;
     this.getEyeParameters = function(eye) {
       var eyeParameters = null;

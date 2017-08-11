@@ -120,33 +120,11 @@
 
   function updateARViewMatrix() {
     if( vrDisplay && arFrameData ) {
-/*
-      // A different way to obtain the pose for the camera view matrix.
-      pose = arFrameData.pose;
-
-      var ori = quat.fromValues(
-        pose.orientation[0],
-        pose.orientation[1],
-        pose.orientation[2],
-        pose.orientation[3]
-      );
-
-      var pos = vec3.fromValues(
-        pose.position[0],
-        pose.position[1],
-        pose.position[2]
-      );
-
-      mat4.fromRotationTranslation( arViewMatrix, ori, pos );
-      mat4.invert( arViewMatrix, arViewMatrix );
- */
-      // It is easier to just use the provided view matrix.
+      // It is easier to just use the view matrix provided by WebVR.
       // WebVR currently does not non stereo matrix retrieval but
       // both left and right eye view matrices contain the same
       // correct single pose view matrix.
-      for (var i = 0; i < 16; i++) {
-        arViewMatrix[i] = arFrameData.leftViewMatrix[i];
-      }
+      mat4.copy( arViewMatrix, arFrameData.leftViewMatrix );
     }
     else{
       mat4.identity( arViewMatrix );
@@ -336,7 +314,7 @@
     if( vrDisplays && vrDisplays.length > 0 ) {
       for( var i = 0; i < vrDisplays.length; i++ ) {
         vrDisplay = vrDisplays[i];
-        if( vrDisplay.displayName === "Tango VR Device" || vrDisplay.displayName === "ARKit VR Device" ) {
+        if( vrDisplay.capabilities.hasPassThroughCamera ) {
           arFrameData = new VRFrameData();
           vrDisplay.depthNear = 0.1;
           vrDisplay.depthFar = 1000.0;
@@ -349,7 +327,7 @@
       }
     }
     if( !vrDisplay ) {
-      alert( "Could not find the right VRDisplay for this app." );
+      alert( "Could not find a VRDisplay with AR capabilities." );
     }
   }
 
