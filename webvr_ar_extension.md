@@ -8,7 +8,7 @@ Basic smartphone based Augmented Reality (AR) web applications can be enabled wi
 
 This extension mainly focuses on smartphone based AR where there are 3 basic elements that enable AR experiences:
 
-* **Motion tracking**: The device needs to know its exact location and orientation in 3D space. This is called 6 Degrees Of Freedom (6DOF) motion tracking.
+* **Motion tracking**: The device needs to know its exact location and orientation in 3D space. This is called 6 Degrees Of Freedom ([6DOF]) motion tracking.
 * **Rendering the pass through camera**: Smartphones allow to render virtual content on top of the reality represented by the feed provided by the camera they have.
 * **Basic understanding of the real world**: Motion tracking provides the exact location of the device in the real world but apart from that, the device does not understand much more from it. In order to be able to interact with the real world correctly, some basic understanding is very valuable. Current Smartphone AR technology provides different ways to identify planes in the real world (or even more complex information like meshes or objects like markers or even complete point clouds). This way, virtual objects can be anchored in the real world so they appear to interact with it as a human would expect them to.
 
@@ -18,7 +18,7 @@ The AR extension to the WebVR API provides basic functionality to expose these f
 
 ### Motion Tracking
 
-Motion tracking is resolved by the WebVR API itself so no extension is needed, just a correct implementation in the browser side to communicate with the underlying AR technology and expose the 6DOF tracking needed. Please, refer to the [WebVR 1.1 API] documentation or to the 'Using the WebAR API' section below for more information on how to obtain the pose.
+Motion tracking is resolved by the WebVR API itself so no extension is needed, just a correct implementation in the browser side to communicate with the underlying AR technology and expose the [6DOF] tracking needed. Please, refer to the [WebVR 1.1 API] documentation or to the 'Using the WebAR API' section below for more information on how to obtain the pose.
 
 ### Rendering the pass through camera
 
@@ -42,7 +42,7 @@ partial interface VRDisplay {
 };
 ```
 
-`VRDisplay.prototype.hitTest` returns an array of 0 or more VRHit instances that represent locations in the real world. This functionality casts the ray from a 2D position and obtains a list of all the hit points in the real world. The ‘x’ and ‘y’ values must be normalized between 0 and 1, with (0, 0) being the upper-left corner of the screen. Also note that if the ‘x’, ‘y’ values are not normalized, the method will throw an error.
+`VRDisplay.prototype.hitTest` returns an array of 0 or more VRHit instances that represent locations in the real world. This functionality casts the ray from a 2D position and obtains a list of all the hit points in the real world. The `x` and `y` values must be normalized between 0 and 1, with (0, 0) being the upper-left corner of the screen. Also note that if the `x`, `y` values are not normalized, the method will throw an error.
 
 The `VRHit` structure and has a single property, `modelMatrix`.
 
@@ -72,11 +72,9 @@ The AR extension on top of WebVR allows to cast a ray from the camera to the rea
 [WebVR 1.1 API]: https://w3c.github.io/webvr/spec/1.1/
 [WebVR 2.0 API]: https://github.com/w3c/webvr/blob/master/explainer.md
 [6DOF]: https://en.wikipedia.org/wiki/Six_degrees_of_freedom
-[Daydream View]: https://vr.google.com/daydream/smartphonevr/
 [VRFrameData]: https://w3c.github.io/webvr/spec/1.1/#interface-vrframedata
 [VRDisplayCapabilities]: https://w3c.github.io/webvr/spec/1.1/#interface-vrdisplaycapabilities
 [VRDisplay]: https://w3c.github.io/webvr/spec/1.1/#interface-vrdisplay
-[getFrameData]: https://w3c.github.io/webvr/spec/1.1/#dom-vrdisplay-getframedata
 [three.js]: https://threejs.org/
 
 
