@@ -1,0 +1,16 @@
+name: "gl-matrix"
+description:
+  "Javascript Matrix and Vector library for High Performance WebGL apps"
+
+third_party {
+  url {
+    type: HOMEPAGE
+    value: "https://github.com/toji/gl-matrix"
+  }
+  url {
+    type: GIT
+    value: "git@github.com:toji/gl-matrix.git"
+  }
+  version: "2.4.0"
+  last_upgrade_date { year: 2017 month: 8 day: 2 }
+}
