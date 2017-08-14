@@ -446,6 +446,36 @@
   //  NSLog(@"width = %d, height = %d, bytesPerRow = %d, ostype = %d", width,
   //  height, bytesPerRow, pixelFormatType);
 
+  NSString* anchors = @"[";
+  for (int i = 0; i< frame.anchors.count; i++) {
+    ARPlaneAnchor* anchor = (ARPlaneAnchor*)frame.anchors[i];
+    matrix_float4x4 anchorTransform = anchor.transform;
+    const float* anchorMatrix = (const float*)(&anchorTransform);
+    //NSLog(@"Plane extent (native) %@", [NSString stringWithFormat: @"%f,%f,%f", anchor.extent.x, anchor.extent.y, anchor.extent.z]);
+    NSString* anchorStr = [NSString stringWithFormat:
+        @"{\"transform\":[%f,%f,%f,%f,%f,%f,%f,%"
+        @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+        @"\"identifier\":%i,"
+        @"\"alignment\":%i,"
+        @"\"center\":[%f,%f,%f],"
+        @"\"extent\":[%f,%f]}",
+        anchorMatrix[0], anchorMatrix[1], anchorMatrix[2],
+        anchorMatrix[3], anchorMatrix[4], anchorMatrix[5],
+        anchorMatrix[6], anchorMatrix[7], anchorMatrix[8],
+        anchorMatrix[9], anchorMatrix[10], anchorMatrix[11],
+        anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
+        anchorMatrix[15],
+        (int)anchor.identifier,
+        (int)anchor.alignment,
+        anchor.center.x, anchor.center.y, anchor.center.z,
+        anchor.extent.x, anchor.extent.z];
+    if (i < frame.anchors.count - 1) {
+      anchorStr = [anchorStr stringByAppendingString:@","];
+    }
+    anchors = [anchors stringByAppendingString:anchorStr];
+  }
+  anchors = [anchors stringByAppendingString:@"]"];
+
   NSString *jsCode = [NSString
       stringWithFormat:@"if (window.WebARForARKitSetData) "
                        @"window.WebARForARKitSetData({"
@@ -454,7 +484,8 @@
                        @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
                        @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
                        @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
-                       @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
+                       @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+                       @"\"anchors\":%@"
                        @"});",
                        position[0], position[1], position[2],
                        pOrientationQuat[0], pOrientationQuat[1],
@@ -471,7 +502,8 @@
                        pProjectionMatrix[8], pProjectionMatrix[9],
                        pProjectionMatrix[10], pProjectionMatrix[11],
                        pProjectionMatrix[12], pProjectionMatrix[13],
-                       pProjectionMatrix[14], pProjectionMatrix[15]];
+                       pProjectionMatrix[14], pProjectionMatrix[15],
+                       anchors];
 
   [self->wkWebView
       evaluateJavaScript:jsCode
