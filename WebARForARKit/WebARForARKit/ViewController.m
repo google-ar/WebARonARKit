@@ -527,58 +527,6 @@
   [self showAlertDialog:message completionHandler:completionHandler];
 }
 
-- (void)webView:(WKWebView *)webView
-    runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt
-                              defaultText:(nullable NSString *)defaultText
-                         initiatedByFrame:(WKFrameInfo *)frame
-                        completionHandler:(void (^)(NSString *_Nullable result))
-                                              completionHandler {
-  NSString *result = @"";
-  NSArray *values = [prompt componentsSeparatedByString:@":"];
-  if ([values count] > 1) {
-    NSString *method = values[0];
-    NSArray *params = [values[1] componentsSeparatedByString:@","];
-    if ([method isEqualToString:@"hitTest"]) {
-      float x = [params[0] floatValue];
-      float y = [params[1] floatValue];
-      CGPoint point = CGPointMake(x, y);
-      ARFrame *currentFrame = [self.session currentFrame];
-      // TODO: Play with the different types of hit tests to see what
-      // corresponds best with what tango already provides.
-      NSArray<ARHitTestResult *> *hits = [currentFrame
-          hitTest:point
-            types:(ARHitTestResultType)
-                      ARHitTestResultTypeExistingPlaneUsingExtent];
-
-      //        NSArray<ARHitTestResult *> * hits = [currentFrame hitTest:point
-      //        types:(ARHitTestResultType)ARHitTestResultTypeExistingPlane];
-      if (hits.count > 0) {
-        result = @"{\"hits\":[";
-        for (int i = 0; i < hits.count; i++) {
-          matrix_float4x4 m4x4 = hits[i].worldTransform;
-          const float *m = (const float *)(&m4x4);
-          NSString *hit = [NSString
-              stringWithFormat:
-                  @"[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]", m[0],
-                  m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8], m[9], m[10],
-                  m[11], m[12], m[13], m[14], m[15]];
-          result = [result stringByAppendingString:hit];
-          if (i < hits.count - 1) {
-            result = [result stringByAppendingString:@","];
-          }
-        }
-        result = [result stringByAppendingString:@"]}"];
-      }
-    }
-    // TODO: This could actually be a message. It does not have to be
-    // synchronous...
-    else if ([method isEqualToString:@"resetPose"]) {
-      [self restartSession];
-    }
-  }
-  completionHandler(result);
-}
-
 #pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView *)webView
@@ -678,6 +626,8 @@
       // 'log:' string and show the rest.
       NSRange range = NSMakeRange(4, messageString.length - 4);
       NSLog(@"%@", [message.body substringWithRange:range]);
+    } else if ([method isEqualToString:@"resetPose"]) {
+      [self restartSession];
     }
   }
 }

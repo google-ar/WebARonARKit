@@ -89,7 +89,7 @@
     this.viewMatrix_ = new Float32Array(16);
 
     this.resetPose = function() {
-      prompt("resetPose:");
+      window.webkit.messageHandlers.WebARForARKit.postMessage("resetPose:");
     };
 
     var depthNear = 0.01;
