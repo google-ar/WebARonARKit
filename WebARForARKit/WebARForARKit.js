@@ -45,12 +45,8 @@
       frameData.timestamp = performance.now();
       frameData.pose = this.getPose();
       // TODO: FieldOfView does not have the correct values. Not important for now as devs should not rely on it
-      frameData.leftProjectionMatrix =
-        frameData.rightProjectionMatrix =
-        this._projectionMatrix;
-      frameData.leftViewMatrix =
-        frameData.rightViewMatrix =
-        this.viewMatrix_;
+      frameData.leftProjectionMatrix = frameData.rightProjectionMatrix = this._projectionMatrix;
+      frameData.leftViewMatrix = frameData.rightViewMatrix = this.viewMatrix_;
     };
 
     this._pose = new VRPose();
@@ -68,21 +64,25 @@
     var depthNear = 0.01;
     Object.defineProperty(this, "depthNear", {
       get: function() {
-        return depthNear
+        return depthNear;
       },
       set: function(value) {
         depthNear = value;
-        window.webkit.messageHandlers.WebARKit.postMessage("setDepthNear:" + depthNear);
+        window.webkit.messageHandlers.WebARForARKit.postMessage(
+          "setDepthNear:" + depthNear
+        );
       }
     });
     var depthFar = 10000.0;
     Object.defineProperty(this, "depthFar", {
       get: function() {
-        return depthFar
+        return depthFar;
       },
       set: function(value) {
         depthFar = value;
-        window.webkit.messageHandlers.WebARKit.postMessage("setDepthFar:" + depthFar);
+        window.webkit.messageHandlers.WebARForARKit.postMessage(
+          "setDepthFar:" + depthFar
+        );
       }
     });
 
@@ -171,7 +171,7 @@
     return this;
   };
 
-  VRPose = function () {
+  VRPose = function() {
     this.position = new Float32Array(3);
     this.linearVelocity = null;
     this.linearAcceleration = null;
@@ -207,37 +207,37 @@
     return this;
   };
 
-  VRHit = function () {
+  VRHit = function() {
     this.modelMatrix = new Float32Array(16);
     return this;
   };
 
-  var webarkitVRDisplay = new VRDisplay();
+  var WebARForARKitVRDisplay = new VRDisplay();
 
- // This function will be called from the native side every frame/pose
- // update.
-  window.WebARKitSetData = function(data) {
-    webarkitVRDisplay._pose.position[0] = data.position[0];
-    webarkitVRDisplay._pose.position[1] = data.position[1];
-    webarkitVRDisplay._pose.position[2] = data.position[2];
-    webarkitVRDisplay._pose.orientation[0] = data.orientation[0];
-    webarkitVRDisplay._pose.orientation[1] = data.orientation[1];
-    webarkitVRDisplay._pose.orientation[2] = data.orientation[2];
-    webarkitVRDisplay._pose.orientation[3] = data.orientation[3];
+  // This function will be called from the native side every frame/pose
+  // update.
+  window.WebARForARKitSetData = function(data) {
+    WebARForARKitVRDisplay._pose.position[0] = data.position[0];
+    WebARForARKitVRDisplay._pose.position[1] = data.position[1];
+    WebARForARKitVRDisplay._pose.position[2] = data.position[2];
+    WebARForARKitVRDisplay._pose.orientation[0] = data.orientation[0];
+    WebARForARKitVRDisplay._pose.orientation[1] = data.orientation[1];
+    WebARForARKitVRDisplay._pose.orientation[2] = data.orientation[2];
+    WebARForARKitVRDisplay._pose.orientation[3] = data.orientation[3];
     for (var i = 0; i < 16; i++) {
-      webarkitVRDisplay.viewMatrix_[i] = data.viewMatrix[i];
+      WebARForARKitVRDisplay.viewMatrix_[i] = data.viewMatrix[i];
     }
     for (var i = 0; i < 16; i++) {
-      webarkitVRDisplay._projectionMatrix[i] = data.projectionMatrix[i];
+      WebARForARKitVRDisplay._projectionMatrix[i] = data.projectionMatrix[i];
     }
     callRafCallbacks();
   };
 
- // If the window size has changed, the native side will call this function.
- // This is a hack due to the WKWebView not handling the window.innerWidth/Height
- // correctly in the window.onresize events.
- // TODO: Remove this hack once the WKWebView has fixed the issue.
-  window.WebARKitSetWindowSize = function(size) {
+  // If the window size has changed, the native side will call this function.
+  // This is a hack due to the WKWebView not handling the window.innerWidth/Height
+  // correctly in the window.onresize events.
+  // TODO: Remove this hack once the WKWebView has fixed the issue.
+  window.WebARForARKitSetWindowSize = function(size) {
     window.innerWidth = size.width;
     window.innerHeight = size.height;
     window.dispatchEvent(new Event("resize"));
@@ -248,32 +248,36 @@
       return window.getVRDisplaysPromise;
     }
     window.getVRDisplaysPromise = new Promise(function(resolve, reject) {
-      resolve([webarkitVRDisplay]);
+      resolve([WebARForARKitVRDisplay]);
     });
     return window.getVRDisplaysPromise;
   };
 
- // TODO: MacOS Safari and iOS 11 seem to have some kind of disagreement
- // and it is to possible to debug the WKWebView (or a Safari iOS page).
- // As console.log calls are not being shown in the XCode console, this
- // reimplementation of console.log does the trick.
- // This could be removed in case the Safari debugging tool is restored.
+  // TODO: MacOS Safari and iOS 11 seem to have some kind of disagreement
+  // and it is to possible to debug the WKWebView (or a Safari iOS page).
+  // As console.log calls are not being shown in the XCode console, this
+  // reimplementation of console.log does the trick.
+  // This could be removed in case the Safari debugging tool is restored.
   var oldConsoleLog = console.log;
   console.log = function() {
     var argumentsArray = Array.prototype.slice.call(arguments);
-    window.webkit.messageHandlers.WebARKit.postMessage("log:" + argumentsArray.join(" "));
+    window.webkit.messageHandlers.WebARForARKit.postMessage(
+      "log:" + argumentsArray.join(" ")
+    );
     oldConsoleLog.apply(this, argumentsArray);
   };
 
- // TODO: Reimplement window.requestAnimationFrame because it seems
- // camera and pose synchronization improves noticeably on iPhones.
- // If at some point the original raf is performant enough, remove this.
+  // TODO: Reimplement window.requestAnimationFrame because it seems
+  // camera and pose synchronization improves noticeably on iPhones.
+  // If at some point the original raf is performant enough, remove this.
   var oldRequestAnimationFrame = window.requestAnimationFrame;
   var rafCallbacks = [];
   window.requestAnimationFrame = function(callback) {
-    if (typeof(callback) !== "function") {
-      throw new TypeError("Failed to execute 'requestAnimationFrame' on 'Window':" +
-                          "The callback provided as parameter 1 is not a function.");
+    if (typeof callback !== "function") {
+      throw new TypeError(
+        "Failed to execute 'requestAnimationFrame' on 'Window':" +
+          "The callback provided as parameter 1 is not a function."
+      );
     }
     rafCallbacks.push(callback);
   };
@@ -288,8 +292,7 @@
       rafCallbacksCopy[i]();
     }
   }
- 
-// TODO: Implement cancelAnimationFrame. raf needs to return a unique
-// identifier and use it to cancel the call (remove it from the array).
 
+  // TODO: Implement cancelAnimationFrame. raf needs to return a unique
+  // identifier and use it to cancel the call (remove it from the array).
 })();
