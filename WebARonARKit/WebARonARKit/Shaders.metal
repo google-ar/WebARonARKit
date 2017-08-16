@@ -1,6 +1,6 @@
 //
 //  Shaders.metal
-//  WebARForARKit
+//  WebARonARKit
 //
 //  Created by Iker Jamardo Zugaza on 6/17/17.
 //  Copyright © 2017 Iker Jamardo Zugaza. All rights reserved.

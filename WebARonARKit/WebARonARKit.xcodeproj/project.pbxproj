@@ -116,7 +116,7 @@
 			dependencies = (
 			);
 			name = WebARonARKit;
-			productName = WebARForARKit;
+			productName = WebARonARKit;
 			productReference = F66038631EF5FCC100385A4C /* WebARonARKit.app */;
 			productType = "com.apple.product-type.application";
 		};
