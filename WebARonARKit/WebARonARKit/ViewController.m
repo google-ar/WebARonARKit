@@ -204,25 +204,25 @@
                                              modifiedSince:dateFrom
                                          completionHandler:^{
                                          }];
-  // Make sure that WebARForARKit.js is injected at the beginning of any webpage
-  // Load the WebARForARKit.js file
-  NSString *WebARForARKitJSPath =
-      [[NSBundle mainBundle] pathForResource:@"WebARForARKit" ofType:@"js"];
-  //  NSLog(WebARForARKitJSPath);
-  NSString *WebARForARKitJSContent =
-      [NSString stringWithContentsOfFile:WebARForARKitJSPath
+  // Make sure that WebARonARKit.js is injected at the beginning of any webpage
+  // Load the WebARonARKit.js file
+  NSString *WebARonARKitJSPath =
+      [[NSBundle mainBundle] pathForResource:@"WebARonARKit" ofType:@"js"];
+  //  NSLog(WebARonARKitJSPath);
+  NSString *WebARonARKitJSContent =
+      [NSString stringWithContentsOfFile:WebARonARKitJSPath
                                 encoding:NSUTF8StringEncoding
                                    error:NULL];
-  //  NSLog(WebARForARKitJSContent);
+  //  NSLog(WebARonARKitJSContent);
   // Setup the script injection
-  WKUserScript *WebARForARKitJSUserScript = [[WKUserScript alloc]
-        initWithSource:WebARForARKitJSContent
+  WKUserScript *WebARonARKitJSUserScript = [[WKUserScript alloc]
+        initWithSource:WebARonARKitJSContent
          injectionTime:WKUserScriptInjectionTimeAtDocumentStart
       forMainFrameOnly:true];
   WKUserContentController *userContentController =
       [[WKUserContentController alloc] init];
-  [userContentController addScriptMessageHandler:self name:@"WebARForARKit"];
-  [userContentController addUserScript:WebARForARKitJSUserScript];
+  [userContentController addScriptMessageHandler:self name:@"WebARonARKit"];
+  [userContentController addUserScript:WebARonARKitJSUserScript];
   WKWebViewConfiguration *wkWebViewConfig =
       [[WKWebViewConfiguration alloc] init];
   wkWebViewConfig.userContentController = userContentController;
@@ -394,8 +394,8 @@
     int height = self.view.frame.size.height - URL_TEXTFIELD_HEIGHT;
     NSString *updateWindowSizeJsCode = [NSString
         stringWithFormat:
-            @"if(window.WebARForARKitSetWindowSize)"
-            @"WebARForARKitSetWindowSize({\"width\":%i,\"height\":%i});",
+            @"if(window.WebARonARKitSetWindowSize)"
+            @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
             width, height];
     [self->wkWebView
         evaluateJavaScript:updateWindowSizeJsCode
@@ -477,8 +477,8 @@
   anchors = [anchors stringByAppendingString:@"]"];
 
   NSString *jsCode = [NSString
-      stringWithFormat:@"if (window.WebARForARKitSetData) "
-                       @"window.WebARForARKitSetData({"
+      stringWithFormat:@"if (window.WebARonARKitSetData) "
+                       @"window.WebARonARKitSetData({"
                        @"\"position\":[%f,%f,%f],"
                        @"\"orientation\":[%f,%f,%f,%f],"
                        @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"

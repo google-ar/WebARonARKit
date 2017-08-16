@@ -99,7 +99,7 @@
       },
       set: function(value) {
         depthNear = value;
-        window.webkit.messageHandlers.WebARForARKit.postMessage(
+        window.webkit.messageHandlers.WebARonARKit.postMessage(
           "setDepthNear:" + depthNear
         );
       }
@@ -111,7 +111,7 @@
       },
       set: function(value) {
         depthFar = value;
-        window.webkit.messageHandlers.WebARForARKit.postMessage(
+        window.webkit.messageHandlers.WebARonARKit.postMessage(
           "setDepthFar:" + depthFar
         );
       }
@@ -451,26 +451,26 @@
     return this;
   };
 
-  var WebARForARKitVRDisplay = new VRDisplay();
+  var WebARonARKitVRDisplay = new VRDisplay();
 
   // This function will be called from the native side every frame/pose
   // update.
-  window.WebARForARKitSetData = function(data) {
-    WebARForARKitVRDisplay.pose_.position[0] = data.position[0];
-    WebARForARKitVRDisplay.pose_.position[1] = data.position[1];
-    WebARForARKitVRDisplay.pose_.position[2] = data.position[2];
-    WebARForARKitVRDisplay.pose_.orientation[0] = data.orientation[0];
-    WebARForARKitVRDisplay.pose_.orientation[1] = data.orientation[1];
-    WebARForARKitVRDisplay.pose_.orientation[2] = data.orientation[2];
-    WebARForARKitVRDisplay.pose_.orientation[3] = data.orientation[3];
+  window.WebARonARKitSetData = function(data) {
+    WebARonARKitVRDisplay.pose_.position[0] = data.position[0];
+    WebARonARKitVRDisplay.pose_.position[1] = data.position[1];
+    WebARonARKitVRDisplay.pose_.position[2] = data.position[2];
+    WebARonARKitVRDisplay.pose_.orientation[0] = data.orientation[0];
+    WebARonARKitVRDisplay.pose_.orientation[1] = data.orientation[1];
+    WebARonARKitVRDisplay.pose_.orientation[2] = data.orientation[2];
+    WebARonARKitVRDisplay.pose_.orientation[3] = data.orientation[3];
     for (var i = 0; i < 16; i++) {
-      WebARForARKitVRDisplay.viewMatrix_[i] = data.viewMatrix[i];
+      WebARonARKitVRDisplay.viewMatrix_[i] = data.viewMatrix[i];
     }
     for (var i = 0; i < 16; i++) {
-      WebARForARKitVRDisplay.projectionMatrix_[i] = data.projectionMatrix[i];
+      WebARonARKitVRDisplay.projectionMatrix_[i] = data.projectionMatrix[i];
     }
 
-    WebARForARKitVRDisplay.anchors_ = data.anchors;
+    WebARonARKitVRDisplay.anchors_ = data.anchors;
 
     callRafCallbacks();
   };
@@ -479,7 +479,7 @@
   // This is a hack due to the WKWebView not handling the window.innerWidth/Height
   // correctly in the window.onresize events.
   // TODO: Remove this hack once the WKWebView has fixed the issue.
-  window.WebARForARKitSetWindowSize = function(size) {
+  window.WebARonARKitSetWindowSize = function(size) {
     window.innerWidth = size.width;
     window.innerHeight = size.height;
     window.dispatchEvent(new Event("resize"));
@@ -490,7 +490,7 @@
       return window.getVRDisplaysPromise;
     }
     window.getVRDisplaysPromise = new Promise(function(resolve, reject) {
-      resolve([WebARForARKitVRDisplay]);
+      resolve([WebARonARKitVRDisplay]);
     });
     return window.getVRDisplaysPromise;
   };
@@ -503,7 +503,7 @@
   var oldConsoleLog = console.log;
   console.log = function() {
     var argumentsArray = Array.prototype.slice.call(arguments);
-    window.webkit.messageHandlers.WebARForARKit.postMessage(
+    window.webkit.messageHandlers.WebARonARKit.postMessage(
       "log:" + argumentsArray.join(" ")
     );
     oldConsoleLog.apply(this, argumentsArray);

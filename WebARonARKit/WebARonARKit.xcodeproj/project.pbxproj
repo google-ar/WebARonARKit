@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BD61CF8C1F33FB1700733763 /* WebARForARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARForARKit.js */; };
+		BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */; };
 		E12809B51F3D309100CF6B3B /* examples in Resources */ = {isa = PBXBuildFile; fileRef = E12809B41F3D307900CF6B3B /* examples */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
@@ -32,9 +32,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BD61CF8B1F33FA0A00733763 /* WebARForARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARForARKit.js; sourceTree = "<group>"; };
+		BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARonARKit.js; sourceTree = "<group>"; };
 		E12809B41F3D307900CF6B3B /* examples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = examples; path = ../examples; sourceTree = "<group>"; };
-		F66038631EF5FCC100385A4C /* WebARForARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARForARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F66038631EF5FCC100385A4C /* WebARonARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARonARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F66038671EF5FCC100385A4C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		F66038691EF5FCC100385A4C /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
@@ -64,9 +64,9 @@
 		F660385A1EF5FCC100385A4C = {
 			isa = PBXGroup;
 			children = (
-				BD61CF8B1F33FA0A00733763 /* WebARForARKit.js */,
+				BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */,
 				E12809B41F3D307900CF6B3B /* examples */,
-				F66038651EF5FCC100385A4C /* WebARForARKit */,
+				F66038651EF5FCC100385A4C /* WebARonARKit */,
 				F66038641EF5FCC100385A4C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -74,12 +74,12 @@
 		F66038641EF5FCC100385A4C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F66038631EF5FCC100385A4C /* WebARForARKit.app */,
+				F66038631EF5FCC100385A4C /* WebARonARKit.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F66038651EF5FCC100385A4C /* WebARForARKit */ = {
+		F66038651EF5FCC100385A4C /* WebARonARKit */ = {
 			isa = PBXGroup;
 			children = (
 				F66038661EF5FCC100385A4C /* AppDelegate.h */,
@@ -96,15 +96,15 @@
 				F660387A1EF5FCC100385A4C /* Info.plist */,
 				F660387B1EF5FCC100385A4C /* main.m */,
 			);
-			path = WebARForARKit;
+			path = WebARonARKit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F66038621EF5FCC100385A4C /* WebARForARKit */ = {
+		F66038621EF5FCC100385A4C /* WebARonARKit */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARForARKit" */;
+			buildConfigurationList = F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARonARKit" */;
 			buildPhases = (
 				F660385F1EF5FCC100385A4C /* Sources */,
 				F66038601EF5FCC100385A4C /* Frameworks */,
@@ -115,9 +115,9 @@
 			);
 			dependencies = (
 			);
-			name = WebARForARKit;
+			name = WebARonARKit;
 			productName = WebARForARKit;
-			productReference = F66038631EF5FCC100385A4C /* WebARForARKit.app */;
+			productReference = F66038631EF5FCC100385A4C /* WebARonARKit.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -134,7 +134,7 @@
 					};
 				};
 			};
-			buildConfigurationList = F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARForARKit" */;
+			buildConfigurationList = F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARonARKit" */;
 			compatibilityVersion = "Xcode 8.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -147,7 +147,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F66038621EF5FCC100385A4C /* WebARForARKit */,
+				F66038621EF5FCC100385A4C /* WebARonARKit */,
 			);
 		};
 /* End PBXProject section */
@@ -161,7 +161,7 @@
 				F66038791EF5FCC100385A4C /* LaunchScreen.storyboard in Resources */,
 				F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */,
 				F66038741EF5FCC100385A4C /* Main.storyboard in Resources */,
-				BD61CF8C1F33FB1700733763 /* WebARForARKit.js in Resources */,
+				BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,9 +307,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = EQHXZ8M8AV;
-				INFOPLIST_FILE = "$(SRCROOT)/WebARForARKit/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/WebARonARKit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARForARKit;
+				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARonARKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -320,9 +320,9 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = EQHXZ8M8AV;
-				INFOPLIST_FILE = "$(SRCROOT)/WebARForARKit/Info.plist";
+				INFOPLIST_FILE = "$(SRCROOT)/WebARonARKit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARForARKit;
+				PRODUCT_BUNDLE_IDENTIFIER = Google.WebARonARKit;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -331,7 +331,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARForARKit" */ = {
+		F660385E1EF5FCC100385A4C /* Build configuration list for PBXProject "WebARonARKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F660387D1EF5FCC100385A4C /* Debug */,
@@ -340,7 +340,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARForARKit" */ = {
+		F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARonARKit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F66038801EF5FCC100385A4C /* Debug */,
