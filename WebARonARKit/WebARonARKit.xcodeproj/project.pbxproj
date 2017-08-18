@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */; };
+		BDACE3331F467B9E00A2F8F7 /* third_party in Resources */ = {isa = PBXBuildFile; fileRef = BDACE3321F467B9000A2F8F7 /* third_party */; };
 		E12809B51F3D309100CF6B3B /* examples in Resources */ = {isa = PBXBuildFile; fileRef = E12809B41F3D307900CF6B3B /* examples */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
@@ -33,6 +34,7 @@
 
 /* Begin PBXFileReference section */
 		BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARonARKit.js; sourceTree = "<group>"; };
+		BDACE3321F467B9000A2F8F7 /* third_party */ = {isa = PBXFileReference; lastKnownFileType = folder; name = third_party; path = ../third_party; sourceTree = "<group>"; };
 		E12809B41F3D307900CF6B3B /* examples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = examples; path = ../examples; sourceTree = "<group>"; };
 		F66038631EF5FCC100385A4C /* WebARonARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARonARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -65,6 +67,7 @@
 			isa = PBXGroup;
 			children = (
 				BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */,
+				BDACE3321F467B9000A2F8F7 /* third_party */,
 				E12809B41F3D307900CF6B3B /* examples */,
 				F66038651EF5FCC100385A4C /* WebARonARKit */,
 				F66038641EF5FCC100385A4C /* Products */,
@@ -162,6 +165,7 @@
 				F66038761EF5FCC100385A4C /* Assets.xcassets in Resources */,
 				F66038741EF5FCC100385A4C /* Main.storyboard in Resources */,
 				BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */,
+				BDACE3331F467B9E00A2F8F7 /* third_party in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
