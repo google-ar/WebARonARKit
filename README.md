@@ -66,19 +66,13 @@ Working with ARKit and iOS 11 requires XCode 9 beta.
 6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.
 
 ## <a name="RunningExamples">Running examples</a>
-WebARonARKit comes with several example scenes. To run them, type the following URLs into the white address bar at the top of the screen:
-
-+ WebGL Cubes: file://examples/webgl/cubes.html
-+ Three.js Cubes: file://examples/threejs/cubes.html
-+ Three.js Reticle: file://examples/threejs/reticle.html
-
-These examples are bundled with the WebARonARKit app, so we must use the “file://” protocol to access them. WebARonARKit’s address bar can also access https and http URLs.
+To check out examples, navigate your browser to https://developers.google.com/ar/develop/web/getting-started#examples and select an example to see WebAR in action.
 
 
 ## <a name="BuildingScenes">Building your own scenes</a>
-The easiest way to start building scenes for WebARonARKit is to fork one of the examples included with this repo. E.g. examples/threejs/cubes.html, which includes boilerplate for hooking into the pose and projection matrix of the AR Camera, and is built on the popular [Three.js](https://threejs.org/) framework.
+The easiest way to start building scenes for WebARonARKit is to fork one of the examples in the (three.ar.js)[https://github.com/googlevr/three.ar.js] repo. These examples include boilerplate for hooking into the pose and projection matrix of the AR camera and to render the camera's feed if needed, and is built on the popular [Three.js](https://threejs.org/) framework.
 
-Once you’re ready to test your scene in WebARonARKit, you can either bundle it with the app, or serve it over your local network. To bundle with the app, add your example to the examples/ directory, build the app using Xcode, and load your scene in WebARonARKit by entering the appropriate path in the address bar, e.g. file://examples/path-to-your-demo. To load your scene over the your local network, serve it via your preferred server solution (e.g. [SimpleHTTPServer](http://lifehacker.com/start-a-simple-web-server-from-any-directory-on-your-ma-496425450)), and load the URL in WebARonARKit.
+Once you’re ready to test your scene in WebARonARKit, you can serve it over your local network and test it on your device. To load your scene over the your local network, serve it via your preferred server solution (e.g. [SimpleHTTPServer](http://lifehacker.com/start-a-simple-web-server-from-any-directory-on-your-ma-496425450)), and load the URL in WebARonARKit.
 
 ## <a name="ARJavascriptAPI">Using the AR JavaScript API</a>
 <p style="color=red">Documentation for the WebVR extension API for AR can be found on [LINK](link to MD file below, and replace with link to dev.google.com on 8/29)</p>
