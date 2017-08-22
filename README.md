@@ -66,16 +66,13 @@ Working with ARKit and iOS 11 requires XCode 9 beta.
 6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.
 
 ## <a name="RunningExamples">Running examples</a>
-To check out examples, navigate your browser to https://developers.google.com/ar/develop/web/getting-started#examples and select an example to see WebAR in action.
-
+To check out examples, navigate your browser to [developers.google.com/ar/develop/web/getting-started#examples](https://developers.google.com/ar/develop/web/getting-started#examples) and select an example to see AR on the web.
 
 ## <a name="BuildingScenes">Building your own scenes</a>
-The easiest way to start building scenes for WebARonARKit is to fork one of the examples in the (three.ar.js)[https://github.com/googlevr/three.ar.js] repo. These examples include boilerplate for hooking into the pose and projection matrix of the AR camera and to render the camera's feed if needed, and is built on the popular [Three.js](https://threejs.org/) framework.
-
-Once you’re ready to test your scene in WebARonARKit, you can serve it over your local network and test it on your device. To load your scene over the your local network, serve it via your preferred server solution (e.g. [SimpleHTTPServer](http://lifehacker.com/start-a-simple-web-server-from-any-directory-on-your-ma-496425450)), and load the URL in WebARonARKit.
+Check out [developer.google.com/ar/develop/web](https://developers.google.com/ar/develop/web/getting-started) to learn more about how to create your own scenes.
 
 ## <a name="ARJavascriptAPI">Using the AR JavaScript API</a>
-<p style="color=red">Documentation for the WebVR extension API for AR can be found on [LINK](link to MD file below, and replace with link to dev.google.com on 8/29)</p>
+Documentation for the WebVR extension API for smart phone AR is [here](https://github.com/googlevr/WebARonARKit/blob/master/webvr_ar_extension.md).
 
 ## <a name="HowWebARonARKitWorks">How does WebARonARKit work?</a>
 On iOS there is no way to build your own version of Safari, where all the changes to be able to add the new WebVR extensions for AR need to happen. But there is a way to extend the web functionality using a webview, a native component to render web content inside a native app. The WKWebView, a widget introduced in iOS 8+, has APIs to be able to expose new JavaScript functionalities and also to make calls from the JavaScript side to the native side. This is how frameworks like [Cordova](https://cordova.apache.org/) exposes native functionalities to native-web hybrid apps. WebARonARKit is built in a similar way.
