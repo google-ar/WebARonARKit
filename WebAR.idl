@@ -21,10 +21,6 @@ partial interface VRDisplayCapabilities {
   readonly attribute boolean hasPassThroughCamera;
 };
 
-partial interface VRFrameData {
-  readonly attribute Float32Array projectionMatrix;
-};
-
 interface VRHit {
   readonly attribute Float32Array modelMatrix;
 };
