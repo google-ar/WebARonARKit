@@ -244,8 +244,10 @@
   // runJavaScriptAlertPanelWithMessage method in this file :(
   self->wkWebView.UIDelegate = self;
   self->wkWebView.navigationDelegate = self;
+
   [self.view addSubview:self->wkWebView];
 
+    
   // Add a textfield for the URL on top of the webview
   self->urlTextField = [[UITextField alloc]
       initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
@@ -255,7 +257,11 @@
   self->urlTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
   self->urlTextField.delegate = self;
   [self.view addSubview:self->urlTextField];
+  NSString *defaultSite = @"https://developers.google.com/ar/";
+  NSURL *url = [NSURL URLWithString:defaultSite];
+  [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
 
+  [self->urlTextField setText:defaultSite];
   self->initialPageLoadedWhenTrackingBegins = false;
 
   UIDevice *device = [UIDevice currentDevice];
