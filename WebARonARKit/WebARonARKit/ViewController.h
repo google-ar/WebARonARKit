@@ -22,14 +22,17 @@
 
 @interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver, WKScriptMessageHandler>
 {
-    WKWebView* wkWebView;
-    UITextField* urlTextField;
-    bool initialPageLoadedWhenTrackingBegins;
-    UIDeviceOrientation deviceOrientation;
-    UIInterfaceOrientation interfaceOrientation;
-    bool updateWindowSize;
-    float near;
-    float far;
+  WKWebView* wkWebView;
+  UITextField* urlTextField;
+  UIButton* backButton;
+//  UIButton* forwardButton;
+  UIButton* refreshButton;
+  bool initialPageLoadedWhenTrackingBegins;
+  UIDeviceOrientation deviceOrientation;
+  UIInterfaceOrientation interfaceOrientation;
+  bool updateWindowSize;
+  float near;
+  float far;
 }
 
 @end

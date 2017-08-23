@@ -18,7 +18,7 @@
 #import "Renderer.h"
 
 // TODO: Should this be a percentage?
-#define URL_TEXTFIELD_HEIGHT 30
+#define URL_TEXTFIELD_HEIGHT 45
 
 @interface ViewController ()<MTKViewDelegate, ARSessionDelegate>
 
@@ -152,6 +152,21 @@
   [defaults synchronize];
 }
 
+-(void)backButtonClicked:(UIButton*)button
+{
+  [self->wkWebView goBack];
+}
+
+-(void)forwardButtonClicked:(UIButton*)button
+{
+  [self->wkWebView goForward];
+}
+
+-(void)refreshButtonClicked:(UIButton*)button
+{
+  [self->wkWebView reload];
+}
+
 - (void)viewDidLoad {
   [super viewDidLoad];
 
@@ -239,31 +254,48 @@
   [self->wkWebView.configuration.preferences
       setValue:@TRUE
         forKey:@"allowFileAccessFromFileURLs"];
-  [self setWKWebViewScrollEnabled:false];
+  [self setWKWebViewScrollEnabled:true];
   // Needed to show alerts. Check the WKUIDelegate protocol and the
   // runJavaScriptAlertPanelWithMessage method in this file :(
   self->wkWebView.UIDelegate = self;
   self->wkWebView.navigationDelegate = self;
-
   [self.view addSubview:self->wkWebView];
 
-    
   // Add a textfield for the URL on top of the webview
   self->urlTextField = [[UITextField alloc]
-      initWithFrame:CGRectMake(0, 0, self.view.frame.size.width,
+      initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
                                URL_TEXTFIELD_HEIGHT)];
   self->urlTextField.backgroundColor = [UIColor whiteColor];
   [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
   self->urlTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
   self->urlTextField.delegate = self;
   [self.view addSubview:self->urlTextField];
+  
+  // Add the back/forward/refresh buttons
+  self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+  self->backButton.backgroundColor = [UIColor grayColor];
+  [self->backButton setTitle:@"<" forState:UIControlStateNormal];
+  [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
+  [self.view addSubview:self->backButton];
+//  self->forwardButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+//  self->forwardButton.backgroundColor = [UIColor grayColor];
+//  [self->forwardButton setTitle:@">" forState:UIControlStateNormal];
+//  [self->forwardButton addTarget:self action:@selector(forwardButtonClicked:) forControlEvents:UIControlEventTouchDown];
+//  [self.view addSubview:self->forwardButton];
+  self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+  self->refreshButton.backgroundColor = [UIColor grayColor];
+  [self->refreshButton setTitle:@"R" forState:UIControlStateNormal];
+  [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
+  [self.view addSubview:self->refreshButton];
+
+  // Load the default website
   NSString *defaultSite = @"https://developers.google.com/ar/";
   NSURL *url = [NSURL URLWithString:defaultSite];
   [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
-
   [self->urlTextField setText:defaultSite];
   self->initialPageLoadedWhenTrackingBegins = false;
 
+  // Calculate the orientation of the device
   UIDevice *device = [UIDevice currentDevice];
   [device beginGeneratingDeviceOrientationNotifications];
   [[NSNotificationCenter defaultCenter]
@@ -276,7 +308,7 @@
 }
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification {
-  [self->urlTextField setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+  [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
                                           URL_TEXTFIELD_HEIGHT)];
   [self->wkWebView
       setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
@@ -554,8 +586,10 @@
 - (void)webView:(WKWebView *)webView
     didFailProvisionalNavigation:(WKNavigation *)navigation
                        withError:(NSError *)error {
-  [self showAlertDialog:error.localizedDescription completionHandler:nil];
-  NSLog(@"ERROR: webview didFailProvisionalNavigation with error %@", error);
+  if (error.code != -999) {
+    [self showAlertDialog:error.localizedDescription completionHandler:nil];
+    NSLog(@"ERROR: webview didFailProvisionalNavigation with error %@", error);
+  }
 }
 
 #pragma mark - UITextFieldDelegate
