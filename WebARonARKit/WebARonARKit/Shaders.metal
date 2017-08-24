@@ -23,19 +23,20 @@
 using namespace metal;
 
 typedef struct {
-    float2 position [[attribute(kVertexAttributePosition)]];
-    float2 texCoord [[attribute(kVertexAttributeTexcoord)]];
+    float2 position[[attribute(kVertexAttributePosition)]];
+    float2 texCoord[[attribute(kVertexAttributeTexcoord)]];
 } ImageVertex;
 
 
 typedef struct {
-    float4 position [[position]];
+    float4 position[[position]];
     float2 texCoord;
 } ImageColorInOut;
 
 
 // Captured image vertex function
-vertex ImageColorInOut capturedImageVertexTransform(ImageVertex in [[stage_in]]) {
+vertex ImageColorInOut capturedImageVertexTransform(ImageVertex in[[stage_in]])
+{
     ImageColorInOut out;
 
     // Pass through the image vertex's position
@@ -48,9 +49,10 @@ vertex ImageColorInOut capturedImageVertexTransform(ImageVertex in [[stage_in]])
 }
 
 // Captured image fragment function
-fragment float4 capturedImageFragmentShader(ImageColorInOut in [[stage_in]],
-                                            texture2d<float, access::sample> capturedImageTextureY [[ texture(kTextureIndexY) ]],
-                                            texture2d<float, access::sample> capturedImageTextureCbCr [[ texture(kTextureIndexCbCr) ]]) {
+fragment float4 capturedImageFragmentShader(ImageColorInOut in[[stage_in]],
+                                            texture2d<float, access::sample> capturedImageTextureY[[texture(kTextureIndexY)]],
+                                            texture2d<float, access::sample> capturedImageTextureCbCr[[texture(kTextureIndexCbCr)]])
+{
 
     constexpr sampler colorSampler(mip_filter::linear,
                                    mag_filter::linear,
@@ -60,8 +62,7 @@ fragment float4 capturedImageFragmentShader(ImageColorInOut in [[stage_in]],
         float4(+1.0000f, +1.0000f, +1.0000f, +0.0000f),
         float4(+0.0000f, -0.3441f, +1.7720f, +0.0000f),
         float4(+1.4020f, -0.7141f, +0.0000f, +0.0000f),
-        float4(-0.7010f, +0.5291f, -0.8860f, +1.0000f)
-    );
+        float4(-0.7010f, +0.5291f, -0.8860f, +1.0000f));
 
     // Sample Y and CbCr textures to get the YCbCr color at the given texture coordinate
     float4 ycbcr = float4(capturedImageTextureY.sample(colorSampler, in.texCoord).r,
@@ -73,26 +74,27 @@ fragment float4 capturedImageFragmentShader(ImageColorInOut in [[stage_in]],
 
 
 typedef struct {
-    float3 position [[attribute(kVertexAttributePosition)]];
-    float2 texCoord [[attribute(kVertexAttributeTexcoord)]];
-    half3 normal    [[attribute(kVertexAttributeNormal)]];
+    float3 position[[attribute(kVertexAttributePosition)]];
+    float2 texCoord[[attribute(kVertexAttributeTexcoord)]];
+    half3 normal[[attribute(kVertexAttributeNormal)]];
 } Vertex;
 
 
 typedef struct {
-    float4 position [[position]];
+    float4 position[[position]];
     float4 color;
-    half3  eyePosition;
-    half3  normal;
+    half3 eyePosition;
+    half3 normal;
 } ColorInOut;
 
 
 // Anchor geometry vertex function
-vertex ColorInOut anchorGeometryVertexTransform(Vertex in [[stage_in]],
-                                                constant SharedUniforms &sharedUniforms [[ buffer(kBufferIndexSharedUniforms) ]],
-                                                constant InstanceUniforms *instanceUniforms [[ buffer(kBufferIndexInstanceUniforms) ]],
-                                                ushort vid [[vertex_id]],
-                                                ushort iid [[instance_id]]) {
+vertex ColorInOut anchorGeometryVertexTransform(Vertex in[[stage_in]],
+                                                constant SharedUniforms &sharedUniforms[[buffer(kBufferIndexSharedUniforms)]],
+                                                constant InstanceUniforms *instanceUniforms[[buffer(kBufferIndexInstanceUniforms)]],
+                                                ushort vid[[vertex_id]],
+                                                ushort iid[[instance_id]])
+{
     ColorInOut out;
 
     // Make position a float4 to perform 4x4 matrix math on it
@@ -106,12 +108,12 @@ vertex ColorInOut anchorGeometryVertexTransform(Vertex in [[stage_in]],
 
     // Color each face a different color
     ushort colorID = vid / 4 % 6;
-    out.color = colorID == 0 ? float4(0.0, 1.0, 0.0, 1.0) // Right face
-              : colorID == 1 ? float4(1.0, 0.0, 0.0, 1.0) // Left face
-              : colorID == 2 ? float4(0.0, 0.0, 1.0, 1.0) // Top face
-              : colorID == 3 ? float4(1.0, 0.5, 0.0, 1.0) // Bottom face
-              : colorID == 4 ? float4(1.0, 1.0, 0.0, 1.0) // Back face
-              : float4(1.0, 1.0, 1.0, 1.0); // Front face
+    out.color = colorID == 0 ? float4(0.0, 1.0, 0.0, 1.0)                                                              // Right face
+                             : colorID == 1 ? float4(1.0, 0.0, 0.0, 1.0)                                               // Left face
+                                            : colorID == 2 ? float4(0.0, 0.0, 1.0, 1.0)                                // Top face
+                                                           : colorID == 3 ? float4(1.0, 0.5, 0.0, 1.0)                 // Bottom face
+                                                                          : colorID == 4 ? float4(1.0, 1.0, 0.0, 1.0)  // Back face
+                                                                                         : float4(1.0, 1.0, 1.0, 1.0); // Front face
 
     // Calculate the positon of our vertex in eye space
     out.eyePosition = half3((modelViewMatrix * position).xyz);
@@ -124,8 +126,9 @@ vertex ColorInOut anchorGeometryVertexTransform(Vertex in [[stage_in]],
 }
 
 // Anchor geometry fragment function
-fragment float4 anchorGeometryFragmentLighting(ColorInOut in [[stage_in]],
-                                               constant SharedUniforms &uniforms [[ buffer(kBufferIndexSharedUniforms) ]]) {
+fragment float4 anchorGeometryFragmentLighting(ColorInOut in[[stage_in]],
+                                               constant SharedUniforms &uniforms[[buffer(kBufferIndexSharedUniforms)]])
+{
 
     float3 normal = float3(in.normal);
 

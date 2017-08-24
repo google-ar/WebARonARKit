@@ -26,26 +26,26 @@
 // Buffer index values shared between shader and C code to ensure Metal shader buffer inputs match
 //   Metal API buffer set calls
 typedef enum BufferIndices {
-    kBufferIndexMeshPositions    = 0,
-    kBufferIndexMeshGenerics     = 1,
+    kBufferIndexMeshPositions = 0,
+    kBufferIndexMeshGenerics = 1,
     kBufferIndexInstanceUniforms = 2,
-    kBufferIndexSharedUniforms   = 3
+    kBufferIndexSharedUniforms = 3
 } BufferIndices;
 
 // Attribute index values shared between shader and C code to ensure Metal shader vertex
 //   attribute indices match the Metal API vertex descriptor attribute indices
 typedef enum VertexAttributes {
-    kVertexAttributePosition  = 0,
-    kVertexAttributeTexcoord  = 1,
-    kVertexAttributeNormal    = 2
+    kVertexAttributePosition = 0,
+    kVertexAttributeTexcoord = 1,
+    kVertexAttributeNormal = 2
 } VertexAttributes;
 
 // Texture index values shared between shader and C code to ensure Metal shader texture indices
 //   match indices of Metal API texture set calls
 typedef enum TextureIndices {
-    kTextureIndexColor    = 0,
-    kTextureIndexY        = 1,
-    kTextureIndexCbCr     = 2
+    kTextureIndexColor = 0,
+    kTextureIndexY = 1,
+    kTextureIndexCbCr = 2
 } TextureIndices;
 
 // Structure shared between shader and C code to ensure the layout of shared uniform data accessed in
@@ -54,7 +54,7 @@ typedef struct {
     // Camera Uniforms
     matrix_float4x4 projectionMatrix;
     matrix_float4x4 viewMatrix;
-    
+
     // Lighting Properties
     vector_float3 ambientLightColor;
     vector_float3 directionalLightDirection;

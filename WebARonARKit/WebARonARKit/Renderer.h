@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#import <Metal/Metal.h>
 #import <ARKit/ARKit.h>
+#import <Metal/Metal.h>
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,9 +38,8 @@ NS_ASSUME_NONNULL_BEGIN
 /*
  The main class performing the rendering of a session.
  */
-@interface Renderer : NSObject
-{
-@public
+@interface Renderer : NSObject {
+  @public
     CGSize viewportSize;
     UIInterfaceOrientation interfaceOrientation;
 }
