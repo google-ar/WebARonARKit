@@ -1,51 +1,25 @@
-# WebARonARKit Documentation
+# WebARonARKit
 
-## Contents
+**An experimental app for iOS that lets developers create Augmented Reality (AR) experiences using web technologies.**
 
-+ [Overview](#Overview)
-+ [Disclaimer](#Disclaimer)
-+ [Supported devices](#SupportedDevices)
-+ [Installing WebARonARKit](#InstallingWebARonARKit)
-  1. [Install iOS 11 beta](#InstalliOS11beta)
-  2. [Install Xcode 9 beta](#InstallXcode9beta)
-  3. [Run WebARonARKit](#RunWebARonARKit)
-+ [Running examples](#RunningExamples)
-+ [Building your own scenes](#BuildingScenes)
-+ [Using the AR JavaScript API](#ARJavascriptAPI)
-+ [How does WebARonARKit work?](#HowWebARonARKitWorks)
-+ [Known issues](#KnownIssues)
-+ [Future work](#FutureWork)
-+ [License](#License)
+**Note:** This is not an official Google product. Nor is it a fully-featured web browser. Nor are the enabling JavaScript APIs standards, or on the standardization path. WebARonARKit is only meant to enable developer experimentation. For details on the WebARonARKit architecture, see [How WebARonARKit works](#HowWebARonARKitWorks).
 
+An [Android version](https://github.com/googlevr/WebARonARCore) is also available.
 
-## <a name="Overview">Overview</a>
-WebARonARKit is an experimental app for iOS that lets developers create Augmented Reality (AR) experiences for the web, using iOS ARKit and JavaScript APIs. It exposes a non standard extension to the WebVR API. The WebARonARKit source/repo includes basic JavaScript examples that developers can use as starting points for their own AR experiences.
+## <a name="InstallingWebARonARKit">Getting started</a>
+WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This requires an Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
 
-The goal of the WebARonARKit project is to enable web developers to create AR experiences on top of iOS ARKit using JavaScript.
-
-WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. See [instructions](#InstallingWebARonARKit).
-
-## <a name="Disclaimer">Disclaimer</a>
-<span style="color:red">**This is not an official Google product.**</span>
-
-<span style="color:red">**The added browser APIs are not on a standards track and are only for experimentation.**</span>
-
-Defining new web APIs is a complex process. The code and ideas in this project are not meant to be definitive proposals for AR capabilities for the web, but prototypes that developers can experiment with, at their own risk.
-
-## <a name="SupportedDevices">Supported devices</a>
+### <a name="SupportedDevices">Supported devices</a>
 WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running iOS 11. For best results, we recommend one of the following:
 
-+ iPad (2017)
++ iPad (2017) 
 + iPad Pro (9.7, 10.5 or 12.9 inches)
 + iPhone 7 and 7 Plus
-
-## <a name="InstallingWebARonARKit">Installing WebARonARKit</a>
-WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This requires an Apple Developer Account. If you do not have one already, you can sign up at [developer.apple.com](http://developer.apple.com).
 
 ### <a name="InstalliOS11beta">Install iOS 11 beta</a>
 ARKit is currently only available for iOS 11 beta. To install iOS 11 beta on your iOS device, consult [Apple’s official guide](https://developer.apple.com/support/beta-software/install-ios-beta/), or follow these steps:
 
-1. Download the iOS 11 Beta configuration profile [developer.apple.com/download](https://developer.apple.com/download/) and double click on the iOS_11_beta_Profile.mobileconfig file in Finder to install the profile.
+1. Download the iOS 11 Beta configuration profile from [developer.apple.com/download](https://developer.apple.com/download/) and double-click on the `iOS_11_beta_Profile.mobileconfig` file in Finder to install the profile.
 2. Download an iOS restore image for iOS 11 beta for your specific device from [developer.apple.com/download](https://developer.apple.com/download/), under Featured Downloads > iOS Restore Images > See all.
 3. Connect your iOS device to your computer with a cable.
 4. Open iTunes and select your device.
@@ -65,34 +39,34 @@ Working with ARKit and iOS 11 requires XCode 9 beta.
 5. Set your device as build destination by first ensuring it is connected to your computer, then selecting it the Product menu, under Destination, or from the drop-down menu next to the Run button (in the top top-left of the UI).
 6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.
 
-## <a name="RunningExamples">Running examples</a>
-To check out examples, navigate your browser to [developers.google.com/ar/develop/web/getting-started#examples](https://developers.google.com/ar/develop/web/getting-started#examples) and select an example to see AR on the web.
+## <a name="ViewingExamples">Viewing examples</a>
+A [list of examples](https://developers.google.com/ar/develop/web/getting-started#examples) is available at [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples).
 
 ## <a name="BuildingScenes">Building your own scenes</a>
-Check out [developer.google.com/ar/develop/web](https://developers.google.com/ar/develop/web/getting-started) to learn more about how to create your own scenes.
+[Instructions](https://developers.google.com/ar/develop/web/getting-started) for creating your own experiences are available at [developer.google.com](https://developers.google.com/ar/develop/web/getting-started).
 
-## <a name="ARJavascriptAPI">Using the AR JavaScript API</a>
-Documentation for the WebVR extension API for smart phone AR is [here](https://github.com/googlevr/WebARonARKit/blob/master/webvr_ar_extension.md).
+## <a name="HowWebARonARKitWorks">How WebARonARKit works</a>
 
-## <a name="HowWebARonARKitWorks">How does WebARonARKit work?</a>
-On iOS there is no way to build your own version of Safari, where all the changes to be able to add the new WebVR extensions for AR need to happen. But there is a way to extend the web functionality using a webview, a native component to render web content inside a native app. The WKWebView, a widget introduced in iOS 8+, has APIs to be able to expose new JavaScript functionalities and also to make calls from the JavaScript side to the native side. This is how frameworks like [Cordova](https://cordova.apache.org/) exposes native functionalities to native-web hybrid apps. WebARonARKit is built in a similar way.
+WebARonARKit is built on the following:
 
-WebARonARKit has 2 layers: the video rendering in the background and a transparent WKWebView on top to render the WebGL content. The final result is a seamless app where the developer/user does not notice this difference. But of course, having to use this mechanism, comes at a price:
+* **An WKWebView instance**. [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) is an iOS class that enables developers to embed web views in their native apps, and to expose native device capabilities to web content via custom APIs. In our case, we use WKWebView to expose ARKit functionality to web content. Native/web app frameworks such as [Cordova](https://cordova.apache.org/) use a similar approach.
+* **Extensions to the WebVR API.** The WebVR API (v1.1) gives us much of what we need for AR. We then extend it to add a few more essentials: motion tracking, rendering of the camera's video feed, and basic understanding of the real world. For details, see [WebVR API extension for smartphone AR](https://github.com/googlevr/WebARonARKit/blob/master/webvr_ar_extension.md)
 
-* In pass through camera based AR, the time stamp based syncrhonization of the camera frame and the 6DOF pose needs to be as accurate as possible. Beause of the nature of this 2 layer system, WebARonARKit is not able to ensure the proper synchronization. It is very possible that there might be some drifting of the virtual objects on top of the reality shown with the video feed (specially on iPhones).
-* The bidirectional communciation bridge between the native side and the JavaScript side in always asynchronous. WebARonARKit tries to resolve this limitation as much as possible using some techniques (like for hitTest, that has to be synchronous).
-* The video frame is really hard to be exposed to the JavaScript side. In the current version of WebARonARKit the camera feed is always rendered in the native side underneath the WKWebView running the web content. Not being able to expose the frame forbids very interesting use cases like doing reflections/refractions/environment mapping or even just rendering the video in a specific location/size (right now it's always fullscreen). Rendering the video feed in the web side would also resolve the synchronization problems mentioned earlier.
+WebARonARKit injects a script (WebARonARKit.js) as soon as a page is loaded into the WKWebView. This script, among other things, polyfills the WebVR 1.1 API and handles all the communication between native and web content.
 
-WebARonARKit injects a script (WebARonARKit.js) as soon as a page is loaded on the WKWebView. This script, among other things, polyfills the WebVR 1.1 API and handles all the communication between the native side and the JavaScript side.
+When running, WebARonARKit layers a fullscreen camera feed in the background with a transparent WKWebView on top. This arrangement creates a fairly seamless result between "real world" and rendered web content, but comes with a few limitations:
+
+* In pass-through camera-based AR, the time stamp based syncrhonization of the camera frame and the 6DOF pose needs to be as accurate as possible. Beause of the nature of this two-layer system, WebARonARKit is not able to ensure the proper synchronization. This contributes to perceptible "drift" between virtual objects and the real world seen in with the camera feed, especially on iPhones.
+* The bidirectional communciation bridge between the native side and the JavaScript side in always asynchronous. WebARonARKit tries to resolve this limitation as much as possible using various techniques (like for hitTest, that has to be synchronous).
+* In the current version of WebARonARKit the camera feed is always rendered in the native side, underneath the WKWebView that runs the web content. Not being able to expose the video frame to the web side prevents interesting use cases such as reflections, refractions, environment mapping, or simply rendering the video in a specific location or size (in current builds it is always fullscreen). Rendering the video feed in the web side would also resolve the synchronization problems mentioned earlier.
 
 ## <a name="KnownIssues">Known issues</a>
 + There seems to be a [bug](https://bugs.webkit.org/show_bug.cgi?id=170595) in WebKit that affects the [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) in iOS 10+ where the window.innerWidth and window.innerHeight values are not correctly up to date when the event is fired and thus, not being able to properly resizing when the device changes orientation. To resolve this issue the, in WebARonARKit, the window.resize event is fired twice.
-+ Because of the nature of how WebARonARKit is built (a webview executing the web content on top of a native process rendering the camera feed and handling ARKit code and the communication between them), it is very hard to get a correct pose estimation that completely matches the underlying camera feed. This desynchronization is more noticeable on an iPhone device as tracking & rendering desynchronization is more noticeable. On the other hand, this desynchronization is far less noticeable on iPad Pro (2nd generation), so it is the device recommended for optimal results.
++ Because of the nature of how WebARonARKit is built (a webview executing the web content on top of a native process rendering the camera feed and handling ARKit code and the communication between them), it is very hard to get a correct pose estimation that completely matches the underlying camera feed. This lack of tracking and rendering synchronization is particularly noticeable on iPhones. It is less perceptible on iPads, so we recommend iPads for optimal results.
 
 ## <a name="FutureWork">Future work</a>
-+ Speed up performance (specially on iPhone) implementing different ways to communicate the WKWebView and the native side trying to synchronize as much as possible the camera feed and the pose used in WebVR.
++ Improve performance, particularly on iPhones, by implementing alternative methods of communicating between the WKWebView and the native side. The goal being to synchronize as much as possible the camera feed and the pose used in WebVR.
 + Add more AR-related features.
 
-
 ## <a name="License">License</a>
-Apache License Version 2.0 (see the `LICENSE' file inside this repo).
+Apache License Version 2.0 (see the `LICENSE` file inside this repo).
