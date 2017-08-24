@@ -358,9 +358,9 @@
           return hits;
         }
 
-        // Create a ray in screen space for the hit test.
-        vec3.set(hitVars.rayStart, 2 * x - 1, 2 * y - 1, 0);
-        vec3.set(hitVars.rayEnd, 2 * x - 1, 2 * y - 1, 1);
+        // Create a ray in screen space for the hit test ([-1, 1] with y flip).
+        vec3.set(hitVars.rayStart, 2 * x - 1, 2 * (1 - y) - 1, 0);
+        vec3.set(hitVars.rayEnd, 2 * x - 1, 2 * (1 - y) - 1, 1);
 
         // Set the projection matrix.
         setMat4FromArray(hitVars.projectionMatrix, this.projectionMatrix_);
