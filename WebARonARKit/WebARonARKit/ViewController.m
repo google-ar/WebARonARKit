@@ -160,7 +160,15 @@
 
 - (void)backButtonClicked:(UIButton *)button
 {
-    [self->wkWebView goBack];
+    if( [self->wkWebView canGoBack] ) {
+        WKBackForwardList *backForwardList = [self->wkWebView backForwardList];
+        WKBackForwardListItem *backItem = [backForwardList backItem];
+        if( backItem != nil ) {
+            NSURL *url = [backItem URL];
+            [self->urlTextField setText:[url absoluteString]];
+        }
+        [self->wkWebView goBack];
+    }
 }
 
 - (void)forwardButtonClicked:(UIButton *)button
@@ -274,24 +282,20 @@
         initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
                                  URL_TEXTFIELD_HEIGHT)];
     self->urlTextField.backgroundColor = [UIColor whiteColor];
-    [self->urlTextField setTextColor:[UIColor colorWithRed:0.8f green:0.8f blue:0.8f alpha:1.0]];
+    [self->urlTextField setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
     [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
     self->urlTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self->urlTextField.delegate = self;
     [self.view addSubview:self->urlTextField];
 
-    // Add the back/forward/refresh buttons
+    // Add the back/refresh buttons
     self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
     self->backButton.backgroundColor = [UIColor whiteColor];
     UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
     [self->backButton setImage:backIcon forState:UIControlStateNormal];
     [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->backButton];
-    //  self->forwardButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    //  self->forwardButton.backgroundColor = [UIColor grayColor];
-    //  [self->forwardButton setTitle:@">" forState:UIControlStateNormal];
-    //  [self->forwardButton addTarget:self action:@selector(forwardButtonClicked:) forControlEvents:UIControlEventTouchDown];
-    //  [self.view addSubview:self->forwardButton];
+    
     self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
     [self->refreshButton setBackgroundColor: [UIColor whiteColor] ];
     UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
@@ -597,6 +601,7 @@
     didFinishNavigation:(WKNavigation *)navigation
 {
     [self restartSession];
+    [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
 }
 
 - (void)webView:(WKWebView *)webView
