@@ -608,8 +608,10 @@
     didFailNavigation:(WKNavigation *)navigation
             withError:(NSError *)error
 {
-    [self showAlertDialog:error.localizedDescription completionHandler:nil];
-    NSLog(@"ERROR: webview didFailNavigation with error %@", error);
+    if (error.code != -999) {
+      [self showAlertDialog:error.localizedDescription completionHandler:nil];
+      NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
+    }
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
@@ -623,7 +625,7 @@
 {
     if (error.code != -999) {
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
-        NSLog(@"ERROR: webview didFailProvisionalNavigation with error %@", error);
+        NSLog(@"ERROR: webview didFailProvisionalNavigation with error '%@'", error);
     }
 }
 
