@@ -100,6 +100,14 @@
      */
     this.displayName = "ARKit VR Device";
 
+    this.showingCameraFeed_ = false;
+    this.showCameraFeed_ = function() {
+      if (!this.showingCameraFeed_) {
+        window.webkit.messageHandlers.WebARonARKit.postMessage("showCameraFeed:");
+        this.showingCameraFeed_ = true;
+      }
+    };
+
     /**
      * Populates given data with pose, timestamp, projection, and view matrices.
      * @param {!VRFrameData} frameData
@@ -110,6 +118,9 @@
       // TODO: FieldOfView does not have the correct values. Not important for now as devs should not rely on it
       frameData.leftProjectionMatrix = frameData.rightProjectionMatrix = this.projectionMatrix_;
       frameData.leftViewMatrix = frameData.rightViewMatrix = this.viewMatrix_;
+      // Make sure that the camera feed can be seen when the pose is requested.
+      // TODO: Improve this with maybe a call to requestPresent or by providing the camera feed to JS.
+      this.showCameraFeed_();
     };
 
     /**
@@ -123,6 +134,9 @@
      * @return {!VRPose} A structure representing the device pose.
      */
     this.getPose = function() {
+      // Make sure that the camera feed can be seen when the pose is requested.
+      // TODO: Improve this with maybe a call to requestPresent or by providing the camera feed to JS.
+      this.showCameraFeed_();
       return this.pose_;
     };
 
