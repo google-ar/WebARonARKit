@@ -36,6 +36,9 @@
     
     float near;
     float far;
+  
+    bool showingCameraFeed;
+    UIColor* wkWebViewOriginalBackgroundColor;
 }
 
 @end

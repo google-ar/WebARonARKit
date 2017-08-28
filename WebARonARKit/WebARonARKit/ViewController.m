@@ -181,12 +181,31 @@
     [self->wkWebView reload];
 }
 
+- (void)setShowCameraFeed:(bool)show
+{
+  if (show)
+  {
+    self->wkWebView.opaque = false;
+    self->wkWebView.backgroundColor = [UIColor clearColor];
+    self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];
+  }
+  else
+  {
+    self->wkWebView.opaque = true;
+    self->wkWebView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
+    self->wkWebView.scrollView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
+  }
+  self->showingCameraFeed = show;
+}
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 
     self->near = 0.01f;
     self->far = 10000.0f;
+  
+    self->showingCameraFeed = false;
 
     // Create an ARSession
     self.session = [ARSession new];
@@ -264,9 +283,9 @@
                           0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
                           self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
         configuration:wkWebViewConfig];
-    self->wkWebView.opaque = false;
-    self->wkWebView.backgroundColor = [UIColor clearColor];
-    self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];
+    self->wkWebViewOriginalBackgroundColor = self->wkWebView.backgroundColor;
+    // By default, the camera feed won't be shown until instructed otherwise
+    [self setShowCameraFeed:false];
     [self->wkWebView.configuration.preferences
         setValue:@TRUE
           forKey:@"allowFileAccessFromFileURLs"];
@@ -601,6 +620,8 @@
     didFinishNavigation:(WKNavigation *)navigation
 {
     [self restartSession];
+    // By default, when a page is loaded, the camera feed should not be shown.
+    [self setShowCameraFeed:false];
     [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
 }
 
@@ -708,6 +729,10 @@
             NSLog(@"%@", [message.body substringWithRange:range]);
         } else if ([method isEqualToString:@"resetPose"]) {
             [self restartSession];
+        } else if ([method isEqualToString:@"showCameraFeed"]) {
+          [self setShowCameraFeed:true];
+        } else if ([method isEqualToString:@"hideCameraFeed"]) {
+          [self setShowCameraFeed:false];
         }
     }
 }
