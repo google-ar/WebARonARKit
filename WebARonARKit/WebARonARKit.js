@@ -100,12 +100,30 @@
      */
     this.displayName = "ARKit VR Device";
 
+    // Hacky code to handle camera feed show/hide
+    // TODO: Improve it somehow.
     this.showingCameraFeed_ = false;
+    this.hideCameraFeedTimeoutId_ = -1;
+    var CAMERA_FEED_HIDE_TIMEOUT_IN_MILLIS = 1000;
+    function hideCameraFeed() {
+      console.log("hideCameraFeed");
+      if (this.showingCameraFeed_) {
+        window.webkit.messageHandlers.WebARonARKit.postMessage("hideCameraFeed:");
+        this.showingCameraFeed_ = false;
+      }
+    }
+    hideCameraFeed = hideCameraFeed.bind(this);
     this.showCameraFeed_ = function() {
+      // If the camera is not being shown, enable it.
       if (!this.showingCameraFeed_) {
         window.webkit.messageHandlers.WebARonARKit.postMessage("showCameraFeed:");
         this.showingCameraFeed_ = true;
       }
+      // Set a timeout to hide the camera feed if a significant amount of time passed since the last call to this function
+      if (this.hideCameraFeedTimeoutId_ !== -1) {
+        window.clearTimeout(this.hideCameraFeedTimeoutId_);
+      }
+      this.hideCameraFeedTimeoutId_ = setTimeout(hideCameraFeed, CAMERA_FEED_HIDE_TIMEOUT_IN_MILLIS);
     };
 
     /**
@@ -118,9 +136,6 @@
       // TODO: FieldOfView does not have the correct values. Not important for now as devs should not rely on it
       frameData.leftProjectionMatrix = frameData.rightProjectionMatrix = this.projectionMatrix_;
       frameData.leftViewMatrix = frameData.rightViewMatrix = this.viewMatrix_;
-      // Make sure that the camera feed can be seen when the pose is requested.
-      // TODO: Improve this with maybe a call to requestPresent or by providing the camera feed to JS.
-      this.showCameraFeed_();
     };
 
     /**

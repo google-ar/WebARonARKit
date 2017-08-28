@@ -617,11 +617,16 @@
 #pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView *)webView
+    didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation
+{
+    [self setShowCameraFeed:false];
+}
+
+- (void)webView:(WKWebView *)webView
     didFinishNavigation:(WKNavigation *)navigation
 {
     [self restartSession];
     // By default, when a page is loaded, the camera feed should not be shown.
-    [self setShowCameraFeed:false];
     [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
 }
 
@@ -730,10 +735,13 @@
         } else if ([method isEqualToString:@"resetPose"]) {
             [self restartSession];
         } else if ([method isEqualToString:@"showCameraFeed"]) {
-          [self setShowCameraFeed:true];
+            [self setShowCameraFeed:true];
         } else if ([method isEqualToString:@"hideCameraFeed"]) {
-          [self setShowCameraFeed:false];
+            [self setShowCameraFeed:false];
+        } else {
+            NSLog(@"WARNING: Unknown message received: '%@'", method);
         }
+      
     }
 }
 
