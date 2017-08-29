@@ -320,7 +320,7 @@
     [self.view addSubview:self->refreshButton];
 
     // Load the default website
-    NSString *defaultSite = @"https://developers.google.com/ar/";
+    NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started";
     NSURL *url = [NSURL URLWithString:defaultSite];
     [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
     [self->urlTextField setText:defaultSite];
