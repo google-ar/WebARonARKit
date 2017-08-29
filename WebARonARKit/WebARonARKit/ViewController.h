@@ -21,24 +21,24 @@
 #import <WebKit/WebKit.h>
 
 @interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver, WKScriptMessageHandler> {
-    
+
     WKWebView *wkWebView;
 
     UITextField *urlTextField;
     UIButton *backButton;
     UIButton *refreshButton;
-    
+
     bool initialPageLoadedWhenTrackingBegins;
-    
+
     UIDeviceOrientation deviceOrientation;
     UIInterfaceOrientation interfaceOrientation;
     bool updateWindowSize;
-    
+
     float near;
     float far;
-  
+
     bool showingCameraFeed;
-    UIColor* wkWebViewOriginalBackgroundColor;
+    UIColor *wkWebViewOriginalBackgroundColor;
 }
 
 @end

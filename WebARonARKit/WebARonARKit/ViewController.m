@@ -160,10 +160,10 @@
 
 - (void)backButtonClicked:(UIButton *)button
 {
-    if( [self->wkWebView canGoBack] ) {
+    if ([self->wkWebView canGoBack]) {
         WKBackForwardList *backForwardList = [self->wkWebView backForwardList];
         WKBackForwardListItem *backItem = [backForwardList backItem];
-        if( backItem != nil ) {
+        if (backItem != nil) {
             NSURL *url = [backItem URL];
             [self->urlTextField setText:[url absoluteString]];
         }
@@ -183,19 +183,16 @@
 
 - (void)setShowCameraFeed:(bool)show
 {
-  if (show)
-  {
-    self->wkWebView.opaque = false;
-    self->wkWebView.backgroundColor = [UIColor clearColor];
-    self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];
-  }
-  else
-  {
-    self->wkWebView.opaque = true;
-    self->wkWebView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
-    self->wkWebView.scrollView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
-  }
-  self->showingCameraFeed = show;
+    if (show) {
+        self->wkWebView.opaque = false;
+        self->wkWebView.backgroundColor = [UIColor clearColor];
+        self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];
+    } else {
+        self->wkWebView.opaque = true;
+        self->wkWebView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
+        self->wkWebView.scrollView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
+    }
+    self->showingCameraFeed = show;
 }
 
 - (void)viewDidLoad
@@ -204,7 +201,7 @@
 
     self->near = 0.01f;
     self->far = 10000.0f;
-  
+
     self->showingCameraFeed = false;
 
     // Create an ARSession
@@ -314,9 +311,9 @@
     [self->backButton setImage:backIcon forState:UIControlStateNormal];
     [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->backButton];
-    
+
     self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    [self->refreshButton setBackgroundColor: [UIColor whiteColor] ];
+    [self->refreshButton setBackgroundColor:[UIColor whiteColor]];
     UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
     [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
     [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
@@ -344,13 +341,14 @@
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
     [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2, URL_TEXTFIELD_HEIGHT)];
-    
-    [self->refreshButton setFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0,  URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    
+
+    [self->refreshButton setFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+
     [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                            self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
-    updateWindowSize = true;
+                                         self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+
     [self updateOrientation];
+    updateWindowSize = true;
 }
 
 - (void)updateOrientation
@@ -475,29 +473,6 @@
     // window.innerWidth/Height
     // correctly in the window.onresize events.
     // TODO: Remove this hack once the WKWebView has fixed the issue.
-    if (updateWindowSize) {
-        int width = self.view.frame.size.width;
-        int height = self.view.frame.size.height - URL_TEXTFIELD_HEIGHT;
-        NSString *updateWindowSizeJsCode = [NSString
-            stringWithFormat:
-                @"if(window.WebARonARKitSetWindowSize)"
-                @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
-                width, height];
-        [self->wkWebView
-            evaluateJavaScript:updateWindowSizeJsCode
-             completionHandler:^(id data, NSError *error) {
-                 if (error) {
-                     [self showAlertDialog:
-                               [NSString stringWithFormat:
-                                             @"ERROR: Evaluating jscode to provide "
-                                             @"window size: %@",
-                                             error]
-                         completionHandler:^{
-                         }];
-                 }
-             }];
-        updateWindowSize = false;
-    }
 
     // Send the per frame data needed in the JS side
     matrix_float4x4 viewMatrix =
@@ -505,9 +480,8 @@
     matrix_float4x4 modelMatrix = matrix_invert(viewMatrix);
     matrix_float4x4 projectionMatrix = [frame.camera
         projectionMatrixForOrientation:interfaceOrientation
-                          viewportSize:CGSizeMake(self.view.frame.size.width,
-                                                  self.view.frame.size.height -
-                                                      URL_TEXTFIELD_HEIGHT)
+                          viewportSize:CGSizeMake(self->wkWebView.frame.size.width,
+                                                  self->wkWebView.frame.size.height)
                                  zNear:self->near
                                   zFar:self->far];
 
@@ -602,6 +576,32 @@
                      }];
              }
          }];
+
+    //This needs to be called after because the window size will affect the
+    //projection matrix calculation upon resize
+    if (updateWindowSize) {
+        int width = self->wkWebView.frame.size.width;
+        int height = self->wkWebView.frame.size.height;
+        NSString *updateWindowSizeJsCode = [NSString
+            stringWithFormat:
+                @"if(window.WebARonARKitSetWindowSize)"
+                @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
+                width, height];
+        [self->wkWebView
+            evaluateJavaScript:updateWindowSizeJsCode
+             completionHandler:^(id data, NSError *error) {
+                 if (error) {
+                     [self showAlertDialog:
+                               [NSString stringWithFormat:
+                                             @"ERROR: Evaluating jscode to provide "
+                                             @"window size: %@",
+                                             error]
+                         completionHandler:^{
+                         }];
+                 }
+             }];
+        updateWindowSize = false;
+    }
 }
 
 #pragma mark - WKUIDelegate
@@ -635,8 +635,8 @@
             withError:(NSError *)error
 {
     if (error.code != -999) {
-      [self showAlertDialog:error.localizedDescription completionHandler:nil];
-      NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
+        [self showAlertDialog:error.localizedDescription completionHandler:nil];
+        NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
     }
 }
 
@@ -741,7 +741,6 @@
         } else {
             NSLog(@"WARNING: Unknown message received: '%@'", method);
         }
-      
     }
 }
 
