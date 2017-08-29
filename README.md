@@ -12,7 +12,7 @@ WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This 
 ### <a name="SupportedDevices">Supported devices</a>
 WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running iOS 11. For best results, we recommend one of the following:
 
-+ iPad (2017) 
++ iPad (2017)
 + iPad Pro (9.7, 10.5 or 12.9 inches)
 + iPhone 7 and 7 Plus
 
@@ -61,7 +61,8 @@ When running, WebARonARKit layers a fullscreen camera feed in the background wit
 * In the current version of WebARonARKit the camera feed is always rendered in the native side, underneath the WKWebView that runs the web content. Not being able to expose the video frame to the web side prevents interesting use cases such as reflections, refractions, environment mapping, or simply rendering the video in a specific location or size (in current builds it is always fullscreen). Rendering the video feed in the web side would also resolve the synchronization problems mentioned earlier.
 
 ## <a name="KnownIssues">Known issues</a>
-+ There seems to be a [bug](https://bugs.webkit.org/show_bug.cgi?id=170595) in WebKit that affects the [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) in iOS 10+ where the window.innerWidth and window.innerHeight values are not correctly up to date when the event is fired and thus, not being able to properly resizing when the device changes orientation. To resolve this issue the, in WebARonARKit, the window.resize event is fired twice.
++ There seems to be a [bug](https://bugs.webkit.org/show_bug.cgi?id=170595) in WebKit that affects the [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) in iOS 10+ where the window.innerWidth and window.innerHeight values are not correctly up to date when the event is fired and thus, not being able to properly resizing when the device changes orientation. To resolve this issue, in WebARonARKit, when an event listener is created to listen to the 'resize' event on the window, it is intercepted and updated only when the device orientation changes.
+
 + Because of the nature of how WebARonARKit is built (a webview executing the web content on top of a native process rendering the camera feed and handling ARKit code and the communication between them), it is very hard to get a correct pose estimation that completely matches the underlying camera feed. This lack of tracking and rendering synchronization is particularly noticeable on iPhones. It is less perceptible on iPads, so we recommend iPads for optimal results.
 
 ## <a name="FutureWork">Future work</a>
