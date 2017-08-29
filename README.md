@@ -4,7 +4,7 @@
 
 **Note:** This is not an official Google product. Nor is it a fully-featured web browser. Nor are the enabling JavaScript APIs standards, or on the standardization path. WebARonARKit is only meant to enable developer experimentation. For details on the WebARonARKit architecture, see [How WebARonARKit works](#HowWebARonARKitWorks).
 
-An [Android version](https://github.com/googlevr/WebARonARCore) is also available.
+An [Android version](https://github.com/google-ar/WebARonARCore) is also available.
 
 ## <a name="InstallingWebARonARKit">Getting started</a>
 WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This requires an Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
@@ -50,7 +50,7 @@ A [list of examples](https://developers.google.com/ar/develop/web/getting-starte
 WebARonARKit is built on the following:
 
 * **An WKWebView instance**. [WKWebView](https://developer.apple.com/documentation/webkit/wkwebview) is an iOS class that enables developers to embed web views in their native apps, and to expose native device capabilities to web content via custom APIs. In our case, we use WKWebView to expose ARKit functionality to web content. Native/web app frameworks such as [Cordova](https://cordova.apache.org/) use a similar approach.
-* **Extensions to the WebVR API.** The WebVR API (v1.1) gives us much of what we need for AR. We then extend it to add a few more essentials: motion tracking, rendering of the camera's video feed, and basic understanding of the real world. For details, see [WebVR API extension for smartphone AR](https://github.com/googlevr/WebARonARKit/blob/master/webvr_ar_extension.md)
+* **Extensions to the WebVR API.** The WebVR API (v1.1) gives us much of what we need for AR. We then extend it to add a few more essentials: motion tracking, rendering of the camera's video feed, and basic understanding of the real world. For details, see [WebVR API extension for smartphone AR](webvr_ar_extension.md)
 
 WebARonARKit injects a script (WebARonARKit.js) as soon as a page is loaded into the WKWebView. This script, among other things, polyfills the WebVR 1.1 API and handles all the communication between native and web content.
 
