@@ -2,6 +2,8 @@
 
 **An experimental app for iOS that lets developers create Augmented Reality (AR) experiences using web technologies.**
 
+<img alt="Spawn-at-Camera example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtCamera-1.gif" style="float: left; object-fit: cover; width: 45%; height: 20em; margin-right: 1em; "><img alt="Spawn-at-Surface example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtSurface-1.gif" style="width: 45%; height: 20em; object-fit: cover;">
+
 **Note:** This is not an official Google product. Nor is it a fully-featured web browser. Nor are the enabling JavaScript APIs standards, or on the standardization path. WebARonARKit is only meant to enable developer experimentation. For details on the WebARonARKit architecture, see [How WebARonARKit works](#HowWebARonARKitWorks).
 
 An [Android version](https://github.com/google-ar/WebARonARCore) is also available.
