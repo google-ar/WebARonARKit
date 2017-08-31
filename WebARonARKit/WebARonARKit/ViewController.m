@@ -682,6 +682,79 @@
     }
 }
 
+- (void)session:(ARSession *)session notifyAnchorEvent:(NSString*)type anchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session did something to anchors; notify the JS side about it.
+    NSString *anchorsStr = @"[";
+    for (int i = 0; i < anchors.count; i++) {
+        ARPlaneAnchor *anchor = (ARPlaneAnchor *)anchors[i];
+        matrix_float4x4 anchorTransform = anchor.transform;
+        const float *anchorMatrix = (const float *)(&anchorTransform);
+        //NSLog(@"Plane extent (native) %@", [NSString stringWithFormat: @"%f,%f,%f", anchor.extent.x, anchor.extent.y, anchor.extent.z]);
+        NSString *anchorStr = [NSString stringWithFormat:
+                               @"{\"transform\":[%f,%f,%f,%f,%f,%f,%f,%"
+                               @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+                               @"\"identifier\":%i,"
+                               @"\"alignment\":%i,"
+                               @"\"center\":[%f,%f,%f],"
+                               @"\"extent\":[%f,%f]}",
+                               anchorMatrix[0], anchorMatrix[1], anchorMatrix[2],
+                               anchorMatrix[3], anchorMatrix[4], anchorMatrix[5],
+                               anchorMatrix[6], anchorMatrix[7], anchorMatrix[8],
+                               anchorMatrix[9], anchorMatrix[10], anchorMatrix[11],
+                               anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
+                               anchorMatrix[15],
+                               (int)anchor.identifier,
+                               (int)anchor.alignment,
+                               anchor.center.x, anchor.center.y, anchor.center.z,
+                               anchor.extent.x, anchor.extent.z];
+        if (i < anchors.count - 1) {
+            anchorStr = [anchorStr stringByAppendingString:@","];
+        }
+        anchorsStr = [anchorsStr stringByAppendingString:anchorStr];
+    }
+    anchorsStr = [anchorsStr stringByAppendingString:@"]"];
+    
+    NSString *jsCode = [NSString
+                        stringWithFormat:@"if (window.WebARonARKitAnchorEvent) "
+                        @"window.WebARonARKitAnchorEvent({"
+                        @"\"type\":\"%@\","
+                        @"\"anchors\":%@"
+                        @"});",
+                        type,
+                        anchorsStr];
+    
+    [self->wkWebView
+     evaluateJavaScript:jsCode
+     completionHandler:^(id data, NSError *error) {
+         if (error) {
+             [self showAlertDialog:
+              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+               error]
+                 completionHandler:^{
+                 }];
+         }
+     }];
+}
+
+- (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session added anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Added" anchors:anchors];
+}
+
+- (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session updated anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Updated" anchors:anchors];
+}
+
+- (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session removed anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Removed" anchors:anchors];
+}
+
 #pragma mark - WKUIDelegate
 
 - (void)webView:(WKWebView *)webView

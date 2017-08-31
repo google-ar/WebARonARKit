@@ -3581,6 +3581,17 @@
     callRafCallbacks();
   };
 
+ /**
+  * This function will be called from the native side upon an anchor event.
+  * @param {Object} data The data from native, which must contain the following properties:
+  *     type - a string describing the type of the anchor event.
+  *     anchors - an array of objects containing planes in the world.
+  * @constructor
+  */
+ window.WebARonARKitAnchorEvent = function(data) {
+   window.dispatchEvent(new CustomEvent('anchors' + data.type, { detail: data }));
+ };
+ 
   /**
    * If the window size has changed, the native side will call this function.
    * This is a hack due to WKWebView not handling the window.innerWidth/Height
