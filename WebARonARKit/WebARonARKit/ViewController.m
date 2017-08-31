@@ -17,13 +17,17 @@
 #import "ViewController.h"
 #import "Renderer.h"
 
+#import "MaterialPalettes.h"
+
 // TODO: Should this be a percentage?
 #define URL_TEXTFIELD_HEIGHT 44
+#define PROGRESSVIEW_HEIGHT 2
 
 @interface ViewController () <MTKViewDelegate, ARSessionDelegate>
 
 @property (nonatomic, strong) ARSession *session;
 @property (nonatomic, strong) Renderer *renderer;
+@property(nonatomic) MDCProgressView *progressView;
 
 @end
 
@@ -292,7 +296,7 @@
     self->wkWebView.UIDelegate = self;
     self->wkWebView.navigationDelegate = self;
     [self.view addSubview:self->wkWebView];
-
+    
     // Add a textfield for the URL on top of the webview
     self->urlTextField = [[UITextField alloc]
         initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
@@ -318,7 +322,10 @@
     [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
     [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->refreshButton];
-
+    
+    // Setup Progress View
+    [self initProgressView];
+    
     // Load the default website
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
     NSURL *url = [NSURL URLWithString:defaultSite];
@@ -338,6 +345,44 @@
     [self updateOrientation];
 }
 
+#pragma mark - Progress View
+
+- (void)initProgressView {
+    self.progressView = [[MDCProgressView alloc] initWithFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    self.progressView.progress = 0;
+    [self.view addSubview:self.progressView];
+    [self startAndShowProgressView];
+}
+
+- (void)setProgressViewColorSuccessful {
+    [self.progressView setProgressTintColor:MDCPalette.bluePalette.tint500];
+}
+
+- (void)setProgressViewColorErrored {
+    [self.progressView setProgressTintColor:MDCPalette.redPalette.tint500];
+}
+
+- (void)startAndShowProgressView {
+    self.progressView.progress = 0;
+    [self.progressView setHidden:NO animated:YES completion:nil];
+}
+
+- (void)completeAndHideProgressViewSuccessful {
+    __weak __typeof__(self) weakSelf = self;
+    [self.progressView setProgress:1 animated:YES completion:^(BOOL finished){
+        [weakSelf.progressView setHidden:YES animated:YES completion:nil];
+    }];
+}
+
+- (void)completeAndHideProgressViewErrored {
+    __weak __typeof__(self) weakSelf = self;
+    [self.progressView setProgress:0.33 animated:YES completion:^(BOOL finished){
+        [weakSelf.progressView setHidden:YES animated:YES completion:nil];
+    }];
+}
+
+#pragma mark - Device Orientation
+
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
     [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2, URL_TEXTFIELD_HEIGHT)];
@@ -347,6 +392,8 @@
     [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
                                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
 
+    [self.progressView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    
     [self updateOrientation];
     updateWindowSize = true;
 }
@@ -620,6 +667,7 @@
     didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation
 {
     [self setShowCameraFeed:false];
+    [self startAndShowProgressView];
 }
 
 - (void)webView:(WKWebView *)webView
@@ -628,6 +676,8 @@
     [self restartSession];
     // By default, when a page is loaded, the camera feed should not be shown.
     [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
+    [self setProgressViewColorSuccessful];
+    [self completeAndHideProgressViewSuccessful];
 }
 
 - (void)webView:(WKWebView *)webView
@@ -638,11 +688,14 @@
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
         NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
     }
+    [self setProgressViewColorErrored];
+    [self completeAndHideProgressViewErrored];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
 {
     [self restartSession];
+    [self completeAndHideProgressViewSuccessful];
 }
 
 - (void)webView:(WKWebView *)webView
@@ -653,6 +706,9 @@
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
         NSLog(@"ERROR: webview didFailProvisionalNavigation with error '%@'", error);
     }
+    
+    [self setProgressViewColorErrored];
+    [self completeAndHideProgressViewErrored];
 }
 
 #pragma mark - UITextFieldDelegate

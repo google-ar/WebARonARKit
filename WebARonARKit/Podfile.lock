@@ -1,0 +1,25 @@
+PODS:
+  - MaterialComponents/Palettes (34.0.0)
+  - MaterialComponents/private/Math (34.0.0)
+  - MaterialComponents/private/RTL (34.0.0)
+  - MaterialComponents/ProgressView (34.0.0):
+    - MaterialComponents/ProgressView/ColorThemer (= 34.0.0)
+    - MaterialComponents/ProgressView/Component (= 34.0.0)
+  - MaterialComponents/ProgressView/ColorThemer (34.0.0):
+    - MaterialComponents/ProgressView/Component
+    - MaterialComponents/Themes
+  - MaterialComponents/ProgressView/Component (34.0.0):
+    - MaterialComponents/private/Math
+    - MaterialComponents/private/RTL
+  - MaterialComponents/Themes (34.0.0)
+
+DEPENDENCIES:
+  - MaterialComponents/Palettes
+  - MaterialComponents/ProgressView
+
+SPEC CHECKSUMS:
+  MaterialComponents: 849fa20d666170d27260aa3f6a48f01b2aceb728
+
+PODFILE CHECKSUM: b4db9f3914bb3540affde9309caeb72e270eda98
+
+COCOAPODS: 1.3.1

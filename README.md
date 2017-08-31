@@ -31,10 +31,22 @@ Working with ARKit and iOS 11 requires XCode 9 beta.
 1. Download Xcode 9 beta from [developer.apple.com/download](https://developer.apple.com/download/).
 2. Unpack Xcode 9 beta and copy to your Applications folder.
 
+### <a name="InstallCocoaPods">Install Cocoa Pods</a>
+WebARonARKit uses [CocoaPods](https://cocoapods.org/) to install its limited dependencies.
+
+1. Install [CocoaPods](https://guides.cocoapods.org/using/getting-started.html)
+```
+sudo gem install cocoapods
+```
+
 ### <a name="RunWebARonARKit">Run WebARonARKit</a>
 1. Clone the WebARonARKit GitHub repo.
+2. Navigate to WebARonARKit/WebARonARKit via terminal and install the cocoa pod dependencies:
+```
+pod install
+```
 2. Launch Xcode 9 beta.
-3. Open the Xcode project from the cloned WebARonARKit repo using Xcode 9 beta.
+3. Open the Xcode workspace (WebARonARKit.xcworkspace) from the cloned WebARonARKit repo using Xcode 9 beta.
 4. Select WebARonARKit Project file (top blue icon in the left column) and then select the WebARonARKit target under TARGETS. Then in the signing section make sure you have selected the right Team (this should correspond to your iOS Developer Account / Team). If you get an error in the following steps, it's probably due to a code signing error.
 5. Set your device as build destination by first ensuring it is connected to your computer, then selecting it the Product menu, under Destination, or from the drop-down menu next to the Run button (in the top top-left of the UI).
 6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.

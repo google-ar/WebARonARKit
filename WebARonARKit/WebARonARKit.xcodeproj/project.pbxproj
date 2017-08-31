@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6FE935D0F3F50B6CF68E2095 /* libPods-WebARonARKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AB93BDB3547AC61271FA3D62 /* libPods-WebARonARKit.a */; };
 		BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
@@ -31,7 +32,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		9A5B983453748587DC604E68 /* Pods-WebARonARKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebARonARKit.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WebARonARKit/Pods-WebARonARKit.debug.xcconfig"; sourceTree = "<group>"; };
+		AB93BDB3547AC61271FA3D62 /* libPods-WebARonARKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WebARonARKit.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARonARKit.js; sourceTree = "<group>"; };
+		C94705F2421FE3193CF6309B /* Pods-WebARonARKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WebARonARKit.release.xcconfig"; path = "Pods/Target Support Files/Pods-WebARonARKit/Pods-WebARonARKit.release.xcconfig"; sourceTree = "<group>"; };
 		F66038631EF5FCC100385A4C /* WebARonARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARonARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F66038671EF5FCC100385A4C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -53,18 +57,38 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6FE935D0F3F50B6CF68E2095 /* libPods-WebARonARKit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CE1871CD61E9B9B7776F63D8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AB93BDB3547AC61271FA3D62 /* libPods-WebARonARKit.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D3C8981182C4F8CA5DC6C3F9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				9A5B983453748587DC604E68 /* Pods-WebARonARKit.debug.xcconfig */,
+				C94705F2421FE3193CF6309B /* Pods-WebARonARKit.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		F660385A1EF5FCC100385A4C = {
 			isa = PBXGroup;
 			children = (
 				BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */,
 				F66038651EF5FCC100385A4C /* WebARonARKit */,
 				F66038641EF5FCC100385A4C /* Products */,
+				D3C8981182C4F8CA5DC6C3F9 /* Pods */,
+				CE1871CD61E9B9B7776F63D8 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -103,10 +127,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = F660387F1EF5FCC100385A4C /* Build configuration list for PBXNativeTarget "WebARonARKit" */;
 			buildPhases = (
+				834690543A64D307E1AA6720 /* [CP] Check Pods Manifest.lock */,
 				F660385F1EF5FCC100385A4C /* Sources */,
 				F66038601EF5FCC100385A4C /* Frameworks */,
 				F66038611EF5FCC100385A4C /* Resources */,
 				F6161D111EF8408100C915FA /* CopyFiles */,
+				F10C19053FC95BD1EBE71D1E /* [CP] Embed Pods Frameworks */,
+				5184CF7362C4045D8DA983C1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -162,6 +189,57 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5184CF7362C4045D8DA983C1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WebARonARKit/Pods-WebARonARKit-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		834690543A64D307E1AA6720 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-WebARonARKit-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F10C19053FC95BD1EBE71D1E /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WebARonARKit/Pods-WebARonARKit-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		F660385F1EF5FCC100385A4C /* Sources */ = {
@@ -300,6 +378,7 @@
 		};
 		F66038801EF5FCC100385A4C /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9A5B983453748587DC604E68 /* Pods-WebARonARKit.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = EQHXZ8M8AV;
@@ -313,6 +392,7 @@
 		};
 		F66038811EF5FCC100385A4C /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C94705F2421FE3193CF6309B /* Pods-WebARonARKit.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = EQHXZ8M8AV;
