@@ -20,6 +20,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#import "MaterialProgressView.h"
+
 @interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver, WKScriptMessageHandler> {
 
     WKWebView *wkWebView;
