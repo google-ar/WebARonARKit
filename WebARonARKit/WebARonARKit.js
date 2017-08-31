@@ -2838,6 +2838,26 @@
   VRDisplay = function() {
     var _layers = null;
 
+    var _listeners = {};
+ 
+    this.addEventListener = function(type, handler) {
+      if (!_listeners[type]) { _listeners[type] = []; }
+      _listeners[type].push(handler);
+    };
+
+    this.removeEventListener = function(type, handler) {
+      var handlers = _listeners[type];
+      if (!handlers) { return; }
+      var index = handlers.indexOf(handler);
+      if (index !== -1) handlers.splice(index, 1);
+    };
+
+    this.dispatchEvent = function(event) {
+      var handlers = _listeners[event.type];
+      if (!handlers) { return; }
+      handlers.forEach(function(handler) { handler(event); });
+    };
+
     /**
      * Whether the display is connected to the device.
      * @type {boolean}
@@ -3381,7 +3401,7 @@
     this.hasPassThroughCamera = false;
     return this;
   };
-
+ 
   /**
    * The enumeration of eyes for a VR/AR display device.
    * @type {{left: string, right: string}}
@@ -3589,7 +3609,7 @@
   * @constructor
   */
  window.WebARonARKitAnchorEvent = function(data) {
-   window.dispatchEvent(new CustomEvent('anchors' + data.type, { detail: data }));
+   WebARonARKitVRDisplay.dispatchEvent(new CustomEvent('anchors' + data.type, { detail: data }));
  };
  
   /**
