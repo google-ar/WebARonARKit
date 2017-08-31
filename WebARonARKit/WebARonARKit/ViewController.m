@@ -297,11 +297,12 @@
     self->urlTextField = [[UITextField alloc]
         initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
                                  URL_TEXTFIELD_HEIGHT)];
-    self->urlTextField.backgroundColor = [UIColor whiteColor];
+    [self->urlTextField setBackgroundColor:[UIColor whiteColor]];
     [self->urlTextField setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
     [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
-    self->urlTextField.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    self->urlTextField.delegate = self;
+    [self->urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
+    [self->urlTextField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+    [self->urlTextField setDelegate:self];
     [self.view addSubview:self->urlTextField];
 
     // Add the back/refresh buttons
