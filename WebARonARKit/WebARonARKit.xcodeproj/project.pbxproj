@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		BD61CF8C1F33FB1700733763 /* WebARonARKit.js in Resources */ = {isa = PBXBuildFile; fileRef = BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */; };
+		E1C5EBAF1F59C45A00C667C2 /* ProgressView.m in Sources */ = {isa = PBXBuildFile; fileRef = E1C5EBAE1F59C45A00C667C2 /* ProgressView.m */; };
 		F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F66038671EF5FCC100385A4C /* AppDelegate.m */; };
 		F660386A1EF5FCC100385A4C /* Shaders.metal in Sources */ = {isa = PBXBuildFile; fileRef = F66038691EF5FCC100385A4C /* Shaders.metal */; };
 		F660386E1EF5FCC100385A4C /* Renderer.m in Sources */ = {isa = PBXBuildFile; fileRef = F660386D1EF5FCC100385A4C /* Renderer.m */; };
@@ -32,6 +33,8 @@
 
 /* Begin PBXFileReference section */
 		BD61CF8B1F33FA0A00733763 /* WebARonARKit.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebARonARKit.js; sourceTree = "<group>"; };
+		E1C5EBAE1F59C45A00C667C2 /* ProgressView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProgressView.m; sourceTree = "<group>"; };
+		E1C5EBB01F59C47000C667C2 /* ProgressView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ProgressView.h; sourceTree = "<group>"; };
 		F66038631EF5FCC100385A4C /* WebARonARKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WebARonARKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F66038661EF5FCC100385A4C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		F66038671EF5FCC100385A4C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -92,6 +95,8 @@
 				F66038771EF5FCC100385A4C /* LaunchScreen.storyboard */,
 				F660387A1EF5FCC100385A4C /* Info.plist */,
 				F660387B1EF5FCC100385A4C /* main.m */,
+				E1C5EBB01F59C47000C667C2 /* ProgressView.h */,
+				E1C5EBAE1F59C45A00C667C2 /* ProgressView.m */,
 			);
 			path = WebARonARKit;
 			sourceTree = "<group>";
@@ -173,6 +178,7 @@
 				F66038681EF5FCC100385A4C /* AppDelegate.m in Sources */,
 				F66038711EF5FCC100385A4C /* ViewController.m in Sources */,
 				F660386E1EF5FCC100385A4C /* Renderer.m in Sources */,
+				E1C5EBAF1F59C45A00C667C2 /* ProgressView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
