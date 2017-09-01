@@ -27,6 +27,7 @@
 @property (nonatomic, strong) ARSession *session;
 @property (nonatomic, strong) Renderer *renderer;
 @property (nonatomic, strong) ProgressView *progressView;
+@property (nonatomic, assign) bool webviewNavigationSuccess;
 
 @end
 
@@ -295,7 +296,7 @@
     self->wkWebView.UIDelegate = self;
     self->wkWebView.navigationDelegate = self;
     [self.view addSubview:self->wkWebView];
-
+    
     // Add a textfield for the URL on top of the webview
     self->urlTextField = [[UITextField alloc]
         initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
@@ -325,6 +326,8 @@
 
     //Progress View Setup
     [self initProgressView];
+    //Observe the estimatedProgress to uodate progress view
+    [self->wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:NSKeyValueObservingOptionNew context:NULL];
     
     // Load the default website
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
@@ -343,6 +346,16 @@
              object:nil];
     deviceOrientation = [device orientation];
     [self updateOrientation];
+}
+
+- (void)dealloc {
+    
+    if ([self isViewLoaded]) {
+        [self->wkWebView removeObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
+    }
+    
+    [self->wkWebView setNavigationDelegate:nil];
+    [self->wkWebView setUIDelegate:nil];
 }
 
 #pragma mark - Progress View
@@ -381,9 +394,9 @@
     }];
 }
 
-- (void)completeAndHideProgressViewErrored {
+- (void)completeAndHideProgressViewErrored:(float) progress {
     __weak __typeof__(self) weakSelf = self;
-    [self.progressView setProgressValue:0.33 animated:YES completion:^(BOOL finished){
+    [self.progressView setProgressValue:progress animated:YES completion:^(BOOL finished){
         [weakSelf.progressView setHidden:YES animated:YES completion:nil];
     }];
 }
@@ -656,6 +669,19 @@
     }
 }
 
+#pragma mark - WK Estimated Progress
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if ([keyPath isEqualToString:NSStringFromSelector(@selector(estimatedProgress))] && object == self->wkWebView) {        
+        if( self.webviewNavigationSuccess ) {
+            [self.progressView setProgressValue:self->wkWebView.estimatedProgress];
+        }
+    }
+    else {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    }
+}
+
 #pragma mark - WKUIDelegate
 
 - (void)webView:(WKWebView *)webView
@@ -673,6 +699,8 @@
 {
     [self setShowCameraFeed:false];
     [self startAndShowProgressView];
+    [self setProgressViewColorSuccessful];
+    self.webviewNavigationSuccess = true;
 }
 
 - (void)webView:(WKWebView *)webView
@@ -689,12 +717,13 @@
     didFailNavigation:(WKNavigation *)navigation
             withError:(NSError *)error
 {
+    self.webviewNavigationSuccess = false;
     if (error.code != -999) {
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
         NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
     }
     [self setProgressViewColorErrored];
-    [self completeAndHideProgressViewErrored];
+    [self completeAndHideProgressViewErrored:self->wkWebView.estimatedProgress];
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView
@@ -707,12 +736,13 @@
     didFailProvisionalNavigation:(WKNavigation *)navigation
                        withError:(NSError *)error
 {
+    self.webviewNavigationSuccess = false;
     if (error.code != -999) {
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
         NSLog(@"ERROR: webview didFailProvisionalNavigation with error '%@'", error);
     }
     [self setProgressViewColorErrored];
-    [self completeAndHideProgressViewErrored];
+    [self completeAndHideProgressViewErrored:self->wkWebView.estimatedProgress];
 }
 
 #pragma mark - UITextFieldDelegate
