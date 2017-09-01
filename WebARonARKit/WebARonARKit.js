@@ -3594,7 +3594,12 @@
     window.innerHeight = size.height;
     var resizeEvent = new Event("resize");
     for (var i = 0; i < resizeEventListeners.length; i++) {
-      resizeEventListeners[i].call(this, resizeEvent);
+      if (typeof(resizeEventListeners[i]) === "function") {
+        resizeEventListeners[i].call(this, resizeEvent);
+      }
+      else if (typeof(resizeEventListeners[i]) === "object" && typeof(resizeEventListeners[i].handleEvent) === "function") {
+        resizeEventListeners[i].handleEvent(resizeEvent);
+      }
     }
     if (typeof window.onresize === "function") {
       window.onresize.call(this, resizeEvent);
