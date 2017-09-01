@@ -1,25 +1,22 @@
 # WebARonARKit
 
-**An experimental app for iOS that lets developers create Augmented Reality (AR) experiences using web technologies.**
+**An experimental app for iOS that lets developers create Augmented Reality (AR) experiences using web technologies. An [Android version](https://github.com/google-ar/WebARonARCore) is also available.**
 
 <img alt="Spawn-at-Camera example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtCamera-1.gif" style="float: left; object-fit: cover; width: 45%; height: 20em; margin-right: 1em; "><img alt="Spawn-at-Surface example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtSurface-1.gif" style="width: 45%; height: 20em; object-fit: cover;">
 
 **Note:** This is not an official Google product. Nor is it a fully-featured web browser. Nor are the enabling JavaScript APIs standards, or on the standardization path. WebARonARKit is only meant to enable developer experimentation. For details on the WebARonARKit architecture, see [How WebARonARKit works](#HowWebARonARKitWorks).
 
-An [Android version](https://github.com/google-ar/WebARonARCore) is also available.
-
-## <a name="InstallingWebARonARKit">Getting started</a>
+## Getting started
 WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This requires an Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
 
-### <a name="SupportedDevices">Supported devices</a>
-WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running iOS 11. For best results, we recommend one of the following:
+### <a name="InstalliOS11beta">1. Install iOS 11 beta</a>
+WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running the iOS 11 beta. For best results, we recommend one of the following:
 
 + iPad (2017)
 + iPad Pro (9.7, 10.5 or 12.9 inches)
 + iPhone 7 and 7 Plus
 
-### <a name="InstalliOS11beta">Install iOS 11 beta</a>
-ARKit is currently only available for iOS 11 beta. To install iOS 11 beta on your iOS device, consult [Apple’s official guide](https://developer.apple.com/support/beta-software/install-ios-beta/), or follow these steps:
+To install iOS 11 beta on your iOS device, consult [Apple’s official guide](https://developer.apple.com/support/beta-software/install-ios-beta/), or follow these steps:
 
 1. Download the iOS 11 Beta configuration profile from [developer.apple.com/download](https://developer.apple.com/download/) and double-click on the `iOS_11_beta_Profile.mobileconfig` file in Finder to install the profile.
 2. Download an iOS restore image for iOS 11 beta for your specific device from [developer.apple.com/download](https://developer.apple.com/download/), under Featured Downloads > iOS Restore Images > See all.
@@ -27,13 +24,13 @@ ARKit is currently only available for iOS 11 beta. To install iOS 11 beta on you
 4. Open iTunes and select your device.
 5. Option-click on the "Check for Update" button, select the iOS 11 restore image you downloaded, and follow the instructions to install it on your device.
 
-### <a name="InstallXcode9beta">Install Xcode 9 beta</a>
+### <a name="InstallXcode9beta">2. Install Xcode 9 beta</a>
 Working with ARKit and iOS 11 requires XCode 9 beta.
 
 1. Download Xcode 9 beta from [developer.apple.com/download](https://developer.apple.com/download/).
 2. Unpack Xcode 9 beta and copy to your Applications folder.
 
-### <a name="RunWebARonARKit">Run WebARonARKit</a>
+### <a name="RunWebARonARKit">3. Run WebARonARKit</a>
 1. Clone the WebARonARKit GitHub repo.
 2. Launch Xcode 9 beta.
 3. Open the Xcode project from the cloned WebARonARKit repo using Xcode 9 beta.
@@ -41,11 +38,12 @@ Working with ARKit and iOS 11 requires XCode 9 beta.
 5. Set your device as build destination by first ensuring it is connected to your computer, then selecting it the Product menu, under Destination, or from the drop-down menu next to the Run button (in the top top-left of the UI).
 6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.
 
-## <a name="ViewingExamples">Viewing examples</a>
-A [list of examples](https://developers.google.com/ar/develop/web/getting-started#examples) is available at [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples).
+### <a name="ViewingExamples">4. Viewing examples</a>
+A [list of example scenes](https://developers.google.com/ar/develop/web/getting-started#examples) compatible with WebARonARKit and [WebARonARCore](https://github.com/google-ar/WebARonARCore) are available at [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples).
 
-## <a name="BuildingScenes">Building your own scenes</a>
-[Instructions](https://developers.google.com/ar/develop/web/getting-started) for creating your own experiences are available at [developer.google.com](https://developers.google.com/ar/develop/web/getting-started).
+### <a name="BuildingScenes">5. Building your own scenes</a>
+To build AR web experiences that work with WebARonARKit and [WebARonARCore for Android](https://github.com/google-ar/WebARonARCore), we recommend **[three.ar.js](https://github.com/google-ar/three.ar.js)**, a helper library that works with the popular [three.js](http://threejs.org) WebGL framework. [Three.ar.js](https://github.com/google-ar/three.ar.js) provides common AR building blocks, such as a visible reticle that draws on top of real world surfaces, and [example scenes](https://github.com/google-ar/three.ar.js#examples).
+
 
 ## <a name="HowWebARonARKitWorks">How WebARonARKit works</a>
 
