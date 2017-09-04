@@ -3621,11 +3621,9 @@
     return window.getVRDisplaysPromise;
   };
 
-  // TODO: MacOS Safari and iOS 11 seem to have some kind of disagreement
-  // and it is to possible to debug the WKWebView (or a Safari iOS page).
-  // As console.log calls are not being shown in the XCode console, this
-  // reimplementation of console.log does the trick.
-  // This could be removed in case the Safari debugging tool is restored.
+  // TODO: iOS 11 Safari requires MacOS Safari 11 or higher to debug a WKWebVew (or any iOS Safari page). 
+  // Reimplementing console.log allows for logs to be shown in older versions of MacOS Safari.
+  // This could be removed once MacOS Safari 11.0 is released (currently available as Safari Technology Preview)
   var oldConsoleLog = console.log;
   console.log = function() {
     var argumentsArray = Array.prototype.slice.call(arguments);
