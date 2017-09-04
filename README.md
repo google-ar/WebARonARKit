@@ -44,6 +44,8 @@ A [list of example scenes](https://developers.google.com/ar/develop/web/getting-
 ### <a name="BuildingScenes">5. Building your own scenes</a>
 To build AR web experiences that work with WebARonARKit and [WebARonARCore for Android](https://github.com/google-ar/WebARonARCore), we recommend **[three.ar.js](https://github.com/google-ar/three.ar.js)**, a helper library that works with the popular [three.js](http://threejs.org) WebGL framework. [Three.ar.js](https://github.com/google-ar/three.ar.js) provides common AR building blocks, such as a visible reticle that draws on top of real world surfaces, and [example scenes](https://github.com/google-ar/three.ar.js#examples).
 
+### <a name="Debugging">6. Debugging </a>
+Pages in WebARonARKit can be inspected and debugged remotely with MacOS Safari, however this requires MacOS Safari 11.0 (available as Safari Technology Preview) or higher. You can download MacOS Safari 11 from https://developer.apple.com/safari/technology-preview/. 
 
 ## <a name="HowWebARonARKitWorks">How WebARonARKit works</a>
 
