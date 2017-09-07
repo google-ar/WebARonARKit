@@ -630,6 +630,9 @@
                          pProjectionMatrix[14], pProjectionMatrix[15],
                          anchors];
 
+    // Try blocking on return.
+    __block BOOL finished = NO;
+    
     [self->wkWebView
         evaluateJavaScript:jsCode
          completionHandler:^(id data, NSError *error) {
@@ -640,7 +643,14 @@
                      completionHandler:^{
                      }];
              }
+             finished = YES;
          }];
+    
+    // Try blocking up to 2 msec on return.
+    double endMediaTime = CACurrentMediaTime() + 0.002;
+    while (!finished && CACurrentMediaTime() < endMediaTime) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+    }
 
     //This needs to be called after because the window size will affect the
     //projection matrix calculation upon resize
