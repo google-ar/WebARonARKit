@@ -19,8 +19,13 @@
 #import "ProgressView.h"
 
 // TODO: Should this be a percentage?
-#define URL_TEXTFIELD_HEIGHT 44
+#define URL_TEXTFIELD_HEIGHT 36 // (I like it a little smaller, with some top margin.)
 #define PROGRESSVIEW_HEIGHT 4
+// Make navigation bar and controls translucent.
+#define ALPHA 0.3
+// Define some margin from top, left and right of screen.
+#define TOP_MARGIN 8
+#define LEFT_RIGHT_MARGIN 8
 
 @interface ViewController () <MTKViewDelegate, ARSessionDelegate>
 
@@ -231,7 +236,7 @@
                             renderDestinationProvider:view];
 
     [self.renderer drawRectResized:view.bounds.size];
-
+/*
     UITapGestureRecognizer *tapGesture =
         [[UITapGestureRecognizer alloc] initWithTarget:self
                                                 action:@selector(handleTap:)];
@@ -239,7 +244,7 @@
     [gestureRecognizers addObject:tapGesture];
     [gestureRecognizers addObjectsFromArray:view.gestureRecognizers];
     view.gestureRecognizers = gestureRecognizers;
-
+*/
     // Clear the webview completely
     //    NSSet *websiteDataTypes = [NSSet setWithArray:@[
     //        WKWebsiteDataTypeDiskCache,
@@ -281,11 +286,11 @@
         [[WKWebViewConfiguration alloc] init];
     wkWebViewConfig.userContentController = userContentController;
     // Create the WKWebView using the configuration/script injection and add it to
-    // the top of the view graph
+    // the top of the view graph; make sure it is fullscreen to match camera view.
     self->wkWebView = [[WKWebView alloc]
         initWithFrame:CGRectMake(
-                          0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+                          0, 0, self.view.frame.size.width,
+                          self.view.frame.size.height)
         configuration:wkWebViewConfig];
     self->wkWebViewOriginalBackgroundColor = self->wkWebView.backgroundColor;
     // By default, the camera feed won't be shown until instructed otherwise
@@ -293,18 +298,19 @@
     [self->wkWebView.configuration.preferences
         setValue:@TRUE
           forKey:@"allowFileAccessFromFileURLs"];
-    [self setWKWebViewScrollEnabled:true];
+    // Set scrollEnabled to false, to avoid flicker on touch.
+    [self setWKWebViewScrollEnabled:false];
     // Needed to show alerts. Check the WKUIDelegate protocol and the
     // runJavaScriptAlertPanelWithMessage method in this file :(
     self->wkWebView.UIDelegate = self;
     self->wkWebView.navigationDelegate = self;
     [self.view addSubview:self->wkWebView];
-    
+
     // Add a textfield for the URL on top of the webview
-    self->urlTextField = [[UITextField alloc]
-        initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
-                                 URL_TEXTFIELD_HEIGHT)];
-    [self->urlTextField setBackgroundColor:[UIColor whiteColor]];
+    self->urlTextField = [[UITextField alloc] initWithFrame:CGRectMake(
+      URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      self.view.frame.size.width - (URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN) * 2, URL_TEXTFIELD_HEIGHT)];
+    [self->urlTextField setBackgroundColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA]];
     [self->urlTextField setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
     [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
     [self->urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
@@ -313,15 +319,19 @@
     [self.view addSubview:self->urlTextField];
 
     // Add the back/refresh buttons
-    self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    self->backButton.backgroundColor = [UIColor whiteColor];
+    self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(
+      LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    self->backButton.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA];
     UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
     [self->backButton setImage:backIcon forState:UIControlStateNormal];
     [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->backButton];
 
-    self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    [self->refreshButton setBackgroundColor:[UIColor whiteColor]];
+    self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(
+      self.view.frame.size.width - URL_TEXTFIELD_HEIGHT - LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    [self->refreshButton setBackgroundColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA]];
     UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
     [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
     [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
@@ -331,7 +341,7 @@
     [self initProgressView];
     //Observe the estimatedProgress to uodate progress view
     [self->wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:NSKeyValueObservingOptionNew context:NULL];
-    
+
     // Load the default website
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
     NSURL *url = [NSURL URLWithString:defaultSite];
@@ -406,14 +416,20 @@
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
-    [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2, URL_TEXTFIELD_HEIGHT)];
+    [self->urlTextField setFrame:CGRectMake(
+      URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      self.view.frame.size.width - (URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN) * 2, URL_TEXTFIELD_HEIGHT)];
 
-    [self->refreshButton setFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    [self->refreshButton setFrame:CGRectMake(
+      self.view.frame.size.width - URL_TEXTFIELD_HEIGHT - LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
 
-    [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                                         self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+    [self->wkWebView setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                         self.view.frame.size.height)];
 
-    [self.progressView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    [self.progressView setFrame:CGRectMake(
+      LEFT_RIGHT_MARGIN, TOP_MARGIN + URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
+      self.view.frame.size.width - LEFT_RIGHT_MARGIN * 2, PROGRESSVIEW_HEIGHT)];
     
     [self updateOrientation];
     updateWindowSize = true;
@@ -482,6 +498,7 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
+/*
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognize
 {
     ARFrame *currentFrame = [self.session currentFrame];
@@ -500,6 +517,7 @@
         [self.session addAnchor:anchor];
     }
 }
+*/
 
 #pragma mark - MTKViewDelegate
 
