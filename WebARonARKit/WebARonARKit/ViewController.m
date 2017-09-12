@@ -22,10 +22,10 @@
 #define URL_TEXTFIELD_HEIGHT 36 // (I like it a little smaller, with some top margin.)
 #define PROGRESSVIEW_HEIGHT 4
 // Make navigation bar and controls translucent.
-#define ALPHA 0.3
+#define ALPHA 0.5
 // Define some margin from top, left and right of screen.
 #define TOP_MARGIN 8
-#define LEFT_RIGHT_MARGIN 8
+#define LEFT_RIGHT_MARGIN 50
 
 @interface ViewController () <MTKViewDelegate, ARSessionDelegate>
 
