@@ -3219,7 +3219,7 @@
           var anchor = this.anchors_[i];
 
           // Get the anchor transform.
-          setMat4FromArray(hitVars.planeMatrix, anchor.transform);
+          setMat4FromArray(hitVars.planeMatrix, anchor.modelMatrix);
 
           // Get the position of the anchor in world-space: the anchor center
           // is an offset from the anchor transform position in local space.
@@ -3328,6 +3328,10 @@
         return hits;
       };
     })();
+ 
+    this.getPlanes = function() {
+      return this.anchors_;
+    };
 
     return this;
   };
@@ -3577,6 +3581,26 @@
     }
 
     WebARonARKitVRDisplay.anchors_ = data.anchors;
+    // ARKit doesn't come with vertices, so generate them for parity with ARKit.
+    for (var i = 0; i < WebARonARKitVRDisplay.anchors_.length; i++) {
+      var anchor = WebARonARKitVRDisplay.anchors_[i];
+      anchor.vertices = [];
+      anchor.vertices.push(anchor.center[0] + (anchor.extent[0] / 2));
+      anchor.vertices.push(anchor.center[1]);
+      anchor.vertices.push(anchor.center[2] + (anchor.extent[1] / 2));
+ 
+      anchor.vertices.push(anchor.center[0] - (anchor.extent[0] / 2));
+      anchor.vertices.push(anchor.center[1]);
+      anchor.vertices.push(anchor.center[2] + (anchor.extent[1] / 2));
+      
+      anchor.vertices.push(anchor.center[0] - (anchor.extent[0] / 2));
+      anchor.vertices.push(anchor.center[1]);
+      anchor.vertices.push(anchor.center[2] - (anchor.extent[1] / 2));
+      
+      anchor.vertices.push(anchor.center[0] + (anchor.extent[0] / 2));
+      anchor.vertices.push(anchor.center[1]);
+      anchor.vertices.push(anchor.center[2] - (anchor.extent[1] / 2));
+    }
 
     callRafCallbacks();
   };
