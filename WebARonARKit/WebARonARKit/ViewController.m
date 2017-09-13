@@ -578,7 +578,7 @@
         const float *anchorMatrix = (const float *)(&anchorTransform);
         //NSLog(@"Plane extent (native) %@", [NSString stringWithFormat: @"%f,%f,%f", anchor.extent.x, anchor.extent.y, anchor.extent.z]);
         NSString *anchorStr = [NSString stringWithFormat:
-                                            @"{\"transform\":[%f,%f,%f,%f,%f,%f,%f,%"
+                                            @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
                                             @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
                                             @"\"identifier\":%i,"
                                             @"\"alignment\":%i,"
