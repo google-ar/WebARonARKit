@@ -28,6 +28,7 @@
 @property (nonatomic, strong) Renderer *renderer;
 @property (nonatomic, strong) ProgressView *progressView;
 @property (nonatomic, assign) bool webviewNavigationSuccess;
+@property (nonatomic, strong) NSMutableDictionary *timestamps;
 
 @end
 
@@ -580,6 +581,7 @@
         NSString *anchorStr = [NSString stringWithFormat:
                                             @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
                                             @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+                                            @"\"timestamp\":%@,"
                                             @"\"identifier\":%i,"
                                             @"\"alignment\":%i,"
                                             @"\"extent\":[%f,%f]}",
@@ -591,6 +593,7 @@
                                             anchorMatrix[13] + anchor.center.y,
                                             anchorMatrix[14] + anchor.center.z,
                                             anchorMatrix[15],
+                                            self.timestamps[anchor.identifier],
                                             (int)anchor.identifier,
                                             (int)anchor.alignment,
                                             anchor.extent.x, anchor.extent.z];
@@ -666,6 +669,32 @@
                  }
              }];
         updateWindowSize = false;
+    }
+}
+
+- (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session added anchors; update the lookaside timestamps array accordingly for each.
+    long currentTime = (long)(NSTimeInterval)([[NSDate date] timeIntervalSince1970]);
+    for (int i=0; i<anchors.count; i++) {
+        [self.timestamps setObject:@(currentTime) forKey: anchors[i].identifier];
+    }
+}
+
+- (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session updated anchors; update the lookaside timestamps array accordingly for each.
+    long currentTime = (long)(NSTimeInterval)([[NSDate date] timeIntervalSince1970]);
+    for (int i=0; i<anchors.count; i++) {
+        [self.timestamps setObject:@(currentTime) forKey: anchors[i].identifier];
+    }
+}
+
+- (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session removed anchors; remove from the lookaside timestamps array accordingly for each.
+    for (int i=0; i<anchors.count; i++) {
+        [self.timestamps removeObjectForKey: anchors[i].identifier];
     }
 }
 
