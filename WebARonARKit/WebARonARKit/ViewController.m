@@ -19,8 +19,13 @@
 #import "ProgressView.h"
 
 // TODO: Should this be a percentage?
-#define URL_TEXTFIELD_HEIGHT 44
+#define URL_TEXTFIELD_HEIGHT 36 // (I like it a little smaller, with some top margin.)
 #define PROGRESSVIEW_HEIGHT 4
+// Make navigation bar and controls translucent.
+#define ALPHA 0.5
+// Define some margin from top, left and right of screen.
+#define TOP_MARGIN 8
+#define LEFT_RIGHT_MARGIN 50
 
 @interface ViewController () <MTKViewDelegate, ARSessionDelegate>
 
@@ -228,7 +233,7 @@
                             renderDestinationProvider:view];
 
     [self.renderer drawRectResized:view.bounds.size];
-
+/*
     UITapGestureRecognizer *tapGesture =
         [[UITapGestureRecognizer alloc] initWithTarget:self
                                                 action:@selector(handleTap:)];
@@ -236,7 +241,7 @@
     [gestureRecognizers addObject:tapGesture];
     [gestureRecognizers addObjectsFromArray:view.gestureRecognizers];
     view.gestureRecognizers = gestureRecognizers;
-
+*/
     // Clear the webview completely
     //    NSSet *websiteDataTypes = [NSSet setWithArray:@[
     //        WKWebsiteDataTypeDiskCache,
@@ -278,11 +283,11 @@
         [[WKWebViewConfiguration alloc] init];
     wkWebViewConfig.userContentController = userContentController;
     // Create the WKWebView using the configuration/script injection and add it to
-    // the top of the view graph
+    // the top of the view graph; make sure it is fullscreen to match camera view.
     self->wkWebView = [[WKWebView alloc]
         initWithFrame:CGRectMake(
-                          0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+                          0, 0, self.view.frame.size.width,
+                          self.view.frame.size.height)
         configuration:wkWebViewConfig];
     self->wkWebViewOriginalBackgroundColor = self->wkWebView.backgroundColor;
     // By default, the camera feed won't be shown until instructed otherwise
@@ -290,18 +295,19 @@
     [self->wkWebView.configuration.preferences
         setValue:@TRUE
           forKey:@"allowFileAccessFromFileURLs"];
-    [self setWKWebViewScrollEnabled:true];
+    // Set scrollEnabled to false, to avoid flicker on touch.
+    [self setWKWebViewScrollEnabled:false];
     // Needed to show alerts. Check the WKUIDelegate protocol and the
     // runJavaScriptAlertPanelWithMessage method in this file :(
     self->wkWebView.UIDelegate = self;
     self->wkWebView.navigationDelegate = self;
     [self.view addSubview:self->wkWebView];
-    
+
     // Add a textfield for the URL on top of the webview
-    self->urlTextField = [[UITextField alloc]
-        initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
-                                 URL_TEXTFIELD_HEIGHT)];
-    [self->urlTextField setBackgroundColor:[UIColor whiteColor]];
+    self->urlTextField = [[UITextField alloc] initWithFrame:CGRectMake(
+      URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      self.view.frame.size.width - (URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN) * 2, URL_TEXTFIELD_HEIGHT)];
+    [self->urlTextField setBackgroundColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA]];
     [self->urlTextField setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
     [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
     [self->urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
@@ -310,15 +316,19 @@
     [self.view addSubview:self->urlTextField];
 
     // Add the back/refresh buttons
-    self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    self->backButton.backgroundColor = [UIColor whiteColor];
+    self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(
+      LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    self->backButton.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA];
     UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
     [self->backButton setImage:backIcon forState:UIControlStateNormal];
     [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->backButton];
 
-    self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    [self->refreshButton setBackgroundColor:[UIColor whiteColor]];
+    self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(
+      self.view.frame.size.width - URL_TEXTFIELD_HEIGHT - LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    [self->refreshButton setBackgroundColor:[UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:ALPHA]];
     UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
     [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
     [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
@@ -328,7 +338,7 @@
     [self initProgressView];
     //Observe the estimatedProgress to uodate progress view
     [self->wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:NSKeyValueObservingOptionNew context:NULL];
-    
+
     // Load the default website
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
     NSURL *url = [NSURL URLWithString:defaultSite];
@@ -403,14 +413,20 @@
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
-    [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2, URL_TEXTFIELD_HEIGHT)];
+    [self->urlTextField setFrame:CGRectMake(
+      URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      self.view.frame.size.width - (URL_TEXTFIELD_HEIGHT + LEFT_RIGHT_MARGIN) * 2, URL_TEXTFIELD_HEIGHT)];
 
-    [self->refreshButton setFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    [self->refreshButton setFrame:CGRectMake(
+      self.view.frame.size.width - URL_TEXTFIELD_HEIGHT - LEFT_RIGHT_MARGIN, TOP_MARGIN,
+      URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
 
-    [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                                         self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+    [self->wkWebView setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                         self.view.frame.size.height)];
 
-    [self.progressView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    [self.progressView setFrame:CGRectMake(
+      LEFT_RIGHT_MARGIN, TOP_MARGIN + URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
+      self.view.frame.size.width - LEFT_RIGHT_MARGIN * 2, PROGRESSVIEW_HEIGHT)];
     
     [self updateOrientation];
     updateWindowSize = true;
@@ -479,6 +495,7 @@
     // Release any cached data, images, etc that aren't in use.
 }
 
+/*
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognize
 {
     ARFrame *currentFrame = [self.session currentFrame];
@@ -497,6 +514,7 @@
         [self.session addAnchor:anchor];
     }
 }
+*/
 
 #pragma mark - MTKViewDelegate
 
@@ -680,6 +698,79 @@
     else {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
+}
+
+- (void)session:(ARSession *)session notifyAnchorEvent:(NSString*)type anchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session did something to anchors; notify the JS side about it.
+    NSString *anchorsStr = @"[";
+    for (int i = 0; i < anchors.count; i++) {
+        ARPlaneAnchor *anchor = (ARPlaneAnchor *)anchors[i];
+        matrix_float4x4 anchorTransform = anchor.transform;
+        const float *anchorMatrix = (const float *)(&anchorTransform);
+        //NSLog(@"Plane extent (native) %@", [NSString stringWithFormat: @"%f,%f,%f", anchor.extent.x, anchor.extent.y, anchor.extent.z]);
+        NSString *anchorStr = [NSString stringWithFormat:
+                               @"{\"transform\":[%f,%f,%f,%f,%f,%f,%f,%"
+                               @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+                               @"\"identifier\":%i,"
+                               @"\"alignment\":%i,"
+                               @"\"center\":[%f,%f,%f],"
+                               @"\"extent\":[%f,%f]}",
+                               anchorMatrix[0], anchorMatrix[1], anchorMatrix[2],
+                               anchorMatrix[3], anchorMatrix[4], anchorMatrix[5],
+                               anchorMatrix[6], anchorMatrix[7], anchorMatrix[8],
+                               anchorMatrix[9], anchorMatrix[10], anchorMatrix[11],
+                               anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
+                               anchorMatrix[15],
+                               (int)anchor.identifier,
+                               (int)anchor.alignment,
+                               anchor.center.x, anchor.center.y, anchor.center.z,
+                               anchor.extent.x, anchor.extent.z];
+        if (i < anchors.count - 1) {
+            anchorStr = [anchorStr stringByAppendingString:@","];
+        }
+        anchorsStr = [anchorsStr stringByAppendingString:anchorStr];
+    }
+    anchorsStr = [anchorsStr stringByAppendingString:@"]"];
+    
+    NSString *jsCode = [NSString
+                        stringWithFormat:@"if (window.WebARonARKitAnchorEvent) "
+                        @"window.WebARonARKitAnchorEvent({"
+                        @"\"type\":\"%@\","
+                        @"\"anchors\":%@"
+                        @"});",
+                        type,
+                        anchorsStr];
+    
+    [self->wkWebView
+     evaluateJavaScript:jsCode
+     completionHandler:^(id data, NSError *error) {
+         if (error) {
+             [self showAlertDialog:
+              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+               error]
+                 completionHandler:^{
+                 }];
+         }
+     }];
+}
+
+- (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session added anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Added" anchors:anchors];
+}
+
+- (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session updated anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Updated" anchors:anchors];
+}
+
+- (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+    // The session removed anchors; notify the JS side about it.
+    [self session:session notifyAnchorEvent:@"Removed" anchors:anchors];
 }
 
 #pragma mark - WKUIDelegate

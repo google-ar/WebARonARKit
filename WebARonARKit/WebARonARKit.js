@@ -56,6 +56,26 @@
   VRDisplay = function() {
     var _layers = null;
 
+    var _listeners = {};
+ 
+    this.addEventListener = function(type, handler) {
+      if (!_listeners[type]) { _listeners[type] = []; }
+      _listeners[type].push(handler);
+    };
+
+    this.removeEventListener = function(type, handler) {
+      var handlers = _listeners[type];
+      if (!handlers) { return; }
+      var index = handlers.indexOf(handler);
+      if (index !== -1) handlers.splice(index, 1);
+    };
+
+    this.dispatchEvent = function(event) {
+      var handlers = _listeners[event.type];
+      if (!handlers) { return; }
+      handlers.forEach(function(handler) { handler(event); });
+    };
+
     /**
      * Whether the display is connected to the device.
      * @type {boolean}
@@ -603,7 +623,7 @@
     this.hasPassThroughCamera = false;
     return this;
   };
-
+ 
   /**
    * The enumeration of eyes for a VR/AR display device.
    * @type {{left: string, right: string}}
@@ -823,6 +843,17 @@
     callRafCallbacks();
   };
 
+ /**
+  * This function will be called from the native side upon an anchor event.
+  * @param {Object} data The data from native, which must contain the following properties:
+  *     type - a string describing the type of the anchor event.
+  *     anchors - an array of objects containing planes in the world.
+  * @constructor
+  */
+ window.WebARonARKitAnchorEvent = function(data) {
+   WebARonARKitVRDisplay.dispatchEvent(new CustomEvent('anchors' + data.type, { detail: data }));
+ };
+ 
   /**
    * If the window size has changed, the native side will call this function.
    * This is a hack due to WKWebView not handling the window.innerWidth/Height
