@@ -439,13 +439,12 @@
           // Get the anchor transform.
           setMat4FromArray(hitVars.planeMatrix, anchor.modelMatrix);
 
-          // Get the position of the anchor in world-space: the anchor center
-          // is an offset from the anchor transform position in local space.
+          // Get the position of the anchor in world-space.
           vec3.set(
             hitVars.planeCenter,
-            anchor.center[0],
-            anchor.center[1],
-            anchor.center[2]
+            0,
+            0,
+            0
           );
           vec3.transformMat4(
             hitVars.planePosition,
@@ -516,13 +515,13 @@
           // Tolerance is added to match the behavior of the native hitTest call.
           var tolerance = 0.0075;
           if (
-            Math.abs(hitVars.planeIntersectionLocal[0] - anchor.center[0]) >
+            Math.abs(hitVars.planeIntersectionLocal[0]) >
             hitVars.planeExtent[0] / 2 + tolerance
           ) {
             continue;
           }
           if (
-            Math.abs(hitVars.planeIntersectionLocal[2] - anchor.center[2]) >
+            Math.abs(hitVars.planeIntersectionLocal[2]) >
             hitVars.planeExtent[2] / 2 + tolerance
           ) {
             continue;
@@ -803,21 +802,21 @@
     for (var i = 0; i < WebARonARKitVRDisplay.anchors_.length; i++) {
       var anchor = WebARonARKitVRDisplay.anchors_[i];
       anchor.vertices = [];
-      anchor.vertices.push(anchor.center[0] + (anchor.extent[0] / 2));
-      anchor.vertices.push(anchor.center[1]);
-      anchor.vertices.push(anchor.center[2] + (anchor.extent[1] / 2));
+      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(0);
+      anchor.vertices.push(anchor.extent[1] / 2);
  
-      anchor.vertices.push(anchor.center[0] - (anchor.extent[0] / 2));
-      anchor.vertices.push(anchor.center[1]);
-      anchor.vertices.push(anchor.center[2] + (anchor.extent[1] / 2));
+      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(0);
+      anchor.vertices.push(anchor.extent[1] / 2);
       
-      anchor.vertices.push(anchor.center[0] - (anchor.extent[0] / 2));
-      anchor.vertices.push(anchor.center[1]);
-      anchor.vertices.push(anchor.center[2] - (anchor.extent[1] / 2));
+      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(0);
+      anchor.vertices.push(anchor.extent[1] / 2);
       
-      anchor.vertices.push(anchor.center[0] + (anchor.extent[0] / 2));
-      anchor.vertices.push(anchor.center[1]);
-      anchor.vertices.push(anchor.center[2] - (anchor.extent[1] / 2));
+      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(0);
+      anchor.vertices.push(anchor.extent[1] / 2);
     }
 
     callRafCallbacks();
