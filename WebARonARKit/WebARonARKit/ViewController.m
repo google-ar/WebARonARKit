@@ -582,17 +582,17 @@
                                             @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
                                             @"\"identifier\":%i,"
                                             @"\"alignment\":%i,"
-                                            @"\"center\":[%f,%f,%f],"
                                             @"\"extent\":[%f,%f]}",
                                             anchorMatrix[0], anchorMatrix[1], anchorMatrix[2],
                                             anchorMatrix[3], anchorMatrix[4], anchorMatrix[5],
                                             anchorMatrix[6], anchorMatrix[7], anchorMatrix[8],
                                             anchorMatrix[9], anchorMatrix[10], anchorMatrix[11],
-                                            anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
+                                            anchorMatrix[12] + anchor.center.x,
+                                            anchorMatrix[13] + anchor.center.y,
+                                            anchorMatrix[14] + anchor.center.z,
                                             anchorMatrix[15],
                                             (int)anchor.identifier,
                                             (int)anchor.alignment,
-                                            anchor.center.x, anchor.center.y, anchor.center.z,
                                             anchor.extent.x, anchor.extent.z];
         if (i < frame.anchors.count - 1) {
             anchorStr = [anchorStr stringByAppendingString:@","];
