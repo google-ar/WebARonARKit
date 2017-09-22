@@ -209,6 +209,8 @@
 
     self->showingCameraFeed = false;
 
+    self.timestamps = [[NSMutableDictionary alloc] init];
+    
     // Create an ARSession
     self.session = [ARSession new];
     self.session.delegate = self;
