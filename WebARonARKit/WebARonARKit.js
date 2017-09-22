@@ -806,17 +806,17 @@
       anchor.vertices.push(0);
       anchor.vertices.push(anchor.extent[1] / 2);
  
-      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(-anchor.extent[0] / 2);
       anchor.vertices.push(0);
       anchor.vertices.push(anchor.extent[1] / 2);
       
-      anchor.vertices.push(anchor.extent[0] / 2);
+      anchor.vertices.push(-anchor.extent[0] / 2);
       anchor.vertices.push(0);
-      anchor.vertices.push(anchor.extent[1] / 2);
+      anchor.vertices.push(-anchor.extent[1] / 2);
       
       anchor.vertices.push(anchor.extent[0] / 2);
       anchor.vertices.push(0);
-      anchor.vertices.push(anchor.extent[1] / 2);
+      anchor.vertices.push(-anchor.extent[1] / 2);
     }
 
     callRafCallbacks();
