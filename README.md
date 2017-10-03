@@ -7,45 +7,39 @@
 **Note:** This is not an official Google product. Nor is it a fully-featured web browser. Nor are the enabling JavaScript APIs standards, or on the standardization path. WebARonARKit is only meant to enable developer experimentation. For details on the WebARonARKit architecture, see [How WebARonARKit works](#HowWebARonARKitWorks).
 
 ## Getting started
-WebARonARKit must be built from source using Xcode 9 beta and iOS 11 beta. This requires an Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
+WebARonARKit must be built from source using Xcode 9 and iOS 11. This requires an Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
 
-### <a name="InstalliOS11beta">1. Install iOS 11 beta</a>
-WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running the iOS 11 beta. For best results, we recommend one of the following:
+### <a name="Prerequisites">0. Prerequisites</a> 
+WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running iOS 11. For best results, we recommend one of the following:
 
 + iPad (2017)
 + iPad Pro (9.7, 10.5 or 12.9 inches)
 + iPhone 7 and 7 Plus
 
-To install iOS 11 beta on your iOS device, consult [Apple’s official guide](https://developer.apple.com/support/beta-software/install-ios-beta/), or follow these steps:
+WebARonARKit must be built from source and requires the following:
 
-1. Download the iOS 11 Beta configuration profile from [developer.apple.com/download](https://developer.apple.com/download/) and double-click on the `iOS_11_beta_Profile.mobileconfig` file in Finder to install the profile.
-2. Download an iOS restore image for iOS 11 beta for your specific device from [developer.apple.com/download](https://developer.apple.com/download/), under Featured Downloads > iOS Restore Images > See all.
-3. Connect your iOS device to your computer with a cable.
-4. Open iTunes and select your device.
-5. Option-click on the "Check for Update" button, select the iOS 11 restore image you downloaded, and follow the instructions to install it on your device.
++ [Xcode 9](https://developer.apple.com/xcode/) 
++ iOS 11
++ An Apple Developer Account. If you do have one already, sign up at [developer.apple.com](http://developer.apple.com).
 
-### <a name="InstallXcode9beta">2. Install Xcode 9 beta</a>
-Working with ARKit and iOS 11 requires XCode 9 beta.
 
-1. Download Xcode 9 beta from [developer.apple.com/download](https://developer.apple.com/download/).
-2. Unpack Xcode 9 beta and copy to your Applications folder.
-
-### <a name="RunWebARonARKit">3. Run WebARonARKit</a>
+### <a name="RunWebARonARKit">1. Run WebARonARKit</a>
 1. Clone the WebARonARKit GitHub repo.
-2. Launch Xcode 9 beta.
-3. Open the Xcode project from the cloned WebARonARKit repo using Xcode 9 beta.
-4. Select WebARonARKit Project file (top blue icon in the left column) and then select the WebARonARKit target under TARGETS. Then in the signing section make sure you have selected the right Team (this should correspond to your iOS Developer Account / Team). If you get an error in the following steps, it's probably due to a code signing error.
-5. Set your device as build destination by first ensuring it is connected to your computer, then selecting it the Product menu, under Destination, or from the drop-down menu next to the Run button (in the top top-left of the UI).
-6. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically.
+2. Launch Xcode 9.
+3. Open the Xcode project (.xcodeproj) from within the cloned WebARonARKit repo using Xcode 9. 
+4. Select WebARonARKit Project file from the Project Navigator (top blue icon in the left column) and then select the WebARonARKit target under TARGETS. 
+5. With WebARonARKit as the selected target, you'll automatically be viewing the "General" tab in the main panel. From there find the signing section and select the Team that corresponds to your iOS Developer Account / Team. If you get an error in the following steps, it's probably due to a code signing error. If you encounter errors, follow the instructions provided within Xcode.
+6. Set your device as build destination by first ensuring it is connected to your computer, then selecting it from Product >> Destination menu or from the drop-down menu next to the Run button (in the top top-left of the UI).
+7. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically. You may have to follow on screen instructions to authorize your developer account to push to your device.
 
-### <a name="ViewingExamples">4. Viewing examples</a>
+### <a name="ViewingExamples">2. Viewing examples</a>
 A [list of example scenes](https://developers.google.com/ar/develop/web/getting-started#examples) compatible with WebARonARKit and [WebARonARCore](https://github.com/google-ar/WebARonARCore) are available at [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples).
 
-### <a name="BuildingScenes">5. Building your own scenes</a>
+### <a name="BuildingScenes">3. Building your own scenes</a>
 To build AR web experiences that work with WebARonARKit and [WebARonARCore for Android](https://github.com/google-ar/WebARonARCore), we recommend **[three.ar.js](https://github.com/google-ar/three.ar.js)**, a helper library that works with the popular [three.js](http://threejs.org) WebGL framework. [Three.ar.js](https://github.com/google-ar/three.ar.js) provides common AR building blocks, such as a visible reticle that draws on top of real world surfaces, and [example scenes](https://github.com/google-ar/three.ar.js#examples).
 
-### <a name="Debugging">6. Debugging </a>
-Pages in WebARonARKit can be inspected and debugged remotely with MacOS Safari, however this requires MacOS Safari 11.0 (available as Safari Technology Preview) or higher. You can download MacOS Safari 11 from https://developer.apple.com/safari/technology-preview/. 
+### <a name="Debugging">4. Debugging </a>
+Pages in WebARonARKit can be inspected and debugged remotely with MacOS Safari, however this requires MacOS Safari 11.0 (available as Safari Technology Preview) or higher. You can download MacOS Safari 11 from [https://developer.apple.com/safari/technology-preview/](https://developer.apple.com/safari/technology-preview/). 
 
 ## <a name="HowWebARonARKitWorks">How WebARonARKit works</a>
 
