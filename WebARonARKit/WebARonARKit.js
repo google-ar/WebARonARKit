@@ -175,6 +175,13 @@
     this.viewMatrix_ = new Float32Array(16);
 
     /**
+     * The list of planes coming from ARKit.
+     * @type {Map<number, ARPlane}
+     * @private
+     */
+    this.planes_ = new Map();
+
+    /**
      * Resets the pose of the device so the current transform is world origin.
      */
     this.resetPose = function() {
@@ -545,9 +552,72 @@
         return hits;
       };
     })();
- 
+
+    /**
+     * Get an iterable of plane objects representing ARKit's current understanding of the world.
+     * @return {iterator<Object>} The iterable of plane objects.
+     */
     this.getPlanes = function() {
-      return this.anchors_;
+      return Array.from(this.planes_.values());
+    };
+
+    // EventTarget implementation.
+    this.listeners_ = {};
+
+    /**
+     * Register a callback function for an event of the given type.
+     * Important events are "planesadded", "planesupdated", and "planesremoved".
+     * @param {string} type The type of event to listen for.
+     * @param {function<Object>} callback The callback to call, which must take an event object parameter,
+     *     which will have the attribute "type" in addition to any event-specific attributes.
+     */ 
+    this.addEventListener = function(type, callback) {
+      if (!(type in this.listeners_)) {
+        this.listeners_[type] = [];
+      }
+      this.listeners_[type].push(callback);
+    };
+
+    /**
+     * Unregister a callback function for an event of the given type.
+     * @param {string} type The type of event to remove.
+     * @param {function<Object>} callback The callback to remove.
+     */
+    this.removeEventListener = function(type, callback) {
+      if (!(type in this.listeners_)) {
+        return;
+      }
+
+      var stack = this.listeners_[type];
+	  for (var i = 0, l = stack.length; i < l; i++) {
+	    if (stack[i] === callback){
+	      stack.splice(i, 1);
+	      return;
+	    }
+	  }
+	};
+
+    /**
+     * Fire an event to all listeners.
+     * @param {Object} event The event to fire, which must have a "type" attribute in addition to any
+     *     event-specific attributes.
+     */
+    this.dispatchEvent = function(event) {
+      if (!(event.type in this.listeners_)) {
+        return true;
+      }
+ 
+      var stack = this.listeners_[event.type];
+      for (var i = 0, l = stack.length; i < l; i++) {
+        stack[i].call(this, event);
+      }
+
+      // Check for "onXXX" version of event handlers.
+      var onFunc = this["on" + event.type];
+      if (typeof onFunc == 'function') {
+        onFunc.call(this, event);
+      }
+      return !event.defaultPrevented;
     };
 
     return this;
@@ -797,29 +867,23 @@
       WebARonARKitVRDisplay.projectionMatrix_[i] = data.projectionMatrix[i];
     }
 
-    WebARonARKitVRDisplay.anchors_ = data.anchors;
-    // ARKit doesn't come with vertices, so generate them for parity with ARKit.
-    for (var i = 0; i < WebARonARKitVRDisplay.anchors_.length; i++) {
-      var anchor = WebARonARKitVRDisplay.anchors_[i];
-      anchor.vertices = [];
-      anchor.vertices.push(anchor.extent[0] / 2);
-      anchor.vertices.push(0);
-      anchor.vertices.push(anchor.extent[1] / 2);
- 
-      anchor.vertices.push(-anchor.extent[0] / 2);
-      anchor.vertices.push(0);
-      anchor.vertices.push(anchor.extent[1] / 2);
-      
-      anchor.vertices.push(-anchor.extent[0] / 2);
-      anchor.vertices.push(0);
-      anchor.vertices.push(-anchor.extent[1] / 2);
-      
-      anchor.vertices.push(anchor.extent[0] / 2);
-      anchor.vertices.push(0);
-      anchor.vertices.push(-anchor.extent[1] / 2);
-    }
-
     callRafCallbacks();
+  };
+
+  window.WebARonARKitDispatchARDisplayEvent = function(event) {
+    WebARonARKitVRDisplay.dispatchEvent(event);
+
+    // Keep the list of planes updated to support the polling planes api.
+    if (event.type == "planesadded" || event.type == "planesupdated") {
+      for (var i = 0; i < event.planes.length; i++) {
+        var plane = event.planes[i];
+        WebARonARKitVRDisplay.planes_.set(plane.identifier, plane);
+      }
+    } else if (event.type == "planesremoved") {
+      for (var i = 0; i < event.planes.length; i++) {
+        WebARonARKitVRDisplay.planes_.delete(event.planes[i]);
+      }
+    }
   };
 
   /**

@@ -531,6 +531,103 @@
     // required
 }
 
+- (NSString *)getPlanesString:(nonnull NSArray<ARAnchor *> *)anchors
+{
+  NSString *result = @"[";
+  for (int i = 0; i < anchors.count; i++) {
+    if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
+      // We only want anchors of type plane.
+      continue;
+    }
+    ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
+    matrix_float4x4 planeTransform = plane.transform;
+    const float *planeMatrix = (const float *)(&planeTransform);
+    NSString *planeStr = [NSString stringWithFormat:
+                          @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
+                          @"%f,%f,%f,%f,%f,%f,%f,%f],"
+                          @"\"identifier\":%i,"
+                          @"\"alignment\":%i,"
+                          @"\"extent\":[%f,%f],"
+                          @"\"vertices\":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}",
+                          planeMatrix[0], planeMatrix[1], planeMatrix[2],
+                          planeMatrix[3], planeMatrix[4], planeMatrix[5],
+                          planeMatrix[6], planeMatrix[7], planeMatrix[8],
+                          planeMatrix[9], planeMatrix[10], planeMatrix[11],
+                          planeMatrix[12] + plane.center.x,
+                          planeMatrix[13] + plane.center.y,
+                          planeMatrix[14] + plane.center.z,
+                          planeMatrix[15],
+                          (int)plane.identifier,
+                          (int)plane.alignment,
+                          plane.extent.x, plane.extent.z,
+                          plane.extent.x / 2, 0.0, plane.extent.z / 2,
+                          -plane.extent.x / 2, 0.0, plane.extent.z / 2,
+                          -plane.extent.x / 2, 0.0, -plane.extent.z / 2,
+                          plane.extent.x / 2, 0.0, -plane.extent.z / 2];
+        if (i < anchors.count - 1) {
+            planeStr = [planeStr stringByAppendingString:@","];
+        }
+        result = [result stringByAppendingString:planeStr];
+    }
+    result = [result stringByAppendingString:@"]"];
+    return result;
+}
+
+- (void) dispatchVRDisplayPlaneEvent:(NSString *)type planes:(NSString *)planes
+{
+  NSString *jsCode = [NSString
+        stringWithFormat:@"if (window.WebARonARKitDispatchARDisplayEvent) "
+                         @"window.WebARonARKitDispatchARDisplayEvent({"
+                         @"\"type\":\"%@\","
+                         @"\"planes\":%@"
+                         @"});",
+                         type,
+                         planes];
+
+    [self->wkWebView
+        evaluateJavaScript:jsCode
+         completionHandler:^(id data, NSError *error) {
+             if (error) {
+                 [self showAlertDialog:
+                     [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@", error]
+                     completionHandler:^{
+                     }];
+             }
+         }];
+}
+
+- (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+  [self dispatchVRDisplayPlaneEvent:@"planesadded" planes:[self getPlanesString:anchors]];
+}
+
+- (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+  [self dispatchVRDisplayPlaneEvent:@"planesupdated" planes:[self getPlanesString:anchors]];
+}
+
+- (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
+{
+  NSString *removedStr = @"[";
+  for (int i = 0; i < anchors.count; i++) {
+    if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
+      // We only want anchors of type plane.
+      continue;
+    }
+    ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
+    NSString *identifierStr = [NSString stringWithFormat:
+                           @"%i",
+                           (int)plane.identifier];
+    if (i < anchors.count - 1) {
+      identifierStr = [identifierStr stringByAppendingString:@","];
+    }
+    removedStr = [removedStr stringByAppendingString:identifierStr];
+  }
+  removedStr = [removedStr stringByAppendingString:@"]"];
+
+  [self dispatchVRDisplayPlaneEvent:@"planesremoved" planes:removedStr];
+}
+
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame
 {
     // If the window size has changed, notify the JS side about it.
@@ -570,37 +667,7 @@
     //  CVPixelBufferGetPixelFormatType(frame.capturedImage);
     //  NSLog(@"width = %d, height = %d, bytesPerRow = %d, ostype = %d", width,
     //  height, bytesPerRow, pixelFormatType);
-
-    NSString *anchors = @"[";
-    for (int i = 0; i < frame.anchors.count; i++) {
-        ARPlaneAnchor *anchor = (ARPlaneAnchor *)frame.anchors[i];
-        matrix_float4x4 anchorTransform = anchor.transform;
-        const float *anchorMatrix = (const float *)(&anchorTransform);
-        //NSLog(@"Plane extent (native) %@", [NSString stringWithFormat: @"%f,%f,%f", anchor.extent.x, anchor.extent.y, anchor.extent.z]);
-        NSString *anchorStr = [NSString stringWithFormat:
-                                            @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
-                                            @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
-                                            @"\"identifier\":%i,"
-                                            @"\"alignment\":%i,"
-                                            @"\"extent\":[%f,%f]}",
-                                            anchorMatrix[0], anchorMatrix[1], anchorMatrix[2],
-                                            anchorMatrix[3], anchorMatrix[4], anchorMatrix[5],
-                                            anchorMatrix[6], anchorMatrix[7], anchorMatrix[8],
-                                            anchorMatrix[9], anchorMatrix[10], anchorMatrix[11],
-                                            anchorMatrix[12] + anchor.center.x,
-                                            anchorMatrix[13] + anchor.center.y,
-                                            anchorMatrix[14] + anchor.center.z,
-                                            anchorMatrix[15],
-                                            (int)anchor.identifier,
-                                            (int)anchor.alignment,
-                                            anchor.extent.x, anchor.extent.z];
-        if (i < frame.anchors.count - 1) {
-            anchorStr = [anchorStr stringByAppendingString:@","];
-        }
-        anchors = [anchors stringByAppendingString:anchorStr];
-    }
-    anchors = [anchors stringByAppendingString:@"]"];
-
+    
     NSString *jsCode = [NSString
         stringWithFormat:@"if (window.WebARonARKitSetData) "
                          @"window.WebARonARKitSetData({"
@@ -609,8 +676,7 @@
                          @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
                          @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
                          @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
-                         @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
-                         @"\"anchors\":%@"
+                         @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
                          @"});",
                          position[0], position[1], position[2],
                          pOrientationQuat[0], pOrientationQuat[1],
@@ -627,8 +693,7 @@
                          pProjectionMatrix[8], pProjectionMatrix[9],
                          pProjectionMatrix[10], pProjectionMatrix[11],
                          pProjectionMatrix[12], pProjectionMatrix[13],
-                         pProjectionMatrix[14], pProjectionMatrix[15],
-                         anchors];
+                         pProjectionMatrix[14], pProjectionMatrix[15]];
 
     [self->wkWebView
         evaluateJavaScript:jsCode
