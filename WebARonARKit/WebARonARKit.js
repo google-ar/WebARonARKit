@@ -396,7 +396,8 @@
         var hits = [];
 
         // If there are no anchors detected, there will be no hits.
-        if (!this.anchors_ || this.anchors_.length == 0) {
+        var planes = this.getPlanes();
+        if (!planes || planes.length == 0) {
           return hits;
         }
 
@@ -440,11 +441,11 @@
         vec3.normalize(hitVars.worldRayDir, hitVars.worldRayDir);
 
         // Go through all the anchors and test for intersections with the ray.
-        for (var i = 0; i < this.anchors_.length; i++) {
-          var anchor = this.anchors_[i];
+        for (var i = 0; i < planes.length; i++) {
+          var plane = planes[i];
 
           // Get the anchor transform.
-          setMat4FromArray(hitVars.planeMatrix, anchor.modelMatrix);
+          setMat4FromArray(hitVars.planeMatrix, plane.modelMatrix);
 
           // Get the position of the anchor in world-space.
           vec3.set(
@@ -485,7 +486,7 @@
           );
 
           // Get the plane extents (extents are in plane local space).
-          vec3.set(hitVars.planeExtent, anchor.extent[0], 0, anchor.extent[1]);
+          vec3.set(hitVars.planeExtent, plane.extent[0], 0, plane.extent[1]);
 
           /*
            ///////////////////////////////////////////////
