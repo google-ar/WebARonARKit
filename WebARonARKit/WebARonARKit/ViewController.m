@@ -608,24 +608,7 @@
 
 - (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
 {
-  NSString *removedStr = @"[";
-  for (int i = 0; i < anchors.count; i++) {
-    if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
-      // We only want anchors of type plane.
-      continue;
-    }
-    ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
-    NSString *identifierStr = [NSString stringWithFormat:
-                           @"%i",
-                           (int)plane.identifier];
-    if (i < anchors.count - 1) {
-      identifierStr = [identifierStr stringByAppendingString:@","];
-    }
-    removedStr = [removedStr stringByAppendingString:identifierStr];
-  }
-  removedStr = [removedStr stringByAppendingString:@"]"];
-
-  [self dispatchVRDisplayPlaneEvent:@"planesremoved" planes:removedStr];
+  [self dispatchVRDisplayPlaneEvent:@"planesremoved" planes:[self getPlanesString:anchors]];
 }
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame

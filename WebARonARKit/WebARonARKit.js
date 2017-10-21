@@ -872,8 +872,6 @@
   };
 
   window.WebARonARKitDispatchARDisplayEvent = function(event) {
-    WebARonARKitVRDisplay.dispatchEvent(event);
-
     // Keep the list of planes updated to support the polling planes api.
     if (event.type == "planesadded" || event.type == "planesupdated") {
       for (var i = 0; i < event.planes.length; i++) {
@@ -882,9 +880,13 @@
       }
     } else if (event.type == "planesremoved") {
       for (var i = 0; i < event.planes.length; i++) {
-        WebARonARKitVRDisplay.planes_.delete(event.planes[i]);
+        var plane = event.planes[i];
+        WebARonARKitVRDisplay.planes_.delete(plane.identifier);
       }
     }
+
+    // Dispatch the event to any listeners.
+    WebARonARKitVRDisplay.dispatchEvent(event);
   };
 
   /**
