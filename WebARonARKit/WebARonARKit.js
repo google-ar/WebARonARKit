@@ -990,7 +990,7 @@
     }
     rafCallbacks = [];
     for (var i = 0; i < rafCallbacksCopy.length; i++) {
-      rafCallbacksCopy[i]();
+      rafCallbacksCopy[i](performance.now());
     }
   }
 
