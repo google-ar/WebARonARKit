@@ -207,6 +207,10 @@
     self->far = 10000.0f;
 
     self->showingCameraFeed = false;
+  
+    self->jsAnchorIdsToObjCAnchorIds = [[NSMutableDictionary alloc] init];
+    self->objCAnchorIdsToJSAnchorIds = [[NSMutableDictionary alloc] init];
+    self->anchors = [[NSMutableDictionary alloc] init];
 
     // Create an ARSession
     self.session = [ARSession new];
@@ -314,20 +318,27 @@
     self->backButton.backgroundColor = [UIColor whiteColor];
     UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
     [self->backButton setImage:backIcon forState:UIControlStateNormal];
-    [self->backButton addTarget:self action:@selector(backButtonClicked:) forControlEvents:UIControlEventTouchDown];
+    [self->backButton addTarget:self action:@selector(backButtonClicked:)
+            forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->backButton];
 
-    self->refreshButton = [[UIButton alloc] initWithFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    self->refreshButton = [[UIButton alloc]
+            initWithFrame:CGRectMake(
+                    self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0,
+                    URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
     [self->refreshButton setBackgroundColor:[UIColor whiteColor]];
     UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
     [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
-    [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:) forControlEvents:UIControlEventTouchDown];
+    [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:)
+            forControlEvents:UIControlEventTouchDown];
     [self.view addSubview:self->refreshButton];
 
     //Progress View Setup
     [self initProgressView];
     //Observe the estimatedProgress to uodate progress view
-    [self->wkWebView addObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress)) options:NSKeyValueObservingOptionNew context:NULL];
+    [self->wkWebView addObserver:self
+            forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
+            options:NSKeyValueObservingOptionNew context:NULL];
     
     // Load the default website
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
@@ -351,7 +362,8 @@
 - (void)dealloc {
     
     if ([self isViewLoaded]) {
-        [self->wkWebView removeObserver:self forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
+        [self->wkWebView removeObserver:self
+                forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
     }
     
     [self->wkWebView setNavigationDelegate:nil];
@@ -361,7 +373,10 @@
 #pragma mark - Progress View
 
 - (void)initProgressView {
-    self.progressView = [[ProgressView alloc] initWithFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    self.progressView = [[ProgressView alloc]
+            initWithFrame:CGRectMake(0,
+                    URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
+                    self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
     [self.view addSubview:self.progressView];
     [self setProgressViewColorSuccessful];
     [self startAndShowProgressView];
@@ -369,17 +384,24 @@
 
 - (void)setProgressViewColorSuccessful {
     //Material Design Blue 100 #BBDEFB
-    [self.progressView setProgressBackgroundColor:[UIColor colorWithRed:0.7333333333 green:0.8705882353 blue:0.9843137255 alpha:1.0]];
+    [self.progressView setProgressBackgroundColor:
+            [UIColor colorWithRed:0.7333333333 green:0.8705882353
+                    blue:0.9843137255 alpha:1.0]];
     //Material Design Blue 500 #2196F3
-    [self.progressView setProgressFillColor:[UIColor colorWithRed:0.1294117647 green:0.5882352941 blue:0.9529411765 alpha:1.0]];
+    [self.progressView setProgressFillColor:
+            [UIColor colorWithRed:0.1294117647 green:0.5882352941
+                    blue:0.9529411765 alpha:1.0]];
 }
-
                                              
 - (void)setProgressViewColorErrored {
     //Material Design Red 100 #FFCDD2
-    [self.progressView setProgressFillColor:[UIColor colorWithRed:1.0 green:0.8039215686 blue:0.8235294118 alpha:1.0]];
+    [self.progressView setProgressFillColor:
+            [UIColor colorWithRed:1.0 green:0.8039215686
+                    blue:0.8235294118 alpha:1.0]];
     //Material Design Red 500 #F44336
-    [self.progressView setProgressFillColor:[UIColor colorWithRed:0.9568627451 green:0.262745098 blue:0.2117647059 alpha:1.0]];
+    [self.progressView setProgressFillColor:
+            [UIColor colorWithRed:0.9568627451 green:0.262745098
+                    blue:0.2117647059 alpha:1.0]];
 }
 
 - (void)startAndShowProgressView {
@@ -403,14 +425,22 @@
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {
-    [self->urlTextField setFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2, URL_TEXTFIELD_HEIGHT)];
+    [self->urlTextField setFrame:
+            CGRectMake(URL_TEXTFIELD_HEIGHT, 0,
+                    self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
+                    URL_TEXTFIELD_HEIGHT)];
 
-    [self->refreshButton setFrame:CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
+    [self->refreshButton setFrame:
+            CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0,
+                    URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
 
-    [self->wkWebView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                                         self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+    [self->wkWebView setFrame:
+            CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
+                    self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
 
-    [self.progressView setFrame:CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT, self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    [self.progressView setFrame:
+            CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
+                    self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
     
     [self updateOrientation];
     updateWindowSize = true;
@@ -445,7 +475,7 @@
 {
     ARWorldTrackingConfiguration *configuration =
         [ARWorldTrackingConfiguration new];
-    configuration.planeDetection = ARPlaneDetectionHorizontal;
+    configuration.planeDetection = ARPlaneDetectionNone;// ARPlaneDetectionHorizontal;
     [self.session runWithConfiguration:configuration
                                options:ARSessionRunOptionResetTracking];
 }
@@ -533,11 +563,17 @@
 
 - (NSString *)getPlanesString:(nonnull NSArray<ARAnchor *> *)anchors
 {
-  NSString *result = @"[";
+  // Return nil if no planes are among the anchors
+  NSString *result = nil;
   for (int i = 0; i < anchors.count; i++) {
     if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
       // We only want anchors of type plane.
       continue;
+    }
+    // Now that we know that there is at least one plane among the anchors,
+    // create the returning string.
+    if (result == nil) {
+      result = @"[";
     }
     ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
     matrix_float4x4 planeTransform = plane.transform;
@@ -564,25 +600,64 @@
                           -plane.extent.x / 2, 0.0, plane.extent.z / 2,
                           -plane.extent.x / 2, 0.0, -plane.extent.z / 2,
                           plane.extent.x / 2, 0.0, -plane.extent.z / 2];
-        if (i < anchors.count - 1) {
-            planeStr = [planeStr stringByAppendingString:@","];
-        }
+        planeStr = [planeStr stringByAppendingString:@","];
         result = [result stringByAppendingString:planeStr];
     }
-    result = [result stringByAppendingString:@"]"];
+    // Remove the last coma if there is any string
+    if (result != nil) {
+      result = [result substringToIndex:result.length - 1];
+      result = [result stringByAppendingString:@"]"];
+    }
     return result;
 }
 
-- (void) dispatchVRDisplayPlaneEvent:(NSString *)type planes:(NSString *)planes
+- (NSString *)getAnchorsString:(nonnull NSArray<ARAnchor *> *)anchors
+{
+  NSString *result = nil;
+  for (int i = 0; i < anchors.count; i++) {
+    if ([anchors[i] isKindOfClass:[ARPlaneAnchor class]] ||
+          [anchors[i] isKindOfClass:[ARFaceAnchor class]]) {
+      // We do not want Plane or Face anchors.
+      continue;
+    }
+    if (result == nil) {
+      result = @"[";
+    }
+    ARAnchor *anchor = (ARAnchor *)anchors[i];
+    matrix_float4x4 anchorTransform = anchor.transform;
+    const float *anchorMatrix = (const float *)(&anchorTransform);
+    NSString* jsAnchorId = objCAnchorIdsToJSAnchorIds[anchor.identifier.UUIDString];
+    NSString *anchorStr = [NSString stringWithFormat:
+                          @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
+                          @"%f,%f,%f,%f,%f,%f,%f,%f],"
+                          @"\"identifier\":%@,",
+                          anchorMatrix[ 0], anchorMatrix[ 1], anchorMatrix[ 2],
+                          anchorMatrix[ 3], anchorMatrix[ 4], anchorMatrix[ 5],
+                          anchorMatrix[ 6], anchorMatrix[ 7], anchorMatrix[ 8],
+                          anchorMatrix[ 9], anchorMatrix[10], anchorMatrix[11],
+                          anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
+                          anchorMatrix[15],
+                          jsAnchorId];
+    anchorStr = [anchorStr stringByAppendingString:@","];
+    result = [result stringByAppendingString:anchorStr];
+  }
+  if (result != nil) {
+    result = [result substringToIndex:result.length - 1];
+    result = [result stringByAppendingString:@"]"];
+  }
+  return result;
+}
+
+- (void) dispatchVRDisplayEvent:(NSString *)type
+        dataName:(NSString*)dataName dataString:(NSString *)dataString
 {
   NSString *jsCode = [NSString
         stringWithFormat:@"if (window.WebARonARKitDispatchARDisplayEvent) "
                          @"window.WebARonARKitDispatchARDisplayEvent({"
                          @"\"type\":\"%@\","
-                         @"\"planes\":%@"
+                         @"\"%@\":%@"
                          @"});",
-                         type,
-                         planes];
+                         type, dataName, dataString];
 
     [self->wkWebView
         evaluateJavaScript:jsCode
@@ -598,17 +673,37 @@
 
 - (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
 {
-  [self dispatchVRDisplayPlaneEvent:@"planesadded" planes:[self getPlanesString:anchors]];
+  NSString* planesString = [self getPlanesString:anchors];
+  if (planesString) {
+    [self dispatchVRDisplayEvent:@"planesadded"
+            dataName:@"planes" dataString:planesString];
+  }
 }
 
 - (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
 {
-  [self dispatchVRDisplayPlaneEvent:@"planesupdated" planes:[self getPlanesString:anchors]];
+  // TODO(@ijamardo): Instead of iterating over the anchors collection several
+  // times for differnt types, merge them into one function.
+  NSString* planesString = [self getPlanesString:anchors];
+  if (planesString) {
+    [self dispatchVRDisplayEvent:@"planesupdated"
+                             dataName:@"planes" dataString:planesString];
+  }
+  NSString* anchorsString = [self getAnchorsString:anchors];
+  if (anchorsString) {
+    [self dispatchVRDisplayEvent:@"anchorsupdated"
+                        dataName:@"anchors" dataString:anchorsString];
+  }
+  NSLog(@"JUDAX: session did update anchors with planesString = %@ and anchorsString = %@", planesString, anchorsString);
 }
 
 - (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
 {
-  [self dispatchVRDisplayPlaneEvent:@"planesremoved" planes:[self getPlanesString:anchors]];
+  NSString* planesString = [self getPlanesString:anchors];
+  if (planesString) {
+    [self dispatchVRDisplayEvent:@"planesremoved"
+                             dataName:@"planes" dataString:planesString];
+  }
 }
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame
@@ -876,6 +971,32 @@
             [self setShowCameraFeed:true];
         } else if ([method isEqualToString:@"hideCameraFeed"]) {
             [self setShowCameraFeed:false];
+        } else if ([method isEqualToString:@"createAnchor"]) {
+          // Construct the ARAnchor with the matrix provided from the js side.
+          NSString* jsAnchorId = params[0];
+          matrix_float4x4 modelMatrix;
+          float* pModelMatrix = (float*)(&modelMatrix);
+          for (int i = 0; i < 16; i++) {
+            pModelMatrix[i] = [params[i + 1] floatValue];
+          }
+          ARAnchor* anchor = [[ARAnchor alloc] initWithTransform:modelMatrix];
+          [self.session addAnchor:anchor];
+          // Create an entry to convert from the js id to the objective c id (and viceversa)
+          [jsAnchorIdsToObjCAnchorIds setValue:anchor.identifier.UUIDString forKey:jsAnchorId];
+          [objCAnchorIdsToJSAnchorIds setValue:jsAnchorId forKey:anchor.identifier.UUIDString];
+          // Store the anchor
+          [anchors setValue:anchor forKey:jsAnchorId];
+        } else if ([method isEqualToString:@"removeAnchor"]) {
+          // Retrive the ARAnchor from the jsAnchorId and remove it from the
+          // session. Of course, also remove all the id mapping and the anchor
+          // from the anchors container.
+          NSString* jsAnchorId = params[0];
+          ARAnchor* anchor = anchors[jsAnchorId];
+          NSString* objCAnchorId = anchor.identifier.UUIDString;
+          [jsAnchorIdsToObjCAnchorIds removeObjectForKey:jsAnchorId];
+          [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
+          [anchors removeObjectForKey:jsAnchorId];
+          [self.session removeAnchor:anchor];
         } else {
             NSLog(@"WARNING: Unknown message received: '%@'", method);
         }
