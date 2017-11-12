@@ -39,6 +39,10 @@
 
     bool showingCameraFeed;
     UIColor *wkWebViewOriginalBackgroundColor;
+  
+    NSMutableDictionary* jsAnchorIdsToObjCAnchorIds;
+    NSMutableDictionary* objCAnchorIdsToJSAnchorIds;
+    NSMutableDictionary* anchors;
 }
 
 @end

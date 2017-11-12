@@ -181,6 +181,9 @@
      */
     this.planes_ = new Map();
 
+    this.anchors_ = new Map();
+    this.anchorsIdCounter_ = 0;
+
     /**
      * Resets the pose of the device so the current transform is world origin.
      */
@@ -562,6 +565,35 @@
       return Array.from(this.planes_.values());
     };
 
+    this.createAnchor = function(modelMatrix) {
+      // Create the js anchor.
+      var anchor = new VRAnchor(modelMatrix);
+      var modelMatrixString = "";
+      for (var i = 0; i < 16; i++) {
+        modelMatrixString += modelMatrix[i] + (i < 15 ? "," : "");
+      }
+      window.webkit.messageHandlers.WebARonARKit.postMessage(
+            "createAnchor:" + anchor.identifier + "," + modelMatrixString
+          );
+      this.anchors_.set(anchor.identifier, anchor);
+      return anchor;
+    };
+
+    this.removeAnchor = function(anchor) {
+      window.webkit.messageHandlers.WebARonARKit.postMessage(
+            "removeAnchor:" + anchor.identifier
+          );
+      this.anchors_.delete(anchor.identifier);
+    };
+
+    /**
+     * Get an iterable of anchor objects representing all the anchors created up until this point
+     * @return {iterator<Object>} The iterable of plane objects.
+     */
+    this.getAnchors =  function() {
+      return Array.from(this.anchors_.values());
+    };
+
     // EventTarget implementation.
     this.listeners_ = {};
 
@@ -576,7 +608,10 @@
       if (!(type in this.listeners_)) {
         this.listeners_[type] = [];
       }
-      this.listeners_[type].push(callback);
+      // Only add the callback if it has not already been added.
+      if (this.listeners_[type].indexOf(callback) < 0) {
+        this.listeners_[type].push(callback);
+      }
     };
 
     /**
@@ -590,13 +625,13 @@
       }
 
       var stack = this.listeners_[type];
-	  for (var i = 0, l = stack.length; i < l; i++) {
-	    if (stack[i] === callback){
-	      stack.splice(i, 1);
-	      return;
-	    }
-	  }
-	};
+      for (var i = 0, l = stack.length; i < l; i++) {
+        if (stack[i] === callback){
+          stack.splice(i, 1);
+          return;
+        }
+      }
+    };
 
     /**
      * Fire an event to all listeners.
@@ -839,6 +874,21 @@
     return this;
   };
 
+  VRAnchor = function(modelMatrix) {
+    this.identifier = WebARonARKitVRDisplay.anchorsIdCounter_++;
+    this.modelMatrix = new Float32Array(16);
+    if (modelMatrix && modelMatrix.length === 16) {
+      for (var i = 0; i < 16; i++) {
+        this.modelMatrix[i] = modelMatrix[i];
+      }
+    }
+    else {
+      throw "ERROR: The given parameter is not a 16 value matrix in the " +
+          "VRAnchor constructor.";
+    }
+    return this;
+  };
+
   var WebARonARKitVRDisplay = new VRDisplay();
 
   //
@@ -882,6 +932,19 @@
       for (var i = 0; i < event.planes.length; i++) {
         var plane = event.planes[i];
         WebARonARKitVRDisplay.planes_.delete(plane.identifier);
+      }
+    } else if (event.type == "anchorsupdated") {
+      for (var i = 0; i < event.anchors.length; i++) {
+        var eventAnchor = event.anchors[i];
+        var anchor = WebARonARKitVRDisplay.anchors_.get(
+            eventAnchor.identifier);
+        // As the bridge is asynchronous, it could happen that an anchor is
+        // updated but it has already been removed.
+        if (anchor) {
+          for (var j = 0; j < 16; j++) {
+            anchor.modelMatrix[j] = eventAnchor.modelMatrix[j];
+          }
+        }
       }
     }
 
