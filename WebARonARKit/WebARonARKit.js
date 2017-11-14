@@ -874,6 +874,50 @@
     return this;
   };
 
+  /**
+   * The structure that represents a plane detected by the underlying AR
+   * system.
+   * This structure has 4 properties: 
+   * - identifier: The unique id of the plane.
+   * - modelMatrix: a matrix that represents the position and orientation
+   * of the plane in world space.
+   * - extent: The 2 dimensions extents of the plane.
+   * - vertices: The list of 3D points that conform the plane.
+   * @constructor
+   */
+  VRPlane = function(plane) {
+    this.set_(plane);
+    return this;
+  };
+
+  VRPlane.prototype.set_ = function(plane) {
+    this.identifier = plane.identifier;
+    this.modelMatrix = new Float32Array(plane.modelMatrix.length);
+    for (var i = 0; i < plane.modelMatrix.length; i++) {
+      this.modelMatrix[i] = plane.modelMatrix[i];
+    }
+    this.extent = new Float32Array(plane.extent.length);
+    for (var i = 0; i < plane.extent.length; i++) {
+      this.extent[i] = plane.extent[i];
+    }
+    this.vertices = new Float32Array(plane.vertices.length);
+    for (var i = 0; i < plane.vertices.length; i++) {
+      this.vertices[i] = plane.vertices[i];
+    }
+    return this;
+  };
+
+  /**
+   * The structure that represents an anchor created by the user and notified
+   * to the underlying AR platform so it keeps track of it. If the AR system
+   * changes its tracking estimation, the user anchors might need to be updated
+   * too.
+   * This structure has 2 properties: 
+   * - identifier: The unique id of the anchor.
+   * - modelMatrix: a matrix that represents the position and orientation
+   * of the anchor in world space.
+   * @constructor
+   */
   VRAnchor = function(modelMatrix) {
     this.identifier = WebARonARKitVRDisplay.anchorsIdCounter_++;
     this.modelMatrix = new Float32Array(16);
@@ -881,10 +925,9 @@
       for (var i = 0; i < 16; i++) {
         this.modelMatrix[i] = modelMatrix[i];
       }
-    }
-    else {
+    } else {
       throw "ERROR: The given parameter is not a 16 value matrix in the " +
-          "VRAnchor constructor.";
+      "VRAnchor constructor.";
     }
     return this;
   };
@@ -923,17 +966,30 @@
 
   window.WebARonARKitDispatchARDisplayEvent = function(event) {
     // Keep the list of planes updated to support the polling planes api.
-    if (event.type == "planesadded" || event.type == "planesupdated") {
+    if (event.type == "planesadded" || 
+        event.type == "planesupdated" || 
+        event.type === "planesremoved") {
       for (var i = 0; i < event.planes.length; i++) {
-        var plane = event.planes[i];
-        WebARonARKitVRDisplay.planes_.set(plane.identifier, plane);
-      }
-    } else if (event.type == "planesremoved") {
-      for (var i = 0; i < event.planes.length; i++) {
-        var plane = event.planes[i];
-        WebARonARKitVRDisplay.planes_.delete(plane.identifier);
+        var eventPlane = event.planes[i];
+        // If the plane has been added, create a VRPlane instance
+        if (event.type === "planesadded") {
+          var plane = new VRPlane(eventPlane);
+          WebARonARKitVRDisplay.planes_.set(plane.identifier, plane);
+        // If the plane has been updated, update the actual VRPlane instance
+        } else if (event.type === "planesupdated") {
+          var plane = WebARonARKitVRDisplay.planes_.get(eventPlane.identifier);
+          plane.set_(eventPlane);
+        // If the plane has been removed, remove the actual VRPlane instance.
+        } else if (event.type === "planesremoved") {
+          var plane = WebARonARKitVRDisplay.planes_.get(eventPlane.identifier);
+          WebARonARKitVRDisplay.planes_.delete(plane.identifier);
+        }
+        // The event planes should include the same references to the planes
+        // in the getPlanes call.
+        event.planes[i] = plane;
       }
     } else if (event.type == "anchorsupdated") {
+      var updatedAnchors = [];
       for (var i = 0; i < event.anchors.length; i++) {
         var eventAnchor = event.anchors[i];
         var anchor = WebARonARKitVRDisplay.anchors_.get(
@@ -944,8 +1000,12 @@
           for (var j = 0; j < 16; j++) {
             anchor.modelMatrix[j] = eventAnchor.modelMatrix[j];
           }
+          updatedAnchors.push(anchor);
         }
       }
+      // The event anchors should include the same references to the anchors
+      // in the getAnchors call.
+      event.anchors = updatedAnchors;
     }
 
     // Dispatch the event to any listeners.
