@@ -393,7 +393,8 @@
       return function(x, y) {
         // Coordinates must be in normalized screen space.
         if (x < 0 || x > 1 || y < 0 || y > 1) {
-          throw new Error("hitTest - x and y values must be normalized [0,1]!");
+          throw 
+              new Error("hitTest - x and y values must be normalized [0,1]!");
         }
 
         var hits = [];
@@ -927,7 +928,7 @@
       }
     } else {
       throw "ERROR: The given parameter is not a 16 value matrix in the " +
-      "VRAnchor constructor.";
+          "VRAnchor constructor.";
     }
     return this;
   };
@@ -1072,7 +1073,7 @@
   window.requestAnimationFrame = function(callback) {
     if (typeof callback !== "function") {
       throw new TypeError(
-        "Failed to execute 'requestAnimationFrame' on 'Window':" +
+          "Failed to execute 'requestAnimationFrame' on 'Window':" +
           "The callback provided as parameter 1 is not a function."
       );
     }
