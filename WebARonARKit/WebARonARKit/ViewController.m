@@ -475,7 +475,7 @@
 {
     ARWorldTrackingConfiguration *configuration =
         [ARWorldTrackingConfiguration new];
-    configuration.planeDetection = ARPlaneDetectionNone;// ARPlaneDetectionHorizontal;
+    configuration.planeDetection = ARPlaneDetectionHorizontal;
     [self.session runWithConfiguration:configuration
                                options:ARSessionRunOptionResetTracking];
 }
@@ -641,6 +641,7 @@
     anchorStr = [anchorStr stringByAppendingString:@","];
     result = [result stringByAppendingString:anchorStr];
   }
+  // Remove the last coma if there is any string
   if (result != nil) {
     result = [result substringToIndex:result.length - 1];
     result = [result stringByAppendingString:@"]"];
@@ -694,7 +695,6 @@
     [self dispatchVRDisplayEvent:@"anchorsupdated"
                         dataName:@"anchors" dataString:anchorsString];
   }
-  NSLog(@"JUDAX: session did update anchors with planesString = %@ and anchorsString = %@", planesString, anchorsString);
 }
 
 - (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
