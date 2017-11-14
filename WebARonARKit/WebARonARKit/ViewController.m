@@ -582,7 +582,6 @@
                           @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
                           @"%f,%f,%f,%f,%f,%f,%f,%f],"
                           @"\"identifier\":%i,"
-                          @"\"alignment\":%i,"
                           @"\"extent\":[%f,%f],"
                           @"\"vertices\":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}",
                           planeMatrix[0], planeMatrix[1], planeMatrix[2],
@@ -594,7 +593,6 @@
                           planeMatrix[14] + plane.center.z,
                           planeMatrix[15],
                           (int)plane.identifier,
-                          (int)plane.alignment,
                           plane.extent.x, plane.extent.z,
                           plane.extent.x / 2, 0.0, plane.extent.z / 2,
                           -plane.extent.x / 2, 0.0, plane.extent.z / 2,
@@ -630,7 +628,7 @@
     NSString *anchorStr = [NSString stringWithFormat:
                           @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
                           @"%f,%f,%f,%f,%f,%f,%f,%f],"
-                          @"\"identifier\":%@,",
+                           @"\"identifier\":%@}",
                           anchorMatrix[ 0], anchorMatrix[ 1], anchorMatrix[ 2],
                           anchorMatrix[ 3], anchorMatrix[ 4], anchorMatrix[ 5],
                           anchorMatrix[ 6], anchorMatrix[ 7], anchorMatrix[ 8],
@@ -695,6 +693,14 @@
     [self dispatchVRDisplayEvent:@"anchorsupdated"
                         dataName:@"anchors" dataString:anchorsString];
   }
+  
+  // TODO: As we are not able to get an update on the anchors this code forces
+  // a call to the anchorsUpdated event dispatching for testing purposes.
+//  if (anchorsString == nil && self->anchors.count > 0) {
+//    anchorsString = [self getAnchorsString:self->anchors.allValues];
+//    [self dispatchVRDisplayEvent:@"anchorsupdated"
+//                        dataName:@"anchors" dataString:anchorsString];
+//  }
 }
 
 - (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
