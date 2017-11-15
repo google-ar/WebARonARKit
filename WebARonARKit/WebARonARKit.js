@@ -393,8 +393,9 @@
       return function(x, y) {
         // Coordinates must be in normalized screen space.
         if (x < 0 || x > 1 || y < 0 || y > 1) {
-          throw 
-              new Error("hitTest - x and y values must be normalized [0,1]!");
+          throw new Error(
+              "hitTest - x and y values must be normalized [0,1]!")
+          ;
         }
 
         var hits = [];
@@ -566,7 +567,7 @@
       return Array.from(this.planes_.values());
     };
 
-    this.createAnchor = function(modelMatrix) {
+    this.addAnchor = function(modelMatrix) {
       // Create the js anchor.
       var anchor = new VRAnchor(modelMatrix);
       var modelMatrixString = "";
@@ -574,9 +575,11 @@
         modelMatrixString += modelMatrix[i] + (i < 15 ? "," : "");
       }
       window.webkit.messageHandlers.WebARonARKit.postMessage(
-            "createAnchor:" + anchor.identifier + "," + modelMatrixString
+            "addAnchor:" + anchor.identifier + "," + modelMatrixString
           );
       this.anchors_.set(anchor.identifier, anchor);
+      // Dispatch an event that the anchor has been added.
+      this.dispatchEvent({type:"anchorsadded", anchors:[anchor]});
       return anchor;
     };
 
@@ -585,6 +588,7 @@
             "removeAnchor:" + anchor.identifier
           );
       this.anchors_.delete(anchor.identifier);
+      this.dispatchEvent({type:"anchorsremoved", anchors:[anchor]});
     };
 
     /**
@@ -927,8 +931,10 @@
         this.modelMatrix[i] = modelMatrix[i];
       }
     } else {
-      throw "ERROR: The given parameter is not a 16 value matrix in the " +
-          "VRAnchor constructor.";
+      throw new Error(
+          "ERROR: The given parameter is not a 16 value matrix in the " +
+          "VRAnchor constructor."
+      );
     }
     return this;
   };

@@ -977,7 +977,7 @@
             [self setShowCameraFeed:true];
         } else if ([method isEqualToString:@"hideCameraFeed"]) {
             [self setShowCameraFeed:false];
-        } else if ([method isEqualToString:@"createAnchor"]) {
+        } else if ([method isEqualToString:@"addAnchor"]) {
           // Construct the ARAnchor with the matrix provided from the js side.
           NSString* jsAnchorId = params[0];
           matrix_float4x4 modelMatrix;
