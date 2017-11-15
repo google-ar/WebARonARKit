@@ -105,7 +105,6 @@
     this.hideCameraFeedTimeoutId_ = -1;
     var CAMERA_FEED_HIDE_TIMEOUT_IN_MILLIS = 1000;
     function hideCameraFeed() {
-      console.log("hideCameraFeed");
       if (this.showingCameraFeed_) {
         window.webkit.messageHandlers.WebARonARKit.postMessage(
           "hideCameraFeed:"
@@ -985,7 +984,16 @@
         // If the plane has been updated, update the actual VRPlane instance
         } else if (event.type === "planesupdated") {
           var plane = WebARonARKitVRDisplay.planes_.get(eventPlane.identifier);
-          plane.set_(eventPlane);
+          // It could happen that the plane has been detecte in the native
+          // side but the planesadded event has not been received in the
+          // JS side. If the plane could not be found, create it.
+          if (!plane) {
+            plane = new VRPlane(eventPlane);
+            WebARonARKitVRDisplay.planes_.set(plane.identifier, plane);
+          }
+          else {
+            plane.set_(eventPlane);
+          }
         // If the plane has been removed, remove the actual VRPlane instance.
         } else if (event.type === "planesremoved") {
           var plane = WebARonARKitVRDisplay.planes_.get(eventPlane.identifier);
