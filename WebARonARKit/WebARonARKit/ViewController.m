@@ -149,6 +149,14 @@
     return result;
 }
 
+-(void)loadURL:(NSString*)urlString {
+  if (![self loadURLInWKWebView:urlString]) {
+    [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
+  } else {
+    [self storeURLInUserDefaults:urlString];
+  }
+}
+
 - (NSString *)getURLFromUserDefaults
 {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -263,12 +271,10 @@
     NSString *WebARonARKitJSPath =
         [[NSBundle mainBundle] pathForResource:@"WebARonARKit"
                                         ofType:@"js"];
-    //  NSLog(WebARonARKitJSPath);
     NSString *WebARonARKitJSContent =
         [NSString stringWithContentsOfFile:WebARonARKitJSPath
                                   encoding:NSUTF8StringEncoding
                                      error:NULL];
-    //  NSLog(WebARonARKitJSContent);
     // Setup the script injection
     WKUserScript *WebARonARKitJSUserScript = [[WKUserScript alloc]
           initWithSource:WebARonARKitJSContent
@@ -340,11 +346,11 @@
             forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
             options:NSKeyValueObservingOptionNew context:NULL];
     
-    // Load the default website
+    // Load the default website.
     NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
-    NSURL *url = [NSURL URLWithString:defaultSite];
+    NSURL* url = [NSURL URLWithString:defaultSite];
     [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
-    [self->urlTextField setText:defaultSite];
+    [self->urlTextField setText:url.absoluteString];
     self->initialPageLoadedWhenTrackingBegins = false;
 
     // Calculate the orientation of the device
@@ -473,6 +479,10 @@
 }
 - (void)restartSession
 {
+    // Remove all the cached structures.
+    [anchors removeAllObjects];
+    [jsAnchorIdsToObjCAnchorIds removeAllObjects];
+    [objCAnchorIdsToJSAnchorIds removeAllObjects];
     ARWorldTrackingConfiguration *configuration =
         [ARWorldTrackingConfiguration new];
     configuration.planeDetection = ARPlaneDetectionHorizontal;
@@ -846,6 +856,7 @@
 - (void)webView:(WKWebView *)webView
     didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation
 {
+    [self restartSession];
     [self setShowCameraFeed:false];
     [self startAndShowProgressView];
     [self setProgressViewColorSuccessful];
@@ -855,10 +866,12 @@
 - (void)webView:(WKWebView *)webView
     didFinishNavigation:(WKNavigation *)navigation
 {
-    [self restartSession];
-    // By default, when a page is loaded, the camera feed should not be shown.
     [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
+    if (initialPageLoadedWhenTrackingBegins) {
+      [self storeURLInUserDefaults:[[self->wkWebView URL] absoluteString]];
+    }
     [self setProgressViewColorSuccessful];
+    // By default, when a page is loaded, the camera feed should not be shown.
     [self completeAndHideProgressViewSuccessful];
 }
 

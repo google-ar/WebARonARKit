@@ -45,4 +45,6 @@
     NSMutableDictionary* anchors;
 }
 
+-(void)loadURL:(NSString*)urlString;
+
 @end
