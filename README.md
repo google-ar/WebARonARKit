@@ -11,7 +11,6 @@ WebARonARKit must be built from source using Xcode 9 and iOS 11. This requires a
 
 ### <a name="Prerequisites">0. Prerequisites</a> 
 WebARonARKit is built on top of iOS [ARKit](https://developer.apple.com/arkit/), which requires an iOS device with an A9+ processor, running iOS 11. For best results, we recommend one of the following:
-
 + iPad (2017)
 + iPad Pro (9.7, 10.5 or 12.9 inches)
 + iPhone 7 and 7 Plus
@@ -20,17 +19,20 @@ WebARonARKit must be built from source and requires the following:
 
 + [Xcode 9](https://developer.apple.com/xcode/) 
 + iOS 11
-+ An Apple Developer Account. If you do have one already, sign up at [developer.apple.com](http://developer.apple.com).
++ An Apple Developer Account. If you do not have one already, sign up at [developer.apple.com](http://developer.apple.com).
 
 
 ### <a name="RunWebARonARKit">1. Run WebARonARKit</a>
 1. Clone the WebARonARKit GitHub repo.
 2. Launch Xcode 9.
 3. Open the Xcode project (.xcodeproj) from within the cloned WebARonARKit repo using Xcode 9. 
-4. Select WebARonARKit Project file from the Project Navigator (top blue icon in the left column) and then select the WebARonARKit target under TARGETS. 
-5. With WebARonARKit as the selected target, you'll automatically be viewing the "General" tab in the main panel. From there find the signing section and select the Team that corresponds to your iOS Developer Account / Team. If you get an error in the following steps, it's probably due to a code signing error. If you encounter errors, follow the instructions provided within Xcode.
-6. Set your device as build destination by first ensuring it is connected to your computer, then selecting it from Product >> Destination menu or from the drop-down menu next to the Run button (in the top top-left of the UI).
-7. Build and push to your device by selecting the Run button or typing command-R. Once the build is complete and has been pushed to your device, the app should open automatically. You may have to follow on screen instructions to authorize your developer account to push to your device.
+4. Select WebARonARKit Project file from the Project Navigator (top blue icon in the left column) and then select the WebARonARKit target under `Targets`.
+  - ![GIF showing how to set the project target.](https://media.giphy.com/media/xUOxfc84FVlNqqeJeU/giphy.gif)
+5. With WebARonARKit as the selected target, you'll automatically be viewing the "General" tab in the main panel. From there find the signing section and select the Team that corresponds to your iOS Developer Account / Team. If you get an error in the following steps, it's probably due to a code signing error. If you encounter errors, follow the instructions provided within Xcode (note one default you'll certainly have to change is the `Bundle Identifier`, can be a trivial addition such as "-personal" appended to the identifier in the GIF example below).
+  - ![GIF showing how to code sign.](https://media.giphy.com/media/3osBL6RqUu3prBVYOc/giphy.gif)
+6. Set your device as the build destination by first ensuring it is connected to your computer, then selecting it from Product >> Destination menu or from the drop-down menu next to the Run button in the top top-left of the UI.
+  - ![GIF showing how to set the build destination!](https://media.giphy.com/media/3osBL6aab1y581gPyE/giphy.gif)
+7. Build and push to your device by selecting the Run button or typing `⌘-R`. Once the build is complete and has been pushed to your device the app should open automatically. You may have to follow on screen instructions to authorize your developer account to push to your device. Note that the first time you run the app installing the correct user profiles may take some time.
 
 ### <a name="ViewingExamples">2. Viewing examples</a>
 A [list of example scenes](https://developers.google.com/ar/develop/web/getting-started#examples) compatible with WebARonARKit and [WebARonARCore](https://github.com/google-ar/WebARonARCore) are available at [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples).
