@@ -15,6 +15,10 @@
  */
 
 (function() {
+  if (window.VRDisplay) {
+    return;
+  }
+
   // Inlined gl-matrix-min.js so the gl-matrix library gets injected too.
   /////////////////////////////////////////////////////////////////////////////
   /**
@@ -968,6 +972,8 @@
     }
 
     callRafCallbacks();
+    
+    window.webkit.messageHandlers.WebARonARKit.postMessage("arDataWasUsed:");
   };
 
   window.WebARonARKitDispatchARDisplayEvent = function(event) {

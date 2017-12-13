@@ -19,6 +19,7 @@
 #import <MetalKit/MetalKit.h>
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
+#import <QuartzCore/QuartzCore.h>
 
 @interface ViewController : UIViewController <WKUIDelegate, WKNavigationDelegate, UITextFieldDelegate, ARSessionDelegate, ARSessionObserver, WKScriptMessageHandler> {
 
@@ -43,6 +44,13 @@
     NSMutableDictionary* jsAnchorIdsToObjCAnchorIds;
     NSMutableDictionary* objCAnchorIdsToJSAnchorIds;
     NSMutableDictionary* anchors;
+  
+    // These flags control the synchronization between the natively
+    // rendered camera frame and the 3D scene rendered in the JS side.
+    bool drawCameraFrame;
+    bool sendARData;
+  
+    CFTimeInterval timeOfLastDrawnCameraFrame;
 }
 
 -(void)loadURL:(NSString*)urlString;

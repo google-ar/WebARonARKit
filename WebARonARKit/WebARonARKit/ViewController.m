@@ -216,6 +216,13 @@
 
     self->showingCameraFeed = false;
   
+    // By default, we draw camera frames but do not send AR data until a frame
+    // is drawn.
+    self->drawCameraFrame = true;
+    self->sendARData = false;
+
+    self ->timeOfLastDrawnCameraFrame = 0;
+  
     self->jsAnchorIdsToObjCAnchorIds = [[NSMutableDictionary alloc] init];
     self->objCAnchorIdsToJSAnchorIds = [[NSMutableDictionary alloc] init];
     self->anchors = [[NSMutableDictionary alloc] init];
@@ -290,9 +297,10 @@
     // Create the WKWebView using the configuration/script injection and add it to
     // the top of the view graph
     self->wkWebView = [[WKWebView alloc]
-        initWithFrame:CGRectMake(
-                          0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+//        initWithFrame:CGRectMake(
+//                          0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
+//                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
+        initWithFrame:self.view.frame
         configuration:wkWebViewConfig];
     self->wkWebViewOriginalBackgroundColor = self->wkWebView.backgroundColor;
     // By default, the camera feed won't be shown until instructed otherwise
@@ -441,8 +449,9 @@
                     URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
 
     [self->wkWebView setFrame:
-            CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-                    self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+//            CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
+//                    self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
+            self.view.frame];
 
     [self.progressView setFrame:
             CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
@@ -549,7 +558,30 @@
 // Called whenever the view needs to render
 - (void)drawInMTKView:(nonnull MTKView *)view
 {
+  // Calculate the time passed since the last camera frame that was drawn.
+  CFTimeInterval currentTime = CACurrentMediaTime();
+  // If the time of the last drawn camera frame is 0, use the current time.
+  if (timeOfLastDrawnCameraFrame == 0) {
+    timeOfLastDrawnCameraFrame = currentTime;
+  }
+  CFTimeInterval timeSinceLastDrawnCameraFrame =
+      currentTime - timeOfLastDrawnCameraFrame;
+  // If the time passed since the last camera frame was drawn is over a second
+  // it means that the JS side was not ready to listen to the send AR data event
+  // and therefore, we need to force a camera frame draw and an AR data send.
+  if (timeSinceLastDrawnCameraFrame > 1) {
+    drawCameraFrame = true;
+  }
+  // Only if the JS side stated that the AR data was used to render the 3D
+  // scene, we can render a camera frame.
+  if (drawCameraFrame) {
     [self.renderer update];
+    drawCameraFrame = false;
+    // Now that the camera frame has been rendered, the AR data can be sent.
+    sendARData = true;
+    // Store the time when the camera frame was drawn just in case...
+    timeOfLastDrawnCameraFrame = currentTime;
+  }
 }
 
 #pragma mark - ARSessionDelegate
@@ -724,6 +756,11 @@
 
 - (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame
 {
+    // Do not send AR data until a camera frame has been rendered.
+    if (!sendARData) {
+      return;
+    }
+  
     // If the window size has changed, notify the JS side about it.
     // This is a hack due to the WKWebView not handling the
     // window.innerWidth/Height
@@ -826,6 +863,8 @@
              }];
         updateWindowSize = false;
     }
+  
+    sendARData = false;
 }
 
 #pragma mark - WK Estimated Progress
@@ -866,6 +905,11 @@
 - (void)webView:(WKWebView *)webView
     didFinishNavigation:(WKNavigation *)navigation
 {
+    [self restartSession];
+    // By default, when a page is loaded, the camera feed should not be shown.
+    if (initialPageLoadedWhenTrackingBegins) {
+      [self storeURLInUserDefaults:self->urlTextField.text];
+    }
     [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
     if (initialPageLoadedWhenTrackingBegins) {
       [self storeURLInUserDefaults:[[self->wkWebView URL] absoluteString]];
@@ -1016,6 +1060,10 @@
           [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
           [anchors removeObjectForKey:jsAnchorId];
           [self.session removeAnchor:anchor];
+        } else if ([method isEqualToString:@"arDataWasUsed"]) {
+          // The JS side stated that the AR data was used so we can render
+          // a new camera frame now.
+          drawCameraFrame = true;
         } else {
             NSLog(@"WARNING: Unknown message received: '%@'", method);
         }
