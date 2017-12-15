@@ -218,7 +218,7 @@
   
     // By default, we draw camera frames but do not send AR data until a frame
     // is drawn.
-    self->drawCameraFrame = true;
+    self->drawNextCameraFrame = true;
     self->sendARData = false;
 
     self ->timeOfLastDrawnCameraFrame = 0;
@@ -570,13 +570,13 @@
   // it means that the JS side was not ready to listen to the send AR data event
   // and therefore, we need to force a camera frame draw and an AR data send.
   if (timeSinceLastDrawnCameraFrame > 1) {
-    drawCameraFrame = true;
+    drawNextCameraFrame = true;
   }
   // Only if the JS side stated that the AR data was used to render the 3D
   // scene, we can render a camera frame.
-  if (drawCameraFrame) {
+  if (drawNextCameraFrame) {
     [self.renderer update];
-    drawCameraFrame = false;
+    drawNextCameraFrame = false;
     // Now that the camera frame has been rendered, the AR data can be sent.
     sendARData = true;
     // Store the time when the camera frame was drawn just in case...
@@ -1060,10 +1060,10 @@
           [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
           [anchors removeObjectForKey:jsAnchorId];
           [self.session removeAnchor:anchor];
-        } else if ([method isEqualToString:@"arDataWasUsed"]) {
+        } else if ([method isEqualToString:@"advanceFrame"]) {
           // The JS side stated that the AR data was used so we can render
           // a new camera frame now.
-          drawCameraFrame = true;
+          drawNextCameraFrame = true;
         } else {
             NSLog(@"WARNING: Unknown message received: '%@'", method);
         }

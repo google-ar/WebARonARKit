@@ -47,7 +47,7 @@
   
     // These flags control the synchronization between the natively
     // rendered camera frame and the 3D scene rendered in the JS side.
-    bool drawCameraFrame;
+    bool drawNextCameraFrame;
     bool sendARData;
   
     CFTimeInterval timeOfLastDrawnCameraFrame;
