@@ -25,28 +25,31 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol RenderDestinationProvider
 
-@property (nonatomic, readonly, nullable) MTLRenderPassDescriptor *currentRenderPassDescriptor;
-@property (nonatomic, readonly, nullable) id<MTLDrawable> currentDrawable;
+@property(nonatomic, readonly, nullable)
+MTLRenderPassDescriptor *currentRenderPassDescriptor;
+@property(nonatomic, readonly, nullable) id<MTLDrawable> currentDrawable;
 
-@property (nonatomic) MTLPixelFormat colorPixelFormat;
-@property (nonatomic) MTLPixelFormat depthStencilPixelFormat;
-@property (nonatomic) NSUInteger sampleCount;
+@property(nonatomic) MTLPixelFormat colorPixelFormat;
+@property(nonatomic) MTLPixelFormat depthStencilPixelFormat;
+@property(nonatomic) NSUInteger sampleCount;
 
 @end
-
 
 /*
  The main class performing the rendering of a session.
  */
 @interface Renderer : NSObject {
-  @public
+@public
     CGSize viewportSize;
     UIInterfaceOrientation interfaceOrientation;
 }
 
-@property (atomic) bool cameraRenderEnabled;
+@property(atomic) bool cameraRenderEnabled;
 
-- (instancetype)initWithSession:(ARSession *)session metalDevice:(id<MTLDevice>)device renderDestinationProvider:(id<RenderDestinationProvider>)renderDestinationProvider;
+- (instancetype)initWithSession:(ARSession *)session
+                    metalDevice:(id<MTLDevice>)device
+      renderDestinationProvider:
+(id<RenderDestinationProvider>)renderDestinationProvider;
 
 - (void)drawRectResized:(CGSize)size;
 

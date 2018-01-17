@@ -14,11 +14,25 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
+#include <Foundation/Foundation.h>
 
-@interface AppDelegate : UIResponder<UIApplicationDelegate>
+#import "NavigationView.h"
 
-@property(strong, nonatomic) UIWindow *window;
+@interface NavigationView ()
+
+@end
+
+@implementation NavigationView
+
+- (void)drawRect:(CGRect)rect {
+    [super drawRect:rect];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    UIColor *lineColor = [UIColor colorWithRed:0.5 green:0.5 blue:0.5 alpha:0.25];
+    CGContextSetStrokeColorWithColor(context, lineColor.CGColor);
+    CGContextSetLineWidth(context, 0.5f);
+    CGContextMoveToPoint(context, 0, rect.size.height);
+    CGContextAddLineToPoint(context, rect.size.width, rect.size.height);
+    CGContextStrokePath(context);
+}
 
 @end
