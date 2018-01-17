@@ -14,69 +14,98 @@
  * limitations under the License.
  */
 
-#import "ViewController.h"
-#import "Renderer.h"
+#import "NavigationView.h"
 #import "ProgressView.h"
+#import "Renderer.h"
+#import "ViewController.h"
+
+#import <sys/utsname.h>
+
+NSString *deviceName() {
+    struct utsname systemInfo;
+    uname(&systemInfo);
+    return [NSString stringWithCString:systemInfo.machine
+                              encoding:NSUTF8StringEncoding];
+}
 
 // TODO: Should this be a percentage?
+#define NOTCH_TAB_WIDTH 83
+#define NOTCH_HEIGHT 30
+#define NOTCH_WIDTH 209
+
+#define URL_SAFE_AREA_VERTICAL 8
+#define URL_SAFE_AREA_HORIZONTAL 16
+
+#define URL_BUTTON_PADDING 16
+
+#define URL_BUTTON_WIDTH_PORTRAIT_X 64
+#define URL_BUTTON_HEIGHT_PORTRAIT_X 30
+
+#define URL_BUTTON_WIDTH_PORTRAIT 44
+#define URL_BUTTON_HEIGHT_PORTRAIT 44
+
+#define URL_BUTTON_WIDTH_LANDSCAPE 44
+#define URL_BUTTON_HEIGHT_LANDSCAPE 44
+
+#define URL_TEXTFIELD_HEIGHT_EXPANDED 44
+#define URL_TEXTFIELD_HEIGHT_MINIFIED 14
+
 #define URL_TEXTFIELD_HEIGHT 44
-#define PROGRESSVIEW_HEIGHT 4
+#define PROGRESSVIEW_HEIGHT 2
 
-@interface ViewController () <MTKViewDelegate, ARSessionDelegate>
+@interface ViewController ()<MTKViewDelegate, ARSessionDelegate>
 
-@property (nonatomic, strong) ARSession *session;
-@property (nonatomic, strong) Renderer *renderer;
-@property (nonatomic, strong) ProgressView *progressView;
-@property (nonatomic, assign) bool webviewNavigationSuccess;
+@property(nonatomic, strong) ARSession *session;
+@property(nonatomic, strong) Renderer *renderer;
+@property(nonatomic, strong) ProgressView *progressView;
+@property(nonatomic, strong) NavigationView *navigationBacking;
+@property(nonatomic, assign) bool webviewNavigationSuccess;
 
 @end
 
-@interface MTKView () <RenderDestinationProvider>
+@interface MTKView ()<RenderDestinationProvider>
 
 @end
 
 @implementation ViewController
 
 - (void)showAlertDialog:(NSString *)message
-      completionHandler:(void (^)(void))completionHandler
-{
+      completionHandler:(void (^)(void))completionHandler {
     UIAlertController *alertController =
-        [UIAlertController alertControllerWithTitle:message
-                                            message:nil
-                                     preferredStyle:UIAlertControllerStyleAlert];
+    [UIAlertController alertControllerWithTitle:message
+                                        message:nil
+                                 preferredStyle:UIAlertControllerStyleAlert];
     [alertController
-        addAction:[UIAlertAction actionWithTitle:@"OK"
-                                           style:UIAlertActionStyleCancel
-                                         handler:^(UIAlertAction *action) {
-                                             if (completionHandler) {
-                                                 completionHandler();
-                                             }
-                                         }]];
+     addAction:[UIAlertAction actionWithTitle:@"OK"
+                                        style:UIAlertActionStyleCancel
+                                      handler:^(UIAlertAction *action) {
+                                          if (completionHandler) {
+                                              completionHandler();
+                                          }
+                                      }]];
     [self presentViewController:alertController
                        animated:YES
                      completion:^{
                      }];
 }
 
-- (void)setWKWebViewScrollEnabled:(BOOL)enabled
-{
-    self->wkWebView.scrollView.scrollEnabled = enabled;
-    self->wkWebView.scrollView.panGestureRecognizer.enabled = enabled;
-    self->wkWebView.scrollView.bounces = enabled;
+- (void)setWKWebViewScrollEnabled:(BOOL)enabled {
+    wkWebView.scrollView.scrollEnabled = enabled;
+    wkWebView.scrollView.panGestureRecognizer.enabled = enabled;
+    wkWebView.scrollView.bounces = enabled;
 }
 
-- (bool)loadURLInWKWebView:(NSString *)urlString
-{
+- (bool)loadURLInWKWebView:(NSString *)urlString {
     bool result = true;
     // Try to create a url with the provided string
     NSURL *nsurl = [NSURL URLWithString:urlString];
     bool fileScheme = nsurl && nsurl.scheme &&
-                      [[nsurl.scheme lowercaseString] isEqualToString:@"file"];
+    [[nsurl.scheme lowercaseString] isEqualToString:@"file"];
     // Quick hack: If the url string is not a proper URL, try to add http to it to
     // see if it is an actual URL
     if (!nsurl || !nsurl.scheme || !nsurl.host) {
         NSString *urlStringWithHTTP =
-            [NSString stringWithFormat:@"http://%@", urlString];
+        [NSString stringWithFormat:@"http://%@", urlString];
         nsurl = [NSURL URLWithString:urlStringWithHTTP];
     }
     // If the string did not represent a url or is a filescheme url, the way the
@@ -89,29 +118,28 @@
         if (fileScheme) {
             nsurlPath = [NSString stringWithFormat:@"%@%@", nsurl.host, nsurl.path];
             if ([[nsurl.pathExtension lowercaseString]
-                    isEqualToString:pathExtension]) {
+                 isEqualToString:pathExtension]) {
                 NSRange range =
-                    [[nsurlPath lowercaseString] rangeOfString:@".html"
-                                                       options:NSBackwardsSearch];
-                nsurlPath = [nsurlPath stringByReplacingCharactersInRange:range
-                                                               withString:@""];
+                [[nsurlPath lowercaseString] rangeOfString:@".html"
+                                                   options:NSBackwardsSearch];
+                nsurlPath =
+                [nsurlPath stringByReplacingCharactersInRange:range withString:@""];
             }
         } else {
             // If the file:// was not provided, trim the extension if included.
             NSRange range =
-                [[nsurlPath lowercaseString] rangeOfString:@".html"
-                                                   options:NSBackwardsSearch];
+            [[nsurlPath lowercaseString] rangeOfString:@".html"
+                                               options:NSBackwardsSearch];
             if (range.location != NSNotFound &&
                 range.location == nsurlPath.length - 5) {
-                nsurlPath = [nsurlPath stringByReplacingCharactersInRange:range
-                                                               withString:@""];
+                nsurlPath =
+                [nsurlPath stringByReplacingCharactersInRange:range withString:@""];
             }
         }
         //        NSLog(@"nsurlPath = %@", nsurlPath);
         // Is the URL string a path to a file?
         NSString *path =
-            [[NSBundle mainBundle] pathForResource:nsurlPath
-                                            ofType:pathExtension];
+        [[NSBundle mainBundle] pathForResource:nsurlPath ofType:pathExtension];
         // If the path is incorrect, it could be because is a path to a folder
         // instead of a file
         if (!path) {
@@ -124,24 +152,24 @@
         if (path &&
             [[NSFileManager defaultManager] fileExistsAtPath:path
                                                  isDirectory:&isDirectory]) {
-            // If the path is to a directory, add the index at the end (try to load
-            // index.html).
-            if (isDirectory) {
-                nsurlPath = [NSString stringWithFormat:@"%@/index", nsurlPath];
-            }
-            NSURL *url = [[NSBundle mainBundle] URLForResource:nsurlPath
-                                                 withExtension:pathExtension];
-            // The final URL to the resource may fail so just in case...
-            if (!url) {
-                result = false;
+                // If the path is to a directory, add the index at the end (try to load
+                // index.html).
+                if (isDirectory) {
+                    nsurlPath = [NSString stringWithFormat:@"%@/index", nsurlPath];
+                }
+                NSURL *url = [[NSBundle mainBundle] URLForResource:nsurlPath
+                                                     withExtension:pathExtension];
+                // The final URL to the resource may fail so just in case...
+                if (!url) {
+                    result = false;
+                } else {
+                    //                NSLog(@"Loading a file from resources with url = %@",
+                    //                url.absoluteString);
+                    [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
+                }
             } else {
-                //                NSLog(@"Loading a file from resources with url = %@",
-                //                url.absoluteString);
-                [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
+                result = false;
             }
-        } else {
-            result = false;
-        }
     } else {
         NSURLRequest *nsrequest = [NSURLRequest requestWithURL:nsurl];
         [self->wkWebView loadRequest:nsrequest];
@@ -149,113 +177,119 @@
     return result;
 }
 
--(void)loadURL:(NSString*)urlString {
-  if (![self loadURLInWKWebView:urlString]) {
-    [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
-  } else {
-    [self storeURLInUserDefaults:urlString];
-  }
+- (void)loadURL:(NSString *)urlString {
+    if (![self loadURLInWKWebView:urlString]) {
+        [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
+    } else {
+        [self storeURLInUserDefaults:urlString];
+    }
 }
 
-- (NSString *)getURLFromUserDefaults
-{
+- (NSString *)getURLFromUserDefaults {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     return [defaults stringForKey:@"url"];
 }
 
-- (void)storeURLInUserDefaults:(NSString *)urlString
-{
+- (void)storeURLInUserDefaults:(NSString *)urlString {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:urlString forKey:@"url"];
     [defaults synchronize];
 }
 
-- (void)backButtonClicked:(UIButton *)button
-{
-    if ([self->wkWebView canGoBack]) {
-        WKBackForwardList *backForwardList = [self->wkWebView backForwardList];
+- (void)backButtonClicked:(UIButton *)button {
+    if ([wkWebView canGoBack]) {
+        WKBackForwardList *backForwardList = [wkWebView backForwardList];
         WKBackForwardListItem *backItem = [backForwardList backItem];
         if (backItem != nil) {
             NSURL *url = [backItem URL];
-            [self->urlTextField setText:[url absoluteString]];
+            [urlTextField setText:[url absoluteString]];
         }
-        [self->wkWebView goBack];
+        [wkWebView goBack];
     }
 }
 
-- (void)forwardButtonClicked:(UIButton *)button
-{
-    [self->wkWebView goForward];
+- (void)forwardButtonClicked:(UIButton *)button {
+    [wkWebView goForward];
 }
 
-- (void)refreshButtonClicked:(UIButton *)button
-{
-    [self->wkWebView reload];
+- (void)refreshButtonClicked:(UIButton *)button {
+    [wkWebView reload];
 }
 
-- (void)setShowCameraFeed:(bool)show
-{
+- (void)setShowCameraFeed:(bool)show {
     if (show) {
-        self->wkWebView.opaque = false;
-        self->wkWebView.backgroundColor = [UIColor clearColor];
-        self->wkWebView.scrollView.backgroundColor = [UIColor clearColor];
+        wkWebView.opaque = false;
+        wkWebView.backgroundColor = [UIColor clearColor];
+        wkWebView.scrollView.backgroundColor = [UIColor clearColor];
     } else {
-        self->wkWebView.opaque = true;
-        self->wkWebView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
-        self->wkWebView.scrollView.backgroundColor = self->wkWebViewOriginalBackgroundColor;
+        wkWebView.opaque = true;
+        wkWebView.backgroundColor = wkWebViewOriginalBackgroundColor;
+        wkWebView.scrollView.backgroundColor = wkWebViewOriginalBackgroundColor;
     }
-    self->showingCameraFeed = show;
+    showingCameraFeed = show;
 }
 
-- (void)viewDidLoad
-{
+- (void)deviceCheck {
+    NSString *deviceType = deviceName();
+    if ([deviceType isEqualToString:@"iPhone10,6"]) {
+        iPhoneXDevice = true;
+    } else {
+        iPhoneXDevice = false;
+    }
+}
+
+- (void)viewDidLoad {
     [super viewDidLoad];
-
-    self->near = 0.01f;
-    self->far = 10000.0f;
-
-    self->showingCameraFeed = false;
-  
+    
+    [self deviceCheck];
+    
+    near = 0.01f;
+    far = 10000.0f;
+    showingCameraFeed = false;
+    
     // By default, we draw camera frames but do not send AR data until a frame
     // is drawn.
-    self->drawNextCameraFrame = true;
-    self->sendARData = false;
-
-    self ->timeOfLastDrawnCameraFrame = 0;
-  
-    self->jsAnchorIdsToObjCAnchorIds = [[NSMutableDictionary alloc] init];
-    self->objCAnchorIdsToJSAnchorIds = [[NSMutableDictionary alloc] init];
-    self->anchors = [[NSMutableDictionary alloc] init];
-
+    drawNextCameraFrame = false;
+    sendARData = false;
+    
+    timeOfLastDrawnCameraFrame = 0;
+    
+    jsAnchorIdsToObjCAnchorIds = [[NSMutableDictionary alloc] init];
+    objCAnchorIdsToJSAnchorIds = [[NSMutableDictionary alloc] init];
+    anchors = [[NSMutableDictionary alloc] init];
+    
     // Create an ARSession
-    self.session = [ARSession new];
-    self.session.delegate = self;
+    _session = [ARSession new];
+    _session.delegate = self;
 
     // Set the view to use the default device
-    MTKView *view = (MTKView *)self.view;
-    view.device = MTLCreateSystemDefaultDevice();
-    view.delegate = self;
-
-    if (!view.device) {
+    mtkView = [[MTKView alloc] initWithFrame:self.view.frame device:MTLCreateSystemDefaultDevice()];
+    mtkView.delegate = self;
+    int mtkViewOffset =
+    NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 + URL_TEXTFIELD_HEIGHT_MINIFIED;
+    [mtkView setFrame:CGRectMake(0, mtkViewOffset, self.view.frame.size.width,
+                              self.view.frame.size.height - mtkViewOffset)];
+    
+    if (!mtkView.device) {
         NSLog(@"Metal is not supported on this device");
         return;
     }
-
+    [self.view addSubview:mtkView];
+    
     // Configure the renderer to draw to the view
-    self.renderer = [[Renderer alloc] initWithSession:self.session
-                                          metalDevice:view.device
-                            renderDestinationProvider:view];
-
-    [self.renderer drawRectResized:view.bounds.size];
-
+    _renderer = [[Renderer alloc] initWithSession:self.session
+                                      metalDevice:mtkView.device
+                        renderDestinationProvider:mtkView];
+    [_renderer drawRectResized:mtkView.bounds.size];
+    
     UITapGestureRecognizer *tapGesture =
-        [[UITapGestureRecognizer alloc] initWithTarget:self
-                                                action:@selector(handleTap:)];
+    [[UITapGestureRecognizer alloc] initWithTarget:self
+                                            action:@selector(handleTap:)];
     NSMutableArray *gestureRecognizers = [NSMutableArray array];
     [gestureRecognizers addObject:tapGesture];
-    [gestureRecognizers addObjectsFromArray:view.gestureRecognizers];
-    view.gestureRecognizers = gestureRecognizers;
-
+    [gestureRecognizers addObjectsFromArray:self.view.gestureRecognizers];
+    self.view.gestureRecognizers = gestureRecognizers;
+    
     // Clear the webview completely
     //    NSSet *websiteDataTypes = [NSSet setWithArray:@[
     //        WKWebsiteDataTypeDiskCache,
@@ -276,262 +310,395 @@
     // Make sure that WebARonARKit.js is injected at the beginning of any webpage
     // Load the WebARonARKit.js file
     NSString *WebARonARKitJSPath =
-        [[NSBundle mainBundle] pathForResource:@"WebARonARKit"
-                                        ofType:@"js"];
+    [[NSBundle mainBundle] pathForResource:@"WebARonARKit" ofType:@"js"];
     NSString *WebARonARKitJSContent =
-        [NSString stringWithContentsOfFile:WebARonARKitJSPath
-                                  encoding:NSUTF8StringEncoding
-                                     error:NULL];
+    [NSString stringWithContentsOfFile:WebARonARKitJSPath
+                              encoding:NSUTF8StringEncoding
+                                 error:NULL];
     // Setup the script injection
     WKUserScript *WebARonARKitJSUserScript = [[WKUserScript alloc]
-          initWithSource:WebARonARKitJSContent
-           injectionTime:WKUserScriptInjectionTimeAtDocumentStart
-        forMainFrameOnly:true];
+                                              initWithSource:WebARonARKitJSContent
+                                              injectionTime:WKUserScriptInjectionTimeAtDocumentStart
+                                              forMainFrameOnly:true];
     WKUserContentController *userContentController =
-        [[WKUserContentController alloc] init];
+    [[WKUserContentController alloc] init];
     [userContentController addScriptMessageHandler:self name:@"WebARonARKit"];
     [userContentController addUserScript:WebARonARKitJSUserScript];
     WKWebViewConfiguration *wkWebViewConfig =
-        [[WKWebViewConfiguration alloc] init];
+    [[WKWebViewConfiguration alloc] init];
     wkWebViewConfig.userContentController = userContentController;
     // Create the WKWebView using the configuration/script injection and add it to
     // the top of the view graph
-    self->wkWebView = [[WKWebView alloc]
-//        initWithFrame:CGRectMake(
-//                          0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-//                          self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)
-        initWithFrame:self.view.frame
-        configuration:wkWebViewConfig];
-    self->wkWebViewOriginalBackgroundColor = self->wkWebView.backgroundColor;
+    wkWebView = [[WKWebView alloc] initWithFrame:self.view.frame
+                                   configuration:wkWebViewConfig];
+    wkWebViewOriginalBackgroundColor = [UIColor whiteColor];
     // By default, the camera feed won't be shown until instructed otherwise
-    [self setShowCameraFeed:false];
-    [self->wkWebView.configuration.preferences
-        setValue:@TRUE
-          forKey:@"allowFileAccessFromFileURLs"];
+    [self setShowCameraFeed:NO];
+    
+    [wkWebView.configuration.preferences setValue:@TRUE
+                                           forKey:@"allowFileAccessFromFileURLs"];
     [self setWKWebViewScrollEnabled:true];
     // Needed to show alerts. Check the WKUIDelegate protocol and the
     // runJavaScriptAlertPanelWithMessage method in this file :(
-    self->wkWebView.UIDelegate = self;
-    self->wkWebView.navigationDelegate = self;
-    [self.view addSubview:self->wkWebView];
+    wkWebView.UIDelegate = self;
+    wkWebView.navigationDelegate = self;
+    [self.view addSubview:wkWebView];
     
-    // Add a textfield for the URL on top of the webview
-    self->urlTextField = [[UITextField alloc]
-        initWithFrame:CGRectMake(URL_TEXTFIELD_HEIGHT, 0, self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
-                                 URL_TEXTFIELD_HEIGHT)];
-    [self->urlTextField setBackgroundColor:[UIColor whiteColor]];
-    [self->urlTextField setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
-    [self->urlTextField setKeyboardType:UIKeyboardTypeURL];
-    [self->urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
-    [self->urlTextField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
-    [self->urlTextField setDelegate:self];
-    [self.view addSubview:self->urlTextField];
-
-    // Add the back/refresh buttons
-    self->backButton = [[UIButton alloc] initWithFrame:CGRectMake(0, 0, URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    self->backButton.backgroundColor = [UIColor whiteColor];
-    UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
-    [self->backButton setImage:backIcon forState:UIControlStateNormal];
-    [self->backButton addTarget:self action:@selector(backButtonClicked:)
-            forControlEvents:UIControlEventTouchDown];
-    [self.view addSubview:self->backButton];
-
-    self->refreshButton = [[UIButton alloc]
-            initWithFrame:CGRectMake(
-                    self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0,
-                    URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-    [self->refreshButton setBackgroundColor:[UIColor whiteColor]];
-    UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
-    [self->refreshButton setImage:refreshIcon forState:UIControlStateNormal];
-    [self->refreshButton addTarget:self action:@selector(refreshButtonClicked:)
-            forControlEvents:UIControlEventTouchDown];
-    [self.view addSubview:self->refreshButton];
-
-    //Progress View Setup
-    [self initProgressView];
-    //Observe the estimatedProgress to uodate progress view
-    [self->wkWebView addObserver:self
-            forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
-            options:NSKeyValueObservingOptionNew context:NULL];
+    [self initNavigation];
+    
+    // Observe the estimatedProgress to uodate progress view
+    [wkWebView addObserver:self
+                forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
+                   options:NSKeyValueObservingOptionNew
+                   context:NULL];
     
     // Load the default website.
-    NSString *defaultSite = @"https://developers.google.com/ar/develop/web/getting-started#examples";
-    NSURL* url = [NSURL URLWithString:defaultSite];
-    [self->wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
-    [self->urlTextField setText:url.absoluteString];
-    self->initialPageLoadedWhenTrackingBegins = false;
+    NSString *defaultSite =
+    @"https://developers.google.com/ar/develop/web/getting-started#examples";
+    NSURL *url = [NSURL URLWithString:defaultSite];
+    [wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
+    [urlTextField setText:url.absoluteString];
+    initialPageLoadedWhenTrackingBegins = false;
+    
+    [self initOrientationNotifications];
+    [self updateOrientation];
+    [self updateInterface];
+}
 
+- (void)initOrientationNotifications {
     // Calculate the orientation of the device
     UIDevice *device = [UIDevice currentDevice];
     [device beginGeneratingDeviceOrientationNotifications];
     [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(deviceOrientationDidChange:)
-               name:UIDeviceOrientationDidChangeNotification
-             object:nil];
+     addObserver:self
+     selector:@selector(deviceOrientationDidChange:)
+     name:UIDeviceOrientationDidChangeNotification
+     object:nil];
     deviceOrientation = [device orientation];
-    [self updateOrientation];
+}
+
+- (void)initNavigation {
+    [self initNavigationBacking];
+    [self initUrlTextField];
+    [self initButtons];
+    [self initProgressView];
+}
+
+- (void)initNavigationBacking {
+    _navigationBacking = [[NavigationView alloc] init];
+    _navigationBacking.backgroundColor = [UIColor whiteColor];
+    [self.view addSubview:_navigationBacking];
+}
+
+- (void)initUrlTextField {
+    urlTextFieldActive = false;
+    urlTextField = [[UITextField alloc] init];
+    [urlTextField setBackgroundColor:[UIColor clearColor]];
+    [urlTextField
+     setTextColor:[UIColor colorWithRed:0.2f green:0.2f blue:0.2f alpha:1.0]];
+    [urlTextField setKeyboardType:UIKeyboardTypeURL];
+    [urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
+    [urlTextField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
+    [urlTextField setAdjustsFontSizeToFitWidth:YES];
+    
+    urlTextField.contentVerticalAlignment =
+    UIControlContentVerticalAlignmentCenter;
+    urlTextField.textAlignment = NSTextAlignmentCenter;
+    
+    [urlTextField setDelegate:self];
+    [self.view addSubview:urlTextField];
+}
+
+- (void)initButtons {
+    [self initBackButton];
+    [self initRefreshButton];
+}
+
+- (void)initBackButton {
+    backButton = [[UIButton alloc] init];
+    UIImage *backIcon = [UIImage imageNamed:@"BackIcon"];
+    [backButton setBackgroundColor:[UIColor clearColor]];
+    [backButton setImage:backIcon forState:UIControlStateNormal];
+    [backButton addTarget:self
+                   action:@selector(backButtonClicked:)
+         forControlEvents:UIControlEventTouchDown];
+    [self.view addSubview:backButton];
+}
+
+- (void)initRefreshButton {
+    refreshButton = [[UIButton alloc] init];
+    [refreshButton setBackgroundColor:[UIColor clearColor]];
+    UIImage *refreshIcon = [UIImage imageNamed:@"RefreshIcon"];
+    [refreshButton setImage:refreshIcon forState:UIControlStateNormal];
+    [refreshButton addTarget:self
+                      action:@selector(refreshButtonClicked:)
+            forControlEvents:UIControlEventTouchDown];
+    [self.view addSubview:refreshButton];
 }
 
 - (void)dealloc {
-    
     if ([self isViewLoaded]) {
-        [self->wkWebView removeObserver:self
-                forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
+        [wkWebView
+         removeObserver:self
+         forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
     }
     
-    [self->wkWebView setNavigationDelegate:nil];
-    [self->wkWebView setUIDelegate:nil];
+    [wkWebView setNavigationDelegate:nil];
+    [wkWebView setUIDelegate:nil];
 }
 
 #pragma mark - Progress View
 
 - (void)initProgressView {
-    self.progressView = [[ProgressView alloc]
-            initWithFrame:CGRectMake(0,
-                    URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
-                    self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
-    [self.view addSubview:self.progressView];
+    _progressView = [[ProgressView alloc] init];
+    [self.view addSubview:_progressView];
     [self setProgressViewColorSuccessful];
     [self startAndShowProgressView];
 }
 
 - (void)setProgressViewColorSuccessful {
-    //Material Design Blue 100 #BBDEFB
-    [self.progressView setProgressBackgroundColor:
-            [UIColor colorWithRed:0.7333333333 green:0.8705882353
-                    blue:0.9843137255 alpha:1.0]];
-    //Material Design Blue 500 #2196F3
-    [self.progressView setProgressFillColor:
-            [UIColor colorWithRed:0.1294117647 green:0.5882352941
-                    blue:0.9529411765 alpha:1.0]];
+    // Material Design Blue 100 #BBDEFB
+    [_progressView setProgressBackgroundColor:[UIColor colorWithRed:0.7333333333
+                                                              green:0.8705882353
+                                                               blue:0.9843137255
+                                                              alpha:1.0]];
+    // Material Design Blue 500 #2196F3
+    [_progressView setProgressFillColor:[UIColor colorWithRed:0.1294117647
+                                                        green:0.5882352941
+                                                         blue:0.9529411765
+                                                        alpha:1.0]];
 }
-                                             
+
 - (void)setProgressViewColorErrored {
-    //Material Design Red 100 #FFCDD2
-    [self.progressView setProgressFillColor:
-            [UIColor colorWithRed:1.0 green:0.8039215686
-                    blue:0.8235294118 alpha:1.0]];
-    //Material Design Red 500 #F44336
-    [self.progressView setProgressFillColor:
-            [UIColor colorWithRed:0.9568627451 green:0.262745098
-                    blue:0.2117647059 alpha:1.0]];
+    // Material Design Red 100 #FFCDD2
+    [_progressView setProgressFillColor:[UIColor colorWithRed:1.0
+                                                        green:0.8039215686
+                                                         blue:0.8235294118
+                                                        alpha:1.0]];
+    // Material Design Red 500 #F44336
+    [_progressView setProgressFillColor:[UIColor colorWithRed:0.9568627451
+                                                        green:0.262745098
+                                                         blue:0.2117647059
+                                                        alpha:1.0]];
 }
 
 - (void)startAndShowProgressView {
-    self.progressView.progressValue = 0;
-    [self.progressView setHidden:NO animated:YES completion:nil];
+    _progressView.progressValue = 0;
+    [_progressView setHidden:NO animated:YES completion:nil];
 }
 
 - (void)completeAndHideProgressViewSuccessful {
     __weak __typeof__(self) weakSelf = self;
-    [self.progressView setProgressValue:1 animated:YES completion:^(BOOL finished){
-        [weakSelf.progressView setHidden:YES animated:YES completion:nil];
-    }];
+    [_progressView
+     setProgressValue:1
+     animated:YES
+     completion:^(BOOL finished) {
+         [weakSelf.progressView setHidden:YES animated:YES completion:nil];
+     }];
 }
 
-- (void)completeAndHideProgressViewErrored:(float) progress {
+- (void)completeAndHideProgressViewErrored:(float)progress {
     __weak __typeof__(self) weakSelf = self;
-    [self.progressView setProgressValue:progress animated:YES completion:^(BOOL finished){
-        [weakSelf.progressView setHidden:YES animated:YES completion:nil];
-    }];
+    [self.progressView
+     setProgressValue:progress
+     animated:YES
+     completion:^(BOOL finished) {
+         [weakSelf.progressView setHidden:YES animated:YES completion:nil];
+     }];
 }
 
-- (void)deviceOrientationDidChange:(NSNotification *)notification
-{
-    [self->urlTextField setFrame:
-            CGRectMake(URL_TEXTFIELD_HEIGHT, 0,
-                    self.view.frame.size.width - URL_TEXTFIELD_HEIGHT * 2,
-                    URL_TEXTFIELD_HEIGHT)];
+#pragma mark - Orientation Change
 
-    [self->refreshButton setFrame:
-            CGRectMake(self.view.frame.size.width - URL_TEXTFIELD_HEIGHT, 0,
-                    URL_TEXTFIELD_HEIGHT, URL_TEXTFIELD_HEIGHT)];
-
-    [self->wkWebView setFrame:
-//            CGRectMake(0, URL_TEXTFIELD_HEIGHT, self.view.frame.size.width,
-//                    self.view.frame.size.height - URL_TEXTFIELD_HEIGHT)];
-            self.view.frame];
-
-    [self.progressView setFrame:
-            CGRectMake(0, URL_TEXTFIELD_HEIGHT - PROGRESSVIEW_HEIGHT,
-                    self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
-    
+- (void)deviceOrientationDidChange:(NSNotification *)notification {
     [self updateOrientation];
+    [self updateInterface];
     updateWindowSize = true;
 }
 
-- (void)updateOrientation
-{
+- (void)updateOrientation {
     deviceOrientation = [[UIDevice currentDevice] orientation];
     switch (deviceOrientation) {
         case UIDeviceOrientationPortrait: {
             interfaceOrientation = UIInterfaceOrientationPortrait;
         } break;
-
+            
         case UIDeviceOrientationPortraitUpsideDown: {
             interfaceOrientation = UIInterfaceOrientationPortraitUpsideDown;
         } break;
-
+            
         case UIDeviceOrientationLandscapeLeft: {
             interfaceOrientation = UIInterfaceOrientationLandscapeRight;
         } break;
-
+            
         case UIDeviceOrientationLandscapeRight: {
             interfaceOrientation = UIInterfaceOrientationLandscapeLeft;
         } break;
-
+            
         default:
             break;
     }
-    [self->_renderer setInterfaceOrientation:interfaceOrientation];
+    [_renderer setInterfaceOrientation:interfaceOrientation];
 }
-- (void)restartSession
-{
+
+- (void)updateInterface {
+    if (iPhoneXDevice) {
+        if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
+            [backButton
+             setFrame:CGRectMake(URL_BUTTON_PADDING, 0, URL_BUTTON_WIDTH_PORTRAIT,
+                                 URL_BUTTON_HEIGHT_PORTRAIT)];
+            [refreshButton setFrame:CGRectMake(self.view.frame.size.width -
+                                               URL_BUTTON_WIDTH_PORTRAIT -
+                                               URL_BUTTON_PADDING,
+                                               0, URL_BUTTON_WIDTH_PORTRAIT,
+                                               URL_BUTTON_HEIGHT_PORTRAIT)];
+            int contentOffset = NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+            URL_TEXTFIELD_HEIGHT_MINIFIED;
+            CGRect contentRect = CGRectMake(0, contentOffset, self.view.frame.size.width,
+                                            self.view.frame.size.height - contentOffset);
+            [mtkView setFrame:contentRect];
+            [wkWebView setFrame:contentRect];
+            
+            if (urlTextFieldActive) {
+                [urlTextField setFont:[UIFont systemFontOfSize:17]];
+                [urlTextField setFrame:CGRectMake(URL_SAFE_AREA_HORIZONTAL,
+                                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL,
+                                                  self.view.frame.size.width -
+                                                  URL_SAFE_AREA_HORIZONTAL * 2.0,
+                                                  URL_TEXTFIELD_HEIGHT_EXPANDED)];
+                [_navigationBacking
+                 setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                     NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                     URL_TEXTFIELD_HEIGHT_EXPANDED)];
+                [_progressView
+                 setFrame:CGRectMake(0,
+                                     NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                     URL_TEXTFIELD_HEIGHT_EXPANDED -
+                                     PROGRESSVIEW_HEIGHT,
+                                     self.view.frame.size.width,
+                                     PROGRESSVIEW_HEIGHT)];
+            } else {
+                [urlTextField setFont:[UIFont systemFontOfSize:12]];
+                [urlTextField setFrame:CGRectMake(URL_SAFE_AREA_HORIZONTAL,
+                                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL,
+                                                  self.view.frame.size.width -
+                                                  URL_SAFE_AREA_HORIZONTAL * 2.0,
+                                                  URL_TEXTFIELD_HEIGHT_MINIFIED)];
+                [_navigationBacking
+                 setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                     NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                     URL_TEXTFIELD_HEIGHT_MINIFIED)];
+                [_progressView
+                 setFrame:CGRectMake(0,
+                                     NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                     URL_TEXTFIELD_HEIGHT_MINIFIED -
+                                     PROGRESSVIEW_HEIGHT,
+                                     self.view.frame.size.width,
+                                     PROGRESSVIEW_HEIGHT)];
+            }
+        } else {
+            [urlTextField setFont:[UIFont systemFontOfSize:17]];
+            [urlTextField
+             setFrame:CGRectMake(
+                                 URL_BUTTON_PADDING + URL_SAFE_AREA_HORIZONTAL, 0,
+                                 self.view.frame.size.width -
+                                 (URL_BUTTON_PADDING + URL_SAFE_AREA_HORIZONTAL) * 2,
+                                 URL_TEXTFIELD_HEIGHT_EXPANDED)];
+            
+            [backButton
+             setFrame:CGRectMake(URL_BUTTON_PADDING, 0, URL_BUTTON_WIDTH_LANDSCAPE,
+                                 URL_BUTTON_HEIGHT_LANDSCAPE)];
+            
+            [refreshButton
+             setFrame:CGRectMake(self.view.frame.size.width - URL_BUTTON_PADDING -
+                                 URL_BUTTON_WIDTH_LANDSCAPE,
+                                 0, URL_BUTTON_WIDTH_LANDSCAPE,
+                                 URL_BUTTON_HEIGHT_LANDSCAPE)];
+            
+            int contentOffset = URL_TEXTFIELD_HEIGHT_EXPANDED;
+            CGRect contentRect = CGRectMake(0, contentOffset, self.view.frame.size.width,
+                                            self.view.frame.size.height - contentOffset);
+            [mtkView setFrame:contentRect];
+            [wkWebView setFrame:contentRect];
+            
+            [_navigationBacking setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                                    URL_TEXTFIELD_HEIGHT_EXPANDED)];
+            [_progressView
+             setFrame:CGRectMake(
+                                 0, URL_TEXTFIELD_HEIGHT_EXPANDED - PROGRESSVIEW_HEIGHT,
+                                 self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+        }
+    } else {
+        [_navigationBacking setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                                URL_TEXTFIELD_HEIGHT_EXPANDED)];
+        [backButton setFrame:CGRectMake(0, 0, URL_BUTTON_WIDTH_LANDSCAPE,
+                                        URL_BUTTON_HEIGHT_LANDSCAPE)];
+        [urlTextField setFont:[UIFont systemFontOfSize:17]];
+        [urlTextField setFrame:CGRectMake(URL_BUTTON_WIDTH_LANDSCAPE, 0,
+                                          self.view.frame.size.width -
+                                          URL_BUTTON_WIDTH_LANDSCAPE * 2,
+                                          URL_TEXTFIELD_HEIGHT_EXPANDED)];
+        [refreshButton
+         setFrame:CGRectMake(
+                             self.view.frame.size.width - URL_BUTTON_WIDTH_LANDSCAPE, 0,
+                             URL_BUTTON_WIDTH_LANDSCAPE, URL_BUTTON_HEIGHT_LANDSCAPE)];
+        
+        
+        int contentOffset = URL_TEXTFIELD_HEIGHT_EXPANDED;
+        CGRect contentRect = CGRectMake(0, contentOffset, self.view.frame.size.width,
+                                        self.view.frame.size.height - contentOffset);
+        
+        [mtkView setFrame:contentRect];
+        [wkWebView setFrame:contentRect];
+        
+        [_progressView
+         setFrame:CGRectMake(0,
+                             URL_TEXTFIELD_HEIGHT_EXPANDED - PROGRESSVIEW_HEIGHT,
+                             self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+    }
+}
+
+- (void)restartSession {
     // Remove all the cached structures.
     [anchors removeAllObjects];
     [jsAnchorIdsToObjCAnchorIds removeAllObjects];
     [objCAnchorIdsToJSAnchorIds removeAllObjects];
     ARWorldTrackingConfiguration *configuration =
-        [ARWorldTrackingConfiguration new];
+    [ARWorldTrackingConfiguration new];
     configuration.planeDetection = ARPlaneDetectionHorizontal;
-    [self.session runWithConfiguration:configuration
-                               options:ARSessionRunOptionResetTracking];
+    [_session runWithConfiguration:configuration
+                           options:ARSessionRunOptionResetTracking];
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-
+    
     UIDevice *device = [UIDevice currentDevice];
     if (![device isGeneratingDeviceOrientationNotifications]) {
         [device beginGeneratingDeviceOrientationNotifications];
     }
-
+    
     [self restartSession];
 }
 
-- (void)viewWillDisappear:(BOOL)animated
-{
+- (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-
+    
     UIDevice *device = [UIDevice currentDevice];
     if ([device isGeneratingDeviceOrientationNotifications]) {
         [device endGeneratingDeviceOrientationNotifications];
     }
-    [self.session pause];
+    
+    [_session pause];
 }
 
-- (void)didReceiveMemoryWarning
-{
+- (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Release any cached data, images, etc that aren't in use.
 }
 
-- (void)handleTap:(UIGestureRecognizer *)gestureRecognize
-{
-    ARFrame *currentFrame = [self.session currentFrame];
-
+- (void)handleTap:(UIGestureRecognizer *)gestureRecognize {
+    ARFrame *currentFrame = [_session currentFrame];
+    
     // Create anchor using the camera's current position
     if (currentFrame) {
         // Create a transform with a translation of 0.2 meters in front of the
@@ -539,8 +706,8 @@
         matrix_float4x4 translation = matrix_identity_float4x4;
         translation.columns[3].z = -0.2;
         matrix_float4x4 transform =
-            matrix_multiply(currentFrame.camera.transform, translation);
-
+        matrix_multiply(currentFrame.camera.transform, translation);
+        
         // Add a new anchor to the session
         ARAnchor *anchor = [[ARAnchor alloc] initWithTransform:transform];
         [self.session addAnchor:anchor];
@@ -550,245 +717,239 @@
 #pragma mark - MTKViewDelegate
 
 // Called whenever view changes orientation or layout is changed
-- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size
-{
-    [self.renderer drawRectResized:view.bounds.size];
+- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size {
+    [_renderer drawRectResized:view.bounds.size];
 }
 
 // Called whenever the view needs to render
-- (void)drawInMTKView:(nonnull MTKView *)view
-{
-  // Calculate the time passed since the last camera frame that was drawn.
-  CFTimeInterval currentTime = CACurrentMediaTime();
-  // If the time of the last drawn camera frame is 0, use the current time.
-  if (timeOfLastDrawnCameraFrame == 0) {
-    timeOfLastDrawnCameraFrame = currentTime;
-  }
-  CFTimeInterval timeSinceLastDrawnCameraFrame =
-      currentTime - timeOfLastDrawnCameraFrame;
-  // If the time passed since the last camera frame was drawn is over a second
-  // it means that the JS side was not ready to listen to the send AR data event
-  // and therefore, we need to force a camera frame draw and an AR data send.
-  if (timeSinceLastDrawnCameraFrame > 1) {
-    drawNextCameraFrame = true;
-  }
-  // Only if the JS side stated that the AR data was used to render the 3D
-  // scene, we can render a camera frame.
-  if (drawNextCameraFrame) {
-    [self.renderer update];
-    drawNextCameraFrame = false;
-    // Now that the camera frame has been rendered, the AR data can be sent.
-    sendARData = true;
-    // Store the time when the camera frame was drawn just in case...
-    timeOfLastDrawnCameraFrame = currentTime;
-  }
+- (void)drawInMTKView:(nonnull MTKView *)view {
+    // Calculate the time passed since the last camera frame that was drawn.
+    CFTimeInterval currentTime = CACurrentMediaTime();
+    // If the time of the last drawn camera frame is 0, use the current time.
+    if (timeOfLastDrawnCameraFrame == 0) {
+        timeOfLastDrawnCameraFrame = currentTime;
+    }
+    CFTimeInterval timeSinceLastDrawnCameraFrame =
+    currentTime - timeOfLastDrawnCameraFrame;
+    // If the time passed since the last camera frame was drawn is over a second
+    // it means that the JS side was not ready to listen to the send AR data event
+    // and therefore, we need to force a camera frame draw and an AR data send.
+    if (timeSinceLastDrawnCameraFrame > 1) {
+        drawNextCameraFrame = true;
+    }
+    // Only if the JS side stated that the AR data was used to render the 3D
+    // scene, we can render a camera frame.
+    if (drawNextCameraFrame) {
+        [_renderer update];
+        drawNextCameraFrame = false;
+        // Now that the camera frame has been rendered, the AR data can be sent.
+        sendARData = true;
+        // Store the time when the camera frame was drawn just in case...
+        timeOfLastDrawnCameraFrame = currentTime;
+    }
 }
 
 #pragma mark - ARSessionDelegate
 
-- (void)session:(ARSession *)session didFailWithError:(NSError *)error
-{
+- (void)session:(ARSession *)session didFailWithError:(NSError *)error {
     // Present an error message to the user
 }
 
-- (void)sessionWasInterrupted:(ARSession *)session
-{
+- (void)sessionWasInterrupted:(ARSession *)session {
     // Inform the user that the session has been interrupted, for example, by
     // presenting an overlay
 }
 
-- (void)sessionInterruptionEnded:(ARSession *)session
-{
+- (void)sessionInterruptionEnded:(ARSession *)session {
     // Reset tracking and/or remove existing anchors if consistent tracking is
     // required
 }
 
-- (NSString *)getPlanesString:(nonnull NSArray<ARAnchor *> *)anchors
-{
-  // Return nil if no planes are among the anchors
-  NSString *result = nil;
-  for (int i = 0; i < anchors.count; i++) {
-    if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
-      // We only want anchors of type plane.
-      continue;
-    }
-    // Now that we know that there is at least one plane among the anchors,
-    // create the returning string.
-    if (result == nil) {
-      result = @"[";
-    }
-    ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
-    matrix_float4x4 planeTransform = plane.transform;
-    const float *planeMatrix = (const float *)(&planeTransform);
-    NSString *planeStr = [NSString stringWithFormat:
-                          @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
-                          @"%f,%f,%f,%f,%f,%f,%f,%f],"
-                          @"\"identifier\":%i,"
-                          @"\"extent\":[%f,%f],"
-                          @"\"vertices\":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}",
-                          planeMatrix[0], planeMatrix[1], planeMatrix[2],
-                          planeMatrix[3], planeMatrix[4], planeMatrix[5],
-                          planeMatrix[6], planeMatrix[7], planeMatrix[8],
-                          planeMatrix[9], planeMatrix[10], planeMatrix[11],
-                          planeMatrix[12] + plane.center.x,
-                          planeMatrix[13] + plane.center.y,
-                          planeMatrix[14] + plane.center.z,
-                          planeMatrix[15],
-                          (int)plane.identifier,
-                          plane.extent.x, plane.extent.z,
-                          plane.extent.x / 2, 0.0, plane.extent.z / 2,
-                          -plane.extent.x / 2, 0.0, plane.extent.z / 2,
-                          -plane.extent.x / 2, 0.0, -plane.extent.z / 2,
-                          plane.extent.x / 2, 0.0, -plane.extent.z / 2];
+- (NSString *)getPlanesString:(nonnull NSArray<ARAnchor *> *)anchors {
+    // Return nil if no planes are among the anchors
+    NSString *result = nil;
+    for (int i = 0; i < anchors.count; i++) {
+        if (![anchors[i] isKindOfClass:[ARPlaneAnchor class]]) {
+            // We only want anchors of type plane.
+            continue;
+        }
+        // Now that we know that there is at least one plane among the anchors,
+        // create the returning string.
+        if (result == nil) {
+            result = @"[";
+        }
+        ARPlaneAnchor *plane = (ARPlaneAnchor *)anchors[i];
+        matrix_float4x4 planeTransform = plane.transform;
+        const float *planeMatrix = (const float *)(&planeTransform);
+        NSString *planeStr = [NSString
+                              stringWithFormat:
+                              @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
+                              @"%f,%f,%f,%f,%f,%f,%f,%f],"
+                              @"\"identifier\":%i,"
+                              @"\"extent\":[%f,%f],"
+                              @"\"vertices\":[%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%f]}",
+                              planeMatrix[0], planeMatrix[1], planeMatrix[2], planeMatrix[3],
+                              planeMatrix[4], planeMatrix[5], planeMatrix[6], planeMatrix[7],
+                              planeMatrix[8], planeMatrix[9], planeMatrix[10], planeMatrix[11],
+                              planeMatrix[12] + plane.center.x, planeMatrix[13] + plane.center.y,
+                              planeMatrix[14] + plane.center.z, planeMatrix[15],
+                              (int)plane.identifier, plane.extent.x, plane.extent.z,
+                              plane.extent.x / 2, 0.0, plane.extent.z / 2, -plane.extent.x / 2,
+                              0.0, plane.extent.z / 2, -plane.extent.x / 2, 0.0,
+                              -plane.extent.z / 2, plane.extent.x / 2, 0.0, -plane.extent.z / 2];
         planeStr = [planeStr stringByAppendingString:@","];
         result = [result stringByAppendingString:planeStr];
     }
     // Remove the last coma if there is any string
     if (result != nil) {
-      result = [result substringToIndex:result.length - 1];
-      result = [result stringByAppendingString:@"]"];
+        result = [result substringToIndex:result.length - 1];
+        result = [result stringByAppendingString:@"]"];
     }
     return result;
 }
 
-- (NSString *)getAnchorsString:(nonnull NSArray<ARAnchor *> *)anchors
-{
-  NSString *result = nil;
-  for (int i = 0; i < anchors.count; i++) {
-    if ([anchors[i] isKindOfClass:[ARPlaneAnchor class]] ||
-          [anchors[i] isKindOfClass:[ARFaceAnchor class]]) {
-      // We do not want Plane or Face anchors.
-      continue;
+- (NSString *)getAnchorsString:(nonnull NSArray<ARAnchor *> *)anchors {
+    NSString *result = nil;
+    for (int i = 0; i < anchors.count; i++) {
+        if ([anchors[i] isKindOfClass:[ARPlaneAnchor class]] ||
+            [anchors[i] isKindOfClass:[ARFaceAnchor class]]) {
+            // We do not want Plane or Face anchors.
+            continue;
+        }
+        if (result == nil) {
+            result = @"[";
+        }
+        ARAnchor *anchor = (ARAnchor *)anchors[i];
+        matrix_float4x4 anchorTransform = anchor.transform;
+        const float *anchorMatrix = (const float *)(&anchorTransform);
+        NSString *jsAnchorId =
+        objCAnchorIdsToJSAnchorIds[anchor.identifier.UUIDString];
+        NSString *anchorStr = [NSString
+                               stringWithFormat:
+                               @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
+                               @"%f,%f,%f,%f,%f,%f,%f,%f],"
+                               @"\"identifier\":%@}",
+                               anchorMatrix[0], anchorMatrix[1], anchorMatrix[2], anchorMatrix[3],
+                               anchorMatrix[4], anchorMatrix[5], anchorMatrix[6], anchorMatrix[7],
+                               anchorMatrix[8], anchorMatrix[9], anchorMatrix[10],
+                               anchorMatrix[11], anchorMatrix[12], anchorMatrix[13],
+                               anchorMatrix[14], anchorMatrix[15], jsAnchorId];
+        anchorStr = [anchorStr stringByAppendingString:@","];
+        result = [result stringByAppendingString:anchorStr];
     }
-    if (result == nil) {
-      result = @"[";
+    // Remove the last coma if there is any string
+    if (result != nil) {
+        result = [result substringToIndex:result.length - 1];
+        result = [result stringByAppendingString:@"]"];
     }
-    ARAnchor *anchor = (ARAnchor *)anchors[i];
-    matrix_float4x4 anchorTransform = anchor.transform;
-    const float *anchorMatrix = (const float *)(&anchorTransform);
-    NSString* jsAnchorId = objCAnchorIdsToJSAnchorIds[anchor.identifier.UUIDString];
-    NSString *anchorStr = [NSString stringWithFormat:
-                          @"{\"modelMatrix\":[%f,%f,%f,%f,%f,%f,%f,%f,"
-                          @"%f,%f,%f,%f,%f,%f,%f,%f],"
-                           @"\"identifier\":%@}",
-                          anchorMatrix[ 0], anchorMatrix[ 1], anchorMatrix[ 2],
-                          anchorMatrix[ 3], anchorMatrix[ 4], anchorMatrix[ 5],
-                          anchorMatrix[ 6], anchorMatrix[ 7], anchorMatrix[ 8],
-                          anchorMatrix[ 9], anchorMatrix[10], anchorMatrix[11],
-                          anchorMatrix[12], anchorMatrix[13], anchorMatrix[14],
-                          anchorMatrix[15],
-                          jsAnchorId];
-    anchorStr = [anchorStr stringByAppendingString:@","];
-    result = [result stringByAppendingString:anchorStr];
-  }
-  // Remove the last coma if there is any string
-  if (result != nil) {
-    result = [result substringToIndex:result.length - 1];
-    result = [result stringByAppendingString:@"]"];
-  }
-  return result;
+    return result;
 }
 
-- (void) dispatchVRDisplayEvent:(NSString *)type
-        dataName:(NSString*)dataName dataString:(NSString *)dataString
-{
-  NSString *jsCode = [NSString
-        stringWithFormat:@"if (window.WebARonARKitDispatchARDisplayEvent) "
-                         @"window.WebARonARKitDispatchARDisplayEvent({"
-                         @"\"type\":\"%@\","
-                         @"\"%@\":%@"
-                         @"});",
-                         type, dataName, dataString];
-
-    [self->wkWebView
-        evaluateJavaScript:jsCode
-         completionHandler:^(id data, NSError *error) {
-             if (error) {
-                 [self showAlertDialog:
-                     [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@", error]
-                     completionHandler:^{
-                     }];
-             }
-         }];
+- (void)dispatchVRDisplayEvent:(NSString *)type
+                      dataName:(NSString *)dataName
+                    dataString:(NSString *)dataString {
+    NSString *jsCode =
+    [NSString stringWithFormat:
+     @"if (window.WebARonARKitDispatchARDisplayEvent) "
+     @"window.WebARonARKitDispatchARDisplayEvent({"
+     @"\"type\":\"%@\","
+     @"\"%@\":%@"
+     @"});",
+     type, dataName, dataString];
+    
+    [wkWebView
+     evaluateJavaScript:jsCode
+     completionHandler:^(id data, NSError *error) {
+         if (error) {
+             [self showAlertDialog:
+              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+               error]
+                 completionHandler:^{
+                 }];
+         }
+     }];
 }
 
-- (void)session:(ARSession *)session didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors
-{
-  NSString* planesString = [self getPlanesString:anchors];
-  if (planesString) {
-    [self dispatchVRDisplayEvent:@"planesadded"
-            dataName:@"planes" dataString:planesString];
-  }
+- (void)session:(ARSession *)session
+  didAddAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
+    NSString *planesString = [self getPlanesString:anchors];
+    if (planesString) {
+        [self dispatchVRDisplayEvent:@"planesadded"
+                            dataName:@"planes"
+                          dataString:planesString];
+    }
 }
 
-- (void)session:(ARSession *)session didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors
-{
-  // TODO(@ijamardo): Instead of iterating over the anchors collection several
-  // times for differnt types, merge them into one function.
-  NSString* planesString = [self getPlanesString:anchors];
-  if (planesString) {
-    [self dispatchVRDisplayEvent:@"planesupdated"
-                             dataName:@"planes" dataString:planesString];
-  }
-  NSString* anchorsString = [self getAnchorsString:anchors];
-  if (anchorsString) {
-    [self dispatchVRDisplayEvent:@"anchorsupdated"
-                        dataName:@"anchors" dataString:anchorsString];
-  }
-  
-  // TODO: As we are not able to get an update on the anchors this code forces
-  // a call to the anchorsUpdated event dispatching for testing purposes.
-//  if (anchorsString == nil && self->anchors.count > 0) {
-//    anchorsString = [self getAnchorsString:self->anchors.allValues];
-//    [self dispatchVRDisplayEvent:@"anchorsupdated"
-//                        dataName:@"anchors" dataString:anchorsString];
-//  }
+- (void)session:(ARSession *)session
+didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
+    // TODO(@ijamardo): Instead of iterating over the anchors collection several
+    // times for differnt types, merge them into one function.
+    NSString *planesString = [self getPlanesString:anchors];
+    if (planesString) {
+        [self dispatchVRDisplayEvent:@"planesupdated"
+                            dataName:@"planes"
+                          dataString:planesString];
+    }
+    NSString *anchorsString = [self getAnchorsString:anchors];
+    if (anchorsString) {
+        [self dispatchVRDisplayEvent:@"anchorsupdated"
+                            dataName:@"anchors"
+                          dataString:anchorsString];
+    }
+    
+    // TODO: As we are not able to get an update on the anchors this code forces
+    // a call to the anchorsUpdated event dispatching for testing purposes.
+    //  if (anchorsString == nil && self->anchors.count > 0) {
+    //    anchorsString = [self getAnchorsString:self->anchors.allValues];
+    //    [self dispatchVRDisplayEvent:@"anchorsupdated"
+    //                        dataName:@"anchors" dataString:anchorsString];
+    //  }
 }
 
-- (void)session:(ARSession *)session didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors
-{
-  NSString* planesString = [self getPlanesString:anchors];
-  if (planesString) {
-    [self dispatchVRDisplayEvent:@"planesremoved"
-                             dataName:@"planes" dataString:planesString];
-  }
+- (void)session:(ARSession *)session
+didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
+    NSString *planesString = [self getPlanesString:anchors];
+    if (planesString) {
+        [self dispatchVRDisplayEvent:@"planesremoved"
+                            dataName:@"planes"
+                          dataString:planesString];
+    }
 }
 
-- (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame
-{
+- (void)session:(ARSession *)session didUpdateFrame:(ARFrame *)frame {
     // Do not send AR data until a camera frame has been rendered.
     if (!sendARData) {
-      return;
+        return;
     }
-  
+    
     // If the window size has changed, notify the JS side about it.
     // This is a hack due to the WKWebView not handling the
     // window.innerWidth/Height
     // correctly in the window.onresize events.
     // TODO: Remove this hack once the WKWebView has fixed the issue.
-
+    
     // Send the per frame data needed in the JS side
     matrix_float4x4 viewMatrix =
-        [frame.camera viewMatrixForOrientation:interfaceOrientation];
+    [frame.camera viewMatrixForOrientation:interfaceOrientation];
     matrix_float4x4 modelMatrix = matrix_invert(viewMatrix);
     matrix_float4x4 projectionMatrix = [frame.camera
-        projectionMatrixForOrientation:interfaceOrientation
-                          viewportSize:CGSizeMake(self->wkWebView.frame.size.width,
-                                                  self->wkWebView.frame.size.height)
-                                 zNear:self->near
-                                  zFar:self->far];
-
+                                        projectionMatrixForOrientation:interfaceOrientation
+                                        viewportSize:CGSizeMake(wkWebView.frame.size.width,
+                                                                wkWebView.frame.size.height)
+                                        zNear:near
+                                        zFar:far];
+    
     const float *pModelMatrix = (const float *)(&modelMatrix);
     const float *pViewMatrix = (const float *)(&viewMatrix);
     const float *pProjectionMatrix = (const float *)(&projectionMatrix);
-
+    
     simd_quatf orientationQuat = simd_quaternion(modelMatrix);
     const float *pOrientationQuat = (const float *)(&orientationQuat);
     float position[3];
     position[0] = pModelMatrix[12];
     position[1] = pModelMatrix[13];
     position[2] = pModelMatrix[14];
-
+    
     // TODO: Testing to see if we can pass the whole frame to JS...
     //  size_t width = CVPixelBufferGetWidth(frame.capturedImage);
     //  size_t height = CVPixelBufferGetHeight(frame.capturedImage);
@@ -800,119 +961,120 @@
     //  height, bytesPerRow, pixelFormatType);
     
     NSString *jsCode = [NSString
-        stringWithFormat:@"if (window.WebARonARKitSetData) "
-                         @"window.WebARonARKitSetData({"
-                         @"\"position\":[%f,%f,%f],"
-                         @"\"orientation\":[%f,%f,%f,%f],"
-                         @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
-                         @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
-                         @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
-                         @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
-                         @"});",
-                         position[0], position[1], position[2],
-                         pOrientationQuat[0], pOrientationQuat[1],
-                         pOrientationQuat[2], pOrientationQuat[3], pViewMatrix[0],
-                         pViewMatrix[1], pViewMatrix[2], pViewMatrix[3],
-                         pViewMatrix[4], pViewMatrix[5], pViewMatrix[6],
-                         pViewMatrix[7], pViewMatrix[8], pViewMatrix[9],
-                         pViewMatrix[10], pViewMatrix[11], pViewMatrix[12],
-                         pViewMatrix[13], pViewMatrix[14], pViewMatrix[15],
-                         pProjectionMatrix[0], pProjectionMatrix[1],
-                         pProjectionMatrix[2], pProjectionMatrix[3],
-                         pProjectionMatrix[4], pProjectionMatrix[5],
-                         pProjectionMatrix[6], pProjectionMatrix[7],
-                         pProjectionMatrix[8], pProjectionMatrix[9],
-                         pProjectionMatrix[10], pProjectionMatrix[11],
-                         pProjectionMatrix[12], pProjectionMatrix[13],
-                         pProjectionMatrix[14], pProjectionMatrix[15]];
-
-    [self->wkWebView
-        evaluateJavaScript:jsCode
+                        stringWithFormat:
+                        @"if (window.WebARonARKitSetData) "
+                        @"window.WebARonARKitSetData({"
+                        @"\"position\":[%f,%f,%f],"
+                        @"\"orientation\":[%f,%f,%f,%f],"
+                        @"\"viewMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
+                        @"f,%f,%f,%f,%f,%f,%f,%f,%f],"
+                        @"\"projectionMatrix\":[%f,%f,%f,%f,%f,%f,%f,%"
+                        @"f,%f,%f,%f,%f,%f,%f,%f,%f]"
+                        @"});",
+                        position[0], position[1], position[2], pOrientationQuat[0],
+                        pOrientationQuat[1], pOrientationQuat[2], pOrientationQuat[3],
+                        pViewMatrix[0], pViewMatrix[1], pViewMatrix[2], pViewMatrix[3],
+                        pViewMatrix[4], pViewMatrix[5], pViewMatrix[6], pViewMatrix[7],
+                        pViewMatrix[8], pViewMatrix[9], pViewMatrix[10], pViewMatrix[11],
+                        pViewMatrix[12], pViewMatrix[13], pViewMatrix[14], pViewMatrix[15],
+                        pProjectionMatrix[0], pProjectionMatrix[1], pProjectionMatrix[2],
+                        pProjectionMatrix[3], pProjectionMatrix[4], pProjectionMatrix[5],
+                        pProjectionMatrix[6], pProjectionMatrix[7], pProjectionMatrix[8],
+                        pProjectionMatrix[9], pProjectionMatrix[10], pProjectionMatrix[11],
+                        pProjectionMatrix[12], pProjectionMatrix[13], pProjectionMatrix[14],
+                        pProjectionMatrix[15]];
+    
+    [wkWebView
+     evaluateJavaScript:jsCode
+     completionHandler:^(id data, NSError *error) {
+         if (error) {
+             [self showAlertDialog:
+              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
+               error]
+                 completionHandler:^{
+                 }];
+         }
+     }];
+    
+    // This needs to be called after because the window size will affect the
+    // projection matrix calculation upon resize
+    if (updateWindowSize) {
+        int width = wkWebView.frame.size.width;
+        int height = wkWebView.frame.size.height;
+        NSString *updateWindowSizeJsCode = [NSString
+                                            stringWithFormat:
+                                            @"if(window.WebARonARKitSetWindowSize)"
+                                            @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
+                                            width, height];
+        [wkWebView
+         evaluateJavaScript:updateWindowSizeJsCode
          completionHandler:^(id data, NSError *error) {
              if (error) {
-                 [self showAlertDialog:
-                           [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
-                                                      error]
+                 [self showAlertDialog:[NSString
+                                        stringWithFormat:@"ERROR: Evaluating "
+                                        @"jscode to provide "
+                                        @"window size: %@",
+                                        error]
                      completionHandler:^{
                      }];
              }
          }];
-
-    //This needs to be called after because the window size will affect the
-    //projection matrix calculation upon resize
-    if (updateWindowSize) {
-        int width = self->wkWebView.frame.size.width;
-        int height = self->wkWebView.frame.size.height;
-        NSString *updateWindowSizeJsCode = [NSString
-            stringWithFormat:
-                @"if(window.WebARonARKitSetWindowSize)"
-                @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
-                width, height];
-        [self->wkWebView
-            evaluateJavaScript:updateWindowSizeJsCode
-             completionHandler:^(id data, NSError *error) {
-                 if (error) {
-                     [self showAlertDialog:
-                               [NSString stringWithFormat:
-                                             @"ERROR: Evaluating jscode to provide "
-                                             @"window size: %@",
-                                             error]
-                         completionHandler:^{
-                         }];
-                 }
-             }];
         updateWindowSize = false;
     }
-  
+    
     sendARData = false;
 }
 
 #pragma mark - WK Estimated Progress
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:NSStringFromSelector(@selector(estimatedProgress))] && object == self->wkWebView) {        
-        if( self.webviewNavigationSuccess ) {
-            [self.progressView setProgressValue:self->wkWebView.estimatedProgress];
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context {
+    if ([keyPath
+         isEqualToString:NSStringFromSelector(@selector(estimatedProgress))] &&
+        object == self->wkWebView) {
+        if (_webviewNavigationSuccess) {
+            [_progressView setProgressValue:wkWebView.estimatedProgress];
         }
-    }
-    else {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    } else {
+        [super observeValueForKeyPath:keyPath
+                             ofObject:object
+                               change:change
+                              context:context];
     }
 }
 
 #pragma mark - WKUIDelegate
 
 - (void)webView:(WKWebView *)webView
-    runJavaScriptAlertPanelWithMessage:(NSString *)message
-                      initiatedByFrame:(WKFrameInfo *)frame
-                     completionHandler:(void (^)(void))completionHandler
-{
+runJavaScriptAlertPanelWithMessage:(NSString *)message
+initiatedByFrame:(WKFrameInfo *)frame
+completionHandler:(void (^)(void))completionHandler {
     [self showAlertDialog:message completionHandler:completionHandler];
 }
 
 #pragma mark - WKNavigationDelegate
 
 - (void)webView:(WKWebView *)webView
-    didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation
-{
+didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation {
     [self restartSession];
-    [self setShowCameraFeed:false];
+    [self setShowCameraFeed:NO];
     [self startAndShowProgressView];
     [self setProgressViewColorSuccessful];
-    self.webviewNavigationSuccess = true;
+    _webviewNavigationSuccess = true;
 }
 
 - (void)webView:(WKWebView *)webView
-    didFinishNavigation:(WKNavigation *)navigation
-{
+didFinishNavigation:(WKNavigation *)navigation {
     [self restartSession];
     // By default, when a page is loaded, the camera feed should not be shown.
     if (initialPageLoadedWhenTrackingBegins) {
-      [self storeURLInUserDefaults:self->urlTextField.text];
+        [self storeURLInUserDefaults:urlTextField.text];
     }
-    [self->urlTextField setText:[[self->wkWebView URL] absoluteString]];
+    [urlTextField setText:[[wkWebView URL] absoluteString]];
     if (initialPageLoadedWhenTrackingBegins) {
-      [self storeURLInUserDefaults:[[self->wkWebView URL] absoluteString]];
+        [self storeURLInUserDefaults:[[wkWebView URL] absoluteString]];
     }
     [self setProgressViewColorSuccessful];
     // By default, when a page is loaded, the camera feed should not be shown.
@@ -920,48 +1082,105 @@
 }
 
 - (void)webView:(WKWebView *)webView
-    didFailNavigation:(WKNavigation *)navigation
-            withError:(NSError *)error
-{
-    self.webviewNavigationSuccess = false;
+didFailNavigation:(WKNavigation *)navigation
+      withError:(NSError *)error {
+    _webviewNavigationSuccess = false;
     if (error.code != -999) {
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
         NSLog(@"ERROR: webview didFailNavigation with error '%@'", error);
     }
     [self setProgressViewColorErrored];
-    [self completeAndHideProgressViewErrored:self->wkWebView.estimatedProgress];
+    [self completeAndHideProgressViewErrored:wkWebView.estimatedProgress];
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView
-{
+- (void)webViewDidFinishLoad:(UIWebView *)webView {
     [self restartSession];
     [self completeAndHideProgressViewSuccessful];
 }
 
 - (void)webView:(WKWebView *)webView
-    didFailProvisionalNavigation:(WKNavigation *)navigation
-                       withError:(NSError *)error
-{
-    self.webviewNavigationSuccess = false;
+didFailProvisionalNavigation:(WKNavigation *)navigation
+      withError:(NSError *)error {
+    _webviewNavigationSuccess = false;
     if (error.code != -999) {
         [self showAlertDialog:error.localizedDescription completionHandler:nil];
-        NSLog(@"ERROR: webview didFailProvisionalNavigation with error '%@'", error);
+        NSLog(@"ERROR: webview didFailProvisionalNavigation with error '%@'",
+              error);
     }
     [self setProgressViewColorErrored];
-    [self completeAndHideProgressViewErrored:self->wkWebView.estimatedProgress];
+    [self completeAndHideProgressViewErrored:wkWebView.estimatedProgress];
 }
 
 #pragma mark - UITextFieldDelegate
 
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    urlTextFieldActive = YES;
+    [urlTextField
+     setSelectedTextRange:[urlTextField
+                           textRangeFromPosition:urlTextField
+                           .beginningOfDocument
+                           toPosition:urlTextField
+                           .endOfDocument]];
+    if (iPhoneXDevice) {
+        if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
+            [urlTextField setFont:[UIFont systemFontOfSize:17]];
+            [urlTextField setFrame:CGRectMake(URL_SAFE_AREA_HORIZONTAL,
+                                              NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL,
+                                              self.view.frame.size.width -
+                                              URL_SAFE_AREA_HORIZONTAL * 2,
+                                              URL_TEXTFIELD_HEIGHT_EXPANDED)];
+            
+            [_navigationBacking
+             setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                 NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                 URL_TEXTFIELD_HEIGHT_EXPANDED)];
+            
+            [_progressView
+             setFrame:CGRectMake(0,
+                                 NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                 URL_TEXTFIELD_HEIGHT_EXPANDED -
+                                 PROGRESSVIEW_HEIGHT,
+                                 self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+        }
+    }
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    urlTextFieldActive = NO;
+    if (iPhoneXDevice) {
+        if (UIInterfaceOrientationIsPortrait(interfaceOrientation)) {
+            [urlTextField setFont:[UIFont systemFontOfSize:12]];
+            [urlTextField setFrame:CGRectMake(URL_SAFE_AREA_HORIZONTAL,
+                                              NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL,
+                                              self.view.frame.size.width -
+                                              URL_SAFE_AREA_HORIZONTAL * 2.0,
+                                              URL_TEXTFIELD_HEIGHT_MINIFIED)];
+            
+            [_navigationBacking
+             setFrame:CGRectMake(0, 0, self.view.frame.size.width,
+                                 NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                 URL_TEXTFIELD_HEIGHT_MINIFIED)];
+            
+            [_progressView
+             setFrame:CGRectMake(0,
+                                 NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
+                                 URL_TEXTFIELD_HEIGHT_MINIFIED -
+                                 PROGRESSVIEW_HEIGHT,
+                                 self.view.frame.size.width, PROGRESSVIEW_HEIGHT)];
+        } else {
+            [urlTextField setFont:[UIFont systemFontOfSize:17]];
+        }
+    }
+}
+
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
     BOOL result = NO;
-    NSString *urlString = self->urlTextField.text;
+    NSString *urlString = urlTextField.text;
     if (![self loadURLInWKWebView:urlString]) {
         [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
     } else {
         [self storeURLInUserDefaults:urlString];
-        [self->urlTextField resignFirstResponder];
+        [urlTextField resignFirstResponder];
         result = YES;
     }
     return result;
@@ -970,8 +1189,7 @@
 #pragma mark - ARSessionObserver
 
 - (void)session:(ARSession *)session
-    cameraDidChangeTrackingState:(ARCamera *)camera
-{
+cameraDidChangeTrackingState:(ARCamera *)camera {
     NSString *trackingStateString = nil;
     if (camera.trackingState == ARTrackingStateNotAvailable) {
         trackingStateString = @"Not Available";
@@ -989,11 +1207,11 @@
     }
     NSLog(@"AR camera tracking state = %@%@", trackingStateString,
           (trackingStateReasonString != nil ? trackingStateReasonString : @""));
-
+    
     // Only the first time the tacking state is something else but unavailable
     // load the initial page.
     if (camera.trackingState != ARTrackingStateNotAvailable &&
-        !self->initialPageLoadedWhenTrackingBegins) {
+        !initialPageLoadedWhenTrackingBegins) {
         // Retore a URL from a previous execution and load it.
         NSString *urlString = [self getURLFromUserDefaults];
         if (urlString) {
@@ -1003,26 +1221,25 @@
             if (![self loadURLInWKWebView:urlString]) {
                 [self showAlertDialog:@"The URL is not valid." completionHandler:NULL];
             }
-            self->urlTextField.text = urlString;
+            urlTextField.text = urlString;
         }
-        self->initialPageLoadedWhenTrackingBegins = true;
+        initialPageLoadedWhenTrackingBegins = true;
     }
 }
 
 #pragma mark - WKScriptMessageHandler
 
 - (void)userContentController:(WKUserContentController *)userContentController
-      didReceiveScriptMessage:(WKScriptMessage *)message
-{
+      didReceiveScriptMessage:(WKScriptMessage *)message {
     NSString *messageString = message.body;
     NSArray *values = [messageString componentsSeparatedByString:@":"];
     if ([values count] > 1) {
         NSString *method = values[0];
         NSArray *params = [values[1] componentsSeparatedByString:@","];
         if ([method isEqualToString:@"setDepthNear"]) {
-            self->near = [params[0] floatValue];
+            near = [params[0] floatValue];
         } else if ([method isEqualToString:@"setDepthFar"]) {
-            self->far = [params[0] floatValue];
+            far = [params[0] floatValue];
         } else if ([method isEqualToString:@"log"]) {
             // As a log command can have colons in its content, just get rid of the
             // 'log:' string and show the rest.
@@ -1035,35 +1252,39 @@
         } else if ([method isEqualToString:@"hideCameraFeed"]) {
             [self setShowCameraFeed:false];
         } else if ([method isEqualToString:@"addAnchor"]) {
-          // Construct the ARAnchor with the matrix provided from the js side.
-          NSString* jsAnchorId = params[0];
-          matrix_float4x4 modelMatrix;
-          float* pModelMatrix = (float*)(&modelMatrix);
-          for (int i = 0; i < 16; i++) {
-            pModelMatrix[i] = [params[i + 1] floatValue];
-          }
-          ARAnchor* anchor = [[ARAnchor alloc] initWithTransform:modelMatrix];
-          [self.session addAnchor:anchor];
-          // Create an entry to convert from the js id to the objective c id (and viceversa)
-          [jsAnchorIdsToObjCAnchorIds setValue:anchor.identifier.UUIDString forKey:jsAnchorId];
-          [objCAnchorIdsToJSAnchorIds setValue:jsAnchorId forKey:anchor.identifier.UUIDString];
-          // Store the anchor
-          [anchors setValue:anchor forKey:jsAnchorId];
+            // Construct the ARAnchor with the matrix provided from the js side.
+            NSString *jsAnchorId = params[0];
+            matrix_float4x4 modelMatrix;
+            float *pModelMatrix = (float *)(&modelMatrix);
+            for (int i = 0; i < 16; i++) {
+                pModelMatrix[i] = [params[i + 1] floatValue];
+            }
+            ARAnchor *anchor = [[ARAnchor alloc] initWithTransform:modelMatrix];
+            [_session addAnchor:anchor];
+            // Create an entry to convert from the js id to the objective c id (and
+            // viceversa)
+            [jsAnchorIdsToObjCAnchorIds setValue:anchor.identifier.UUIDString
+                                          forKey:jsAnchorId];
+            [objCAnchorIdsToJSAnchorIds setValue:jsAnchorId
+                                          forKey:anchor.identifier.UUIDString];
+            // Store the anchor
+            [anchors setValue:anchor forKey:jsAnchorId];
         } else if ([method isEqualToString:@"removeAnchor"]) {
-          // Retrive the ARAnchor from the jsAnchorId and remove it from the
-          // session. Of course, also remove all the id mapping and the anchor
-          // from the anchors container.
-          NSString* jsAnchorId = params[0];
-          ARAnchor* anchor = anchors[jsAnchorId];
-          NSString* objCAnchorId = anchor.identifier.UUIDString;
-          [jsAnchorIdsToObjCAnchorIds removeObjectForKey:jsAnchorId];
-          [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
-          [anchors removeObjectForKey:jsAnchorId];
-          [self.session removeAnchor:anchor];
+            // Retrive the ARAnchor from the jsAnchorId and remove it from the
+            // session. Of course, also remove all the id mapping and the anchor
+            // from the anchors container.
+            NSString *jsAnchorId = params[0];
+            ARAnchor *anchor = anchors[jsAnchorId];
+            NSString *objCAnchorId = anchor.identifier.UUIDString;
+            [jsAnchorIdsToObjCAnchorIds removeObjectForKey:jsAnchorId];
+            [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
+            [anchors removeObjectForKey:jsAnchorId];
+            
+            [_session removeAnchor:anchor];
         } else if ([method isEqualToString:@"advanceFrame"]) {
-          // The JS side stated that the AR data was used so we can render
-          // a new camera frame now.
-          drawNextCameraFrame = true;
+            // The JS side stated that the AR data was used so we can render
+            // a new camera frame now.
+            drawNextCameraFrame = true;
         } else {
             NSLog(@"WARNING: Unknown message received: '%@'", method);
         }

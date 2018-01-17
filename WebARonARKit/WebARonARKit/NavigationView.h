@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-#import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface AppDelegate : UIResponder<UIApplicationDelegate>
-
-@property(strong, nonatomic) UIWindow *window;
+@interface NavigationView : UIView
 
 @end

@@ -22,13 +22,13 @@
 @property(nonatomic, strong, null_resettable) UIColor *progressBackgroundColor;
 @property(nonatomic, assign) float progressValue;
 @property(nonatomic, assign) NSTimeInterval animationDuration;
-    
+
 - (void)setProgressValue:(float)value
-    animated:(BOOL)animated
-    completion:(void (^__nullable)(BOOL complete))completion;
+                animated:(BOOL)animated
+              completion:(void (^__nullable)(BOOL complete))completion;
 
 - (void)setHidden:(BOOL)hidden
-    animated:(BOOL)animated
-    completion:(void (^__nullable)(BOOL complete))completion;
+         animated:(BOOL)animated
+       completion:(void (^__nullable)(BOOL complete))completion;
 
 @end
