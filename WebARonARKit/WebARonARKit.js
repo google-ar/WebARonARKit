@@ -454,14 +454,11 @@
 
         var hits = [];
 
-//        console.log("HIT-TEST!@!!!!!!!");
         // If there are no anchors detected, there will be no hits.
         var planes = this.getPlanes();
         if (!planes || planes.length == 0) {
-//          console.log("NO PLANES!");
           return hits;
         }
-//        console.log("PLANES!");
 
         // Create a ray in screen space for the hit test ([-1, 1] with y flip).
         vec3.set(hitVars.rayStart, 2 * x - 1, 2 * (1 - y) - 1, 0);
