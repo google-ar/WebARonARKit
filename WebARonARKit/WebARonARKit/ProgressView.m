@@ -43,29 +43,23 @@
 }
 
 - (void)progressViewInit {
-    self.autoresizingMask =
-    UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
+    self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleTopMargin;
     self.backgroundColor = [UIColor clearColor];
     self.clipsToBounds = YES;
     self.isAccessibilityElement = YES;
-    
+
     self.progressBackgroundView = [[UIView alloc] initWithFrame:self.frame];
-    [self.progressBackgroundView
-     setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
+    [self.progressBackgroundView setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     [self addSubview:self.progressBackgroundView];
-    
+
     self.progressFillView = [[UIView alloc] initWithFrame:CGRectZero];
     [self addSubview:self.progressFillView];
-    
-    [self.progressFillView setBackgroundColor:[UIColor colorWithRed:1.0
-                                                              green:0.0
-                                                               blue:1.0
-                                                              alpha:1.0]];
-    [self.progressBackgroundView setBackgroundColor:[UIColor colorWithRed:0.0
-                                                                    green:1.0
-                                                                     blue:1.0
-                                                                    alpha:1.0]];
-    
+
+    [self.progressFillView
+        setBackgroundColor:[UIColor colorWithRed:1.0 green:0.0 blue:1.0 alpha:1.0]];
+    [self.progressBackgroundView
+        setBackgroundColor:[UIColor colorWithRed:0.0 green:1.0 blue:1.0 alpha:1.0]];
+
     self.progressValue = 0.0;
     self.animationDuration = 0.25;
 }
@@ -113,15 +107,14 @@
                           delay:0
                         options:UIViewAnimationOptionCurveLinear
                      animations:^{
-                         [self updateProgressFillView];
+                       [self updateProgressFillView];
                      }
                      completion:completion];
 }
 
 - (void)setHidden:(BOOL)hidden {
     [super setHidden:hidden];
-    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
-                                    hidden ? nil : self);
+    UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification, hidden ? nil : self);
 }
 
 - (void)setHidden:(BOOL)hidden
@@ -133,64 +126,61 @@
         }
         return;
     }
-    
+
     void (^animations)(void);
-    
+
     if (hidden) {
         self.animateHide = YES;
         animations = ^{
-            CGFloat y = CGRectGetHeight(self.bounds);
-            
-            CGRect backgroundViewFrame = self.progressBackgroundView.frame;
-            backgroundViewFrame.origin.y = y;
-            backgroundViewFrame.size.height = 0;
-            self.progressBackgroundView.frame = backgroundViewFrame;
-            
-            CGRect fillViewFrame = self.progressFillView.frame;
-            fillViewFrame.origin.y = y;
-            fillViewFrame.size.height = 0;
-            self.progressFillView.frame = fillViewFrame;
+          CGFloat y = CGRectGetHeight(self.bounds);
+
+          CGRect backgroundViewFrame = self.progressBackgroundView.frame;
+          backgroundViewFrame.origin.y = y;
+          backgroundViewFrame.size.height = 0;
+          self.progressBackgroundView.frame = backgroundViewFrame;
+
+          CGRect fillViewFrame = self.progressFillView.frame;
+          fillViewFrame.origin.y = y;
+          fillViewFrame.size.height = 0;
+          self.progressFillView.frame = fillViewFrame;
         };
     } else {
         self.hidden = NO;
         animations = ^{
-            self.progressBackgroundView.frame = self.bounds;
-            
-            CGRect fillViewFrame = self.progressFillView.frame;
-            fillViewFrame.origin.y = 0;
-            fillViewFrame.size.height = CGRectGetHeight(self.bounds);
-            self.progressFillView.frame = fillViewFrame;
+          self.progressBackgroundView.frame = self.bounds;
+
+          CGRect fillViewFrame = self.progressFillView.frame;
+          fillViewFrame.origin.y = 0;
+          fillViewFrame.size.height = CGRectGetHeight(self.bounds);
+          self.progressFillView.frame = fillViewFrame;
         };
     }
-    
+
     [UIView animateWithDuration:animated ? self.animationDuration : 0
                           delay:0
                         options:UIViewAnimationOptionCurveLinear
                      animations:animations
                      completion:^(BOOL complete) {
-                         if (hidden) {
-                             self.animateHide = NO;
-                             self.hidden = YES;
-                         }
-                         if (completion) {
-                             completion(complete);
-                         }
+                       if (hidden) {
+                           self.animateHide = NO;
+                           self.hidden = YES;
+                       }
+                       if (completion) {
+                           completion(complete);
+                       }
                      }];
 }
 
 - (void)updateProgressFillView {
-    CGFloat progressWidth =
-    ceilf(self.progressValue * CGRectGetWidth(self.bounds));
-    CGRect progressFrame =
-    CGRectMake(0, 0, progressWidth, CGRectGetHeight(self.bounds));
+    CGFloat progressWidth = ceilf(self.progressValue * CGRectGetWidth(self.bounds));
+    CGRect progressFrame = CGRectMake(0, 0, progressWidth, CGRectGetHeight(self.bounds));
     [self.progressFillView setFrame:progressFrame];
 }
 
 - (void)updateProgressBackgroundView {
     const CGSize size = self.bounds.size;
-    [self.progressBackgroundView
-     setFrame:self.hidden ? CGRectMake(0.0, size.height, size.width, 0.0)
-     : self.bounds];
+    CGRect frame = self.hidden ? CGRectMake(0.0, size.height, size.width, 0.0) : self.bounds;
+    [self.progressBackgroundView setFrame:frame];
 }
 
 @end

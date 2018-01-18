@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright 2017 Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,8 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @protocol RenderDestinationProvider
 
-@property(nonatomic, readonly, nullable)
-MTLRenderPassDescriptor *currentRenderPassDescriptor;
+@property(nonatomic, readonly, nullable) MTLRenderPassDescriptor *currentRenderPassDescriptor;
 @property(nonatomic, readonly, nullable) id<MTLDrawable> currentDrawable;
 
 @property(nonatomic) MTLPixelFormat colorPixelFormat;
@@ -39,7 +38,7 @@ MTLRenderPassDescriptor *currentRenderPassDescriptor;
  The main class performing the rendering of a session.
  */
 @interface Renderer : NSObject {
-@public
+   @public
     CGSize viewportSize;
     UIInterfaceOrientation interfaceOrientation;
 }
@@ -48,8 +47,7 @@ MTLRenderPassDescriptor *currentRenderPassDescriptor;
 
 - (instancetype)initWithSession:(ARSession *)session
                     metalDevice:(id<MTLDevice>)device
-      renderDestinationProvider:
-(id<RenderDestinationProvider>)renderDestinationProvider;
+      renderDestinationProvider:(id<RenderDestinationProvider>)renderDestinationProvider;
 
 - (void)drawRectResized:(CGSize)size;
 
@@ -60,3 +58,4 @@ MTLRenderPassDescriptor *currentRenderPassDescriptor;
 @end
 
 NS_ASSUME_NONNULL_END
+D
