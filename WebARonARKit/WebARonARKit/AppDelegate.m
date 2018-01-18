@@ -24,7 +24,7 @@
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application
-didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     return YES;
 }
@@ -67,11 +67,9 @@ didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // be loaded in the ViewController.
     NSString *urlString = url.absoluteString;
     NSString *urlStringNoScheme = [urlString
-                                   stringByReplacingOccurrencesOfString:[[url scheme]
-                                                                         stringByAppendingString:@"://"]
-                                   withString:@""];
-    ViewController *viewController =
-    (ViewController *)self.window.rootViewController;
+        stringByReplacingOccurrencesOfString:[[url scheme] stringByAppendingString:@"://"]
+                                  withString:@""];
+    ViewController *viewController = (ViewController *)self.window.rootViewController;
     [viewController loadURL:urlStringNoScheme];
     return YES;
 }
