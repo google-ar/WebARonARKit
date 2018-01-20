@@ -231,33 +231,35 @@ NSString *deviceName() {
 
 - (void)deviceCheck {
     NSString *deviceType = deviceName();
-    if ([deviceType isEqualToString:@"iPhone10,6"]) {
-        iPhoneXDevice = true;
-    } else {
+    NSRange containiPhoneX = [deviceType rangeOfString:@"iPhone10" options:NSCaseInsensitiveSearch];
+    if (containiPhoneX.location == NSNotFound) {
         iPhoneXDevice = false;
+
+    } else {
+        iPhoneXDevice = true;
     }
 }
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     [self deviceCheck];
-    
+
     near = 0.01f;
     far = 10000.0f;
     showingCameraFeed = false;
-    
+
     // By default, we draw camera frames but do not send AR data until a frame
     // is drawn.
     drawNextCameraFrame = false;
     sendARData = false;
-    
+
     timeOfLastDrawnCameraFrame = 0;
-    
+
     jsAnchorIdsToObjCAnchorIds = [[NSMutableDictionary alloc] init];
     objCAnchorIdsToJSAnchorIds = [[NSMutableDictionary alloc] init];
     anchors = [[NSMutableDictionary alloc] init];
-    
+
     // Create an ARSession
     _session = [ARSession new];
     _session.delegate = self;
@@ -269,19 +271,19 @@ NSString *deviceName() {
     NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 + URL_TEXTFIELD_HEIGHT_MINIFIED;
     [mtkView setFrame:CGRectMake(0, mtkViewOffset, self.view.frame.size.width,
                               self.view.frame.size.height - mtkViewOffset)];
-    
+
     if (!mtkView.device) {
         NSLog(@"Metal is not supported on this device");
         return;
     }
     [self.view addSubview:mtkView];
-    
+
     // Configure the renderer to draw to the view
     _renderer = [[Renderer alloc] initWithSession:self.session
                                       metalDevice:mtkView.device
                         renderDestinationProvider:mtkView];
     [_renderer drawRectResized:mtkView.bounds.size];
-    
+
     UITapGestureRecognizer *tapGesture =
     [[UITapGestureRecognizer alloc] initWithTarget:self
                                             action:@selector(handleTap:)];
@@ -289,7 +291,7 @@ NSString *deviceName() {
     [gestureRecognizers addObject:tapGesture];
     [gestureRecognizers addObjectsFromArray:self.view.gestureRecognizers];
     self.view.gestureRecognizers = gestureRecognizers;
-    
+
     // Clear the webview completely
     //    NSSet *websiteDataTypes = [NSSet setWithArray:@[
     //        WKWebsiteDataTypeDiskCache,
@@ -334,7 +336,7 @@ NSString *deviceName() {
     wkWebViewOriginalBackgroundColor = [UIColor whiteColor];
     // By default, the camera feed won't be shown until instructed otherwise
     [self setShowCameraFeed:NO];
-    
+
     [wkWebView.configuration.preferences setValue:@TRUE
                                            forKey:@"allowFileAccessFromFileURLs"];
     [self setWKWebViewScrollEnabled:true];
@@ -343,15 +345,15 @@ NSString *deviceName() {
     wkWebView.UIDelegate = self;
     wkWebView.navigationDelegate = self;
     [self.view addSubview:wkWebView];
-    
+
     [self initNavigation];
-    
+
     // Observe the estimatedProgress to uodate progress view
     [wkWebView addObserver:self
                 forKeyPath:NSStringFromSelector(@selector(estimatedProgress))
                    options:NSKeyValueObservingOptionNew
                    context:NULL];
-    
+
     // Load the default website.
     NSString *defaultSite =
     @"https://developers.google.com/ar/develop/web/getting-started#examples";
@@ -359,7 +361,7 @@ NSString *deviceName() {
     [wkWebView loadRequest:[NSURLRequest requestWithURL:url]];
     [urlTextField setText:url.absoluteString];
     initialPageLoadedWhenTrackingBegins = false;
-    
+
     [self initOrientationNotifications];
     [self updateOrientation];
     [self updateInterface];
@@ -400,11 +402,11 @@ NSString *deviceName() {
     [urlTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
     [urlTextField setAutocapitalizationType:UITextAutocapitalizationTypeNone];
     [urlTextField setAdjustsFontSizeToFitWidth:YES];
-    
+
     urlTextField.contentVerticalAlignment =
     UIControlContentVerticalAlignmentCenter;
     urlTextField.textAlignment = NSTextAlignmentCenter;
-    
+
     [urlTextField setDelegate:self];
     [self.view addSubview:urlTextField];
 }
@@ -442,7 +444,7 @@ NSString *deviceName() {
          removeObserver:self
          forKeyPath:NSStringFromSelector(@selector(estimatedProgress))];
     }
-    
+
     [wkWebView setNavigationDelegate:nil];
     [wkWebView setUIDelegate:nil];
 }
@@ -521,19 +523,19 @@ NSString *deviceName() {
         case UIDeviceOrientationPortrait: {
             interfaceOrientation = UIInterfaceOrientationPortrait;
         } break;
-            
+
         case UIDeviceOrientationPortraitUpsideDown: {
             interfaceOrientation = UIInterfaceOrientationPortraitUpsideDown;
         } break;
-            
+
         case UIDeviceOrientationLandscapeLeft: {
             interfaceOrientation = UIInterfaceOrientationLandscapeRight;
         } break;
-            
+
         case UIDeviceOrientationLandscapeRight: {
             interfaceOrientation = UIInterfaceOrientationLandscapeLeft;
         } break;
-            
+
         default:
             break;
     }
@@ -557,7 +559,7 @@ NSString *deviceName() {
                                             self.view.frame.size.height - contentOffset);
             [mtkView setFrame:contentRect];
             [wkWebView setFrame:contentRect];
-            
+
             if (urlTextFieldActive) {
                 [urlTextField setFont:[UIFont systemFontOfSize:17]];
                 [urlTextField setFrame:CGRectMake(URL_SAFE_AREA_HORIZONTAL,
@@ -603,23 +605,23 @@ NSString *deviceName() {
                                  self.view.frame.size.width -
                                  (URL_BUTTON_PADDING + URL_SAFE_AREA_HORIZONTAL) * 2,
                                  URL_TEXTFIELD_HEIGHT_EXPANDED)];
-            
+
             [backButton
              setFrame:CGRectMake(URL_BUTTON_PADDING, 0, URL_BUTTON_WIDTH_LANDSCAPE,
                                  URL_BUTTON_HEIGHT_LANDSCAPE)];
-            
+
             [refreshButton
              setFrame:CGRectMake(self.view.frame.size.width - URL_BUTTON_PADDING -
                                  URL_BUTTON_WIDTH_LANDSCAPE,
                                  0, URL_BUTTON_WIDTH_LANDSCAPE,
                                  URL_BUTTON_HEIGHT_LANDSCAPE)];
-            
+
             int contentOffset = URL_TEXTFIELD_HEIGHT_EXPANDED;
             CGRect contentRect = CGRectMake(0, contentOffset, self.view.frame.size.width,
                                             self.view.frame.size.height - contentOffset);
             [mtkView setFrame:contentRect];
             [wkWebView setFrame:contentRect];
-            
+
             [_navigationBacking setFrame:CGRectMake(0, 0, self.view.frame.size.width,
                                                     URL_TEXTFIELD_HEIGHT_EXPANDED)];
             [_progressView
@@ -641,15 +643,15 @@ NSString *deviceName() {
          setFrame:CGRectMake(
                              self.view.frame.size.width - URL_BUTTON_WIDTH_LANDSCAPE, 0,
                              URL_BUTTON_WIDTH_LANDSCAPE, URL_BUTTON_HEIGHT_LANDSCAPE)];
-        
-        
+
+
         int contentOffset = URL_TEXTFIELD_HEIGHT_EXPANDED;
         CGRect contentRect = CGRectMake(0, contentOffset, self.view.frame.size.width,
                                         self.view.frame.size.height - contentOffset);
-        
+
         [mtkView setFrame:contentRect];
         [wkWebView setFrame:contentRect];
-        
+
         [_progressView
          setFrame:CGRectMake(0,
                              URL_TEXTFIELD_HEIGHT_EXPANDED - PROGRESSVIEW_HEIGHT,
@@ -671,23 +673,23 @@ NSString *deviceName() {
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    
+
     UIDevice *device = [UIDevice currentDevice];
     if (![device isGeneratingDeviceOrientationNotifications]) {
         [device beginGeneratingDeviceOrientationNotifications];
     }
-    
+
     [self restartSession];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
-    
+
     UIDevice *device = [UIDevice currentDevice];
     if ([device isGeneratingDeviceOrientationNotifications]) {
         [device endGeneratingDeviceOrientationNotifications];
     }
-    
+
     [_session pause];
 }
 
@@ -698,7 +700,7 @@ NSString *deviceName() {
 
 - (void)handleTap:(UIGestureRecognizer *)gestureRecognize {
     ARFrame *currentFrame = [_session currentFrame];
-    
+
     // Create anchor using the camera's current position
     if (currentFrame) {
         // Create a transform with a translation of 0.2 meters in front of the
@@ -707,7 +709,7 @@ NSString *deviceName() {
         translation.columns[3].z = -0.2;
         matrix_float4x4 transform =
         matrix_multiply(currentFrame.camera.transform, translation);
-        
+
         // Add a new anchor to the session
         ARAnchor *anchor = [[ARAnchor alloc] initWithTransform:transform];
         [self.session addAnchor:anchor];
@@ -856,7 +858,7 @@ NSString *deviceName() {
      @"\"%@\":%@"
      @"});",
      type, dataName, dataString];
-    
+
     [wkWebView
      evaluateJavaScript:jsCode
      completionHandler:^(id data, NSError *error) {
@@ -896,7 +898,7 @@ didUpdateAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
                             dataName:@"anchors"
                           dataString:anchorsString];
     }
-    
+
     // TODO: As we are not able to get an update on the anchors this code forces
     // a call to the anchorsUpdated event dispatching for testing purposes.
     //  if (anchorsString == nil && self->anchors.count > 0) {
@@ -921,13 +923,13 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
     if (!sendARData) {
         return;
     }
-    
+
     // If the window size has changed, notify the JS side about it.
     // This is a hack due to the WKWebView not handling the
     // window.innerWidth/Height
     // correctly in the window.onresize events.
     // TODO: Remove this hack once the WKWebView has fixed the issue.
-    
+
     // Send the per frame data needed in the JS side
     matrix_float4x4 viewMatrix =
     [frame.camera viewMatrixForOrientation:interfaceOrientation];
@@ -938,18 +940,18 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
                                                                 wkWebView.frame.size.height)
                                         zNear:near
                                         zFar:far];
-    
+
     const float *pModelMatrix = (const float *)(&modelMatrix);
     const float *pViewMatrix = (const float *)(&viewMatrix);
     const float *pProjectionMatrix = (const float *)(&projectionMatrix);
-    
+
     simd_quatf orientationQuat = simd_quaternion(modelMatrix);
     const float *pOrientationQuat = (const float *)(&orientationQuat);
     float position[3];
     position[0] = pModelMatrix[12];
     position[1] = pModelMatrix[13];
     position[2] = pModelMatrix[14];
-    
+
     // TODO: Testing to see if we can pass the whole frame to JS...
     //  size_t width = CVPixelBufferGetWidth(frame.capturedImage);
     //  size_t height = CVPixelBufferGetHeight(frame.capturedImage);
@@ -959,7 +961,7 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
     //  CVPixelBufferGetPixelFormatType(frame.capturedImage);
     //  NSLog(@"width = %d, height = %d, bytesPerRow = %d, ostype = %d", width,
     //  height, bytesPerRow, pixelFormatType);
-    
+
     NSString *jsCode = [NSString
                         stringWithFormat:
                         @"if (window.WebARonARKitSetData) "
@@ -983,7 +985,7 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
                         pProjectionMatrix[9], pProjectionMatrix[10], pProjectionMatrix[11],
                         pProjectionMatrix[12], pProjectionMatrix[13], pProjectionMatrix[14],
                         pProjectionMatrix[15]];
-    
+
     [wkWebView
      evaluateJavaScript:jsCode
      completionHandler:^(id data, NSError *error) {
@@ -995,7 +997,7 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
                  }];
          }
      }];
-    
+
     // This needs to be called after because the window size will affect the
     // projection matrix calculation upon resize
     if (updateWindowSize) {
@@ -1021,7 +1023,7 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
          }];
         updateWindowSize = false;
     }
-    
+
     sendARData = false;
 }
 
@@ -1129,12 +1131,12 @@ didFailProvisionalNavigation:(WKNavigation *)navigation
                                               self.view.frame.size.width -
                                               URL_SAFE_AREA_HORIZONTAL * 2,
                                               URL_TEXTFIELD_HEIGHT_EXPANDED)];
-            
+
             [_navigationBacking
              setFrame:CGRectMake(0, 0, self.view.frame.size.width,
                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
                                  URL_TEXTFIELD_HEIGHT_EXPANDED)];
-            
+
             [_progressView
              setFrame:CGRectMake(0,
                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
@@ -1155,12 +1157,12 @@ didFailProvisionalNavigation:(WKNavigation *)navigation
                                               self.view.frame.size.width -
                                               URL_SAFE_AREA_HORIZONTAL * 2.0,
                                               URL_TEXTFIELD_HEIGHT_MINIFIED)];
-            
+
             [_navigationBacking
              setFrame:CGRectMake(0, 0, self.view.frame.size.width,
                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
                                  URL_TEXTFIELD_HEIGHT_MINIFIED)];
-            
+
             [_progressView
              setFrame:CGRectMake(0,
                                  NOTCH_HEIGHT + URL_SAFE_AREA_VERTICAL * 2 +
@@ -1207,7 +1209,7 @@ cameraDidChangeTrackingState:(ARCamera *)camera {
     }
     NSLog(@"AR camera tracking state = %@%@", trackingStateString,
           (trackingStateReasonString != nil ? trackingStateReasonString : @""));
-    
+
     // Only the first time the tacking state is something else but unavailable
     // load the initial page.
     if (camera.trackingState != ARTrackingStateNotAvailable &&
@@ -1279,7 +1281,7 @@ cameraDidChangeTrackingState:(ARCamera *)camera {
             [jsAnchorIdsToObjCAnchorIds removeObjectForKey:jsAnchorId];
             [objCAnchorIdsToJSAnchorIds removeObjectForKey:objCAnchorId];
             [anchors removeObjectForKey:jsAnchorId];
-            
+
             [_session removeAnchor:anchor];
         } else if ([method isEqualToString:@"advanceFrame"]) {
             // The JS side stated that the AR data was used so we can render
