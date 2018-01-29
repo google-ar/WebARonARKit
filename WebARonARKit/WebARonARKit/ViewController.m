@@ -337,6 +337,8 @@ NSString *deviceName() {
     // By default, the camera feed won't be shown until instructed otherwise
     [self setShowCameraFeed:NO];
 
+    [wkWebView.scrollView setContentInsetAdjustmentBehavior:UIScrollViewContentInsetAdjustmentNever];
+
     [wkWebView.configuration.preferences setValue:@TRUE
                                            forKey:@"allowFileAccessFromFileURLs"];
     [self setWKWebViewScrollEnabled:true];
@@ -490,6 +492,7 @@ NSString *deviceName() {
 }
 
 - (void)completeAndHideProgressViewSuccessful {
+    [self updateInterface];
     __weak __typeof__(self) weakSelf = self;
     [_progressView
      setProgressValue:1
