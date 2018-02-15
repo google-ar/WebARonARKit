@@ -337,7 +337,8 @@ NSString *deviceName() {
     // By default, the camera feed won't be shown until instructed otherwise
     [self setShowCameraFeed:NO];
 
-    [wkWebView.scrollView setContentInsetAdjustmentBehavior:UIScrollViewContentInsetAdjustmentNever];
+    [wkWebView.scrollView
+     setContentInsetAdjustmentBehavior:UIScrollViewContentInsetAdjustmentNever];
 
     [wkWebView.configuration.preferences setValue:@TRUE
                                            forKey:@"allowFileAccessFromFileURLs"];
