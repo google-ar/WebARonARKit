@@ -64,14 +64,14 @@ NSString *deviceName() {
 
 // Set this value to true or false to enable the passing of the camera
 // frame from the native side to the JS side in each frame.
-bool USE_CAMERA_FRAME = true;
+bool USE_CAMERA_FRAME = false;
 // On iOS 11.3 the webgl context transparency does not work any longer.
 // This flag checks the iOS version and forces to use the camera frames
 // in iOS 11.3 and beyond (this flag and check might disappear once the
 // webview problem is resolved by Apple).
 const bool FORCE_USE_CAMERA_FRAME_ON_IOS_11_3_AND_ABOVE = true;
 // Use these values to control the camera frame quality
-const float CAMERA_FRAME_SCALE_FACTOR = 0.3;
+const float CAMERA_FRAME_SCALE_FACTOR = 0.4;
 const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
 
 @interface ViewController ()<MTKViewDelegate, ARSessionDelegate>
