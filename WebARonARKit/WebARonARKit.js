@@ -330,10 +330,12 @@
       // TODO: Learn fom the WebVR Polyfill how to make the barrel distortion.
     };
 
-    if (window.WebARonARKitUsesCameraFrames) {
+    if (window.WebARonARKitSendsCameraFrames) {
       // On WebARonARKit, the pass through camera can be simulated using an
       // image.
       this.passThroughCameraImage_ = document.createElement("img");
+      this.passThroughCameraImage_.textureWidth = 0;
+      this.passThroughCameraImage_.textureHeight = 0;
       this.passThroughCameraImage_.focalLengthX = 0;
       this.passThroughCameraImage_.focalLengthY = 0;
       this.passThroughCameraImage_.pointX = 0;
@@ -341,8 +343,8 @@
       this.passThroughCameraImage_.orientation = 90;
 
       this.passThroughCameraImage_.addEventListener("load", function(event) {
-        event.target.videoTextureWidth = event.target.width; 
-        event.target.videoTextureHeight = event.target.height;
+        event.target.textureWidth = event.target.width; 
+        event.target.textureHeight = event.target.height;
 
         // Now we can call the callbacks as we know that the camera frame is
         // loaded in the image. This makes the synchronization to be "perfect".
@@ -353,6 +355,10 @@
       });
 
       /**
+      * Returns an instance that represents the camera pass through.
+      *
+      * @return {HTMLImageElement} An instance that represents the camera
+      * pass through.
       */
       this.getPassThroughCamera = function() {
         return this.passThroughCameraImage_;
@@ -1050,7 +1056,7 @@
     }
 
     // Did the native side pass the camera frame? Then update the image!
-    if (window.WebARonARKitUsesCameraFrames && data.cameraFrame !== "") {
+    if (window.WebARonARKitSendsCameraFrames && data.cameraFrame !== "") {
       WebARonARKitVRDisplay.passThroughCameraImage_.src = data.cameraFrame;
       // The raf callbacks and the advance of the frame will be done once the
       // image is loaded (see the image load event above)
