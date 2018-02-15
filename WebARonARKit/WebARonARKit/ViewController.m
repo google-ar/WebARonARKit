@@ -242,21 +242,10 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
         wkWebView.opaque = false;
         wkWebView.backgroundColor = [UIColor clearColor];
         wkWebView.scrollView.backgroundColor = [UIColor clearColor];
-        // Trying to resolve an issue with iPhoneX where the webview does not
-        // accopy the whole screen.
-        [wkWebView.scrollView
-            setContentInsetAdjustmentBehavior:
-            UIScrollViewContentInsetAdjustmentNever];
     } else {
         wkWebView.opaque = true;
         wkWebView.backgroundColor = wkWebViewOriginalBackgroundColor;
         wkWebView.scrollView.backgroundColor = wkWebViewOriginalBackgroundColor;
-        // Trying to resolve an issue with iPhoneX where the webview does not
-        // accopy the whole screen.
-        [wkWebView.scrollView
-            setContentInsetAdjustmentBehavior:
-            UIScrollViewContentInsetAdjustmentAutomatic];
-      
     }
     showingCameraFeed = show;
     NSLog(@"show camera feed: %@", show ? @"YES" : @"NO");
@@ -385,8 +374,10 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
     // By default, the camera feed won't be shown until instructed otherwise
     [self setShowCameraFeed:NO];
 
+    // Fixes the webview scalling problem on iPhoneX.
     [wkWebView.scrollView
-     setContentInsetAdjustmentBehavior:UIScrollViewContentInsetAdjustmentNever];
+       setContentInsetAdjustmentBehavior:
+       UIScrollViewContentInsetAdjustmentNever];
 
     [wkWebView.configuration.preferences setValue:@TRUE
                                            forKey:@"allowFileAccessFromFileURLs"];
