@@ -64,12 +64,12 @@ NSString *deviceName() {
 
 // Set this value to true or false to enable the passing of the camera
 // frame from the native side to the JS side in each frame.
-bool USE_CAMERA_FRAME = false;
+bool SEND_CAMERA_FRAME_TO_JS = false;
 // On iOS 11.3 the webgl context transparency does not work any longer.
 // This flag checks the iOS version and forces to use the camera frames
 // in iOS 11.3 and beyond (this flag and check might disappear once the
 // webview problem is resolved by Apple).
-const bool FORCE_USE_CAMERA_FRAME_ON_IOS_11_3_AND_ABOVE = true;
+const bool FORCE_SEND_CAMERA_FRAME_TO_JS_ON_IOS_11_3_AND_ABOVE = true;
 // Use these values to control the camera frame quality
 const float CAMERA_FRAME_SCALE_FACTOR = 0.4;
 const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
@@ -238,10 +238,12 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
 }
 
 - (void)setShowCameraFeed:(bool)show {
-    if (show && !USE_CAMERA_FRAME) {
+    if (show && !SEND_CAMERA_FRAME_TO_JS) {
         wkWebView.opaque = false;
         wkWebView.backgroundColor = [UIColor clearColor];
         wkWebView.scrollView.backgroundColor = [UIColor clearColor];
+        // Trying to resolve an issue with iPhoneX where the webview does not
+        // accopy the whole screen.
         [wkWebView.scrollView
             setContentInsetAdjustmentBehavior:
             UIScrollViewContentInsetAdjustmentNever];
@@ -249,6 +251,8 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
         wkWebView.opaque = true;
         wkWebView.backgroundColor = wkWebViewOriginalBackgroundColor;
         wkWebView.scrollView.backgroundColor = wkWebViewOriginalBackgroundColor;
+        // Trying to resolve an issue with iPhoneX where the webview does not
+        // accopy the whole screen.
         [wkWebView.scrollView
             setContentInsetAdjustmentBehavior:
             UIScrollViewContentInsetAdjustmentAutomatic];
@@ -275,8 +279,8 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
     // If the iOS version is 11.3 or above and the flag to force the use of
     // the camera frames is set, force the use of the camera frames.
     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"11.3") &&
-        FORCE_USE_CAMERA_FRAME_ON_IOS_11_3_AND_ABOVE) {
-      USE_CAMERA_FRAME = true;
+        FORCE_SEND_CAMERA_FRAME_TO_JS_ON_IOS_11_3_AND_ABOVE) {
+      SEND_CAMERA_FRAME_TO_JS = true;
     }
   
     [self deviceCheck];
@@ -354,11 +358,11 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
                               encoding:NSUTF8StringEncoding
                                  error:NULL];
     // Setup the script injection
-    WKUserScript *useCameraFrameUserScript = [[WKUserScript alloc]
+    WKUserScript *sendCameraFrameUserScript = [[WKUserScript alloc]
                                               initWithSource:
                                               [NSString stringWithFormat:
-                                               @"window.WebARonARKitUsesCameraFrames = %@;",
-                                               USE_CAMERA_FRAME ? @"true" : @"false"]
+                                               @"window.WebARonARKitSendsCameraFrames = %@;",
+                                               SEND_CAMERA_FRAME_TO_JS ? @"true" : @"false"]
                                               injectionTime:WKUserScriptInjectionTimeAtDocumentStart
                                               forMainFrameOnly:true];
     WKUserScript *WebARonARKitJSUserScript = [[WKUserScript alloc]
@@ -368,7 +372,7 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
     WKUserContentController *userContentController =
     [[WKUserContentController alloc] init];
     [userContentController addScriptMessageHandler:self name:@"WebARonARKit"];
-    [userContentController addUserScript:useCameraFrameUserScript];
+    [userContentController addUserScript:sendCameraFrameUserScript];
     [userContentController addUserScript:WebARonARKitJSUserScript];
     WKWebViewConfiguration *wkWebViewConfig =
     [[WKWebViewConfiguration alloc] init];
@@ -790,7 +794,7 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
     // Only if the JS side stated that the AR data was used to render the 3D
     // scene, we can render a camera frame.
     if (drawNextCameraFrame) {
-        if (!USE_CAMERA_FRAME) {
+        if (!SEND_CAMERA_FRAME_TO_JS) {
           [_renderer update];
         }
         drawNextCameraFrame = false;
@@ -1004,53 +1008,59 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
 
     // Get the camera frame in base 64.
     NSString* base64ImageString = @"";
-    if (USE_CAMERA_FRAME) {
+    if (SEND_CAMERA_FRAME_TO_JS) {
       base64ImageString = [self getBase64ImageFromPixelBuffer:
-                           frame.capturedImage];
+          frame.capturedImage];
       if (!base64ImageString) {
         base64ImageString = @"";
-      }
-      else {
+      } else {
         base64ImageString = [NSString stringWithFormat:
-                             @"data:image/jpg;base64, %@", base64ImageString];
+            @"data:image/jpg;base64, %@", base64ImageString];
       }
     }
   
     // Create a NSDictionary that will be parsed as a json and then passed to the JS side
     NSDictionary* jsonDictionary = @{
-        @"position":@[FBOX(position[0]), FBOX(position[1]), FBOX(position[2])],
-        @"orientation":@[FBOX(pOrientationQuat[0]), FBOX(pOrientationQuat[1]),
-                         FBOX(pOrientationQuat[2]), FBOX(pOrientationQuat[3])],
-        @"viewMatrix":@[FBOX(pViewMatrix[0]), FBOX(pViewMatrix[1]),
-                        FBOX(pViewMatrix[2]), FBOX(pViewMatrix[3]),
-                        FBOX(pViewMatrix[4]), FBOX(pViewMatrix[5]),
-                        FBOX(pViewMatrix[6]), FBOX(pViewMatrix[7]),
-                        FBOX(pViewMatrix[8]), FBOX(pViewMatrix[9]),
-                        FBOX(pViewMatrix[10]), FBOX(pViewMatrix[11]),
-                        FBOX(pViewMatrix[12]), FBOX(pViewMatrix[13]),
-                        FBOX(pViewMatrix[14]), FBOX(pViewMatrix[15])],
-        @"projectionMatrix":@[FBOX(pProjectionMatrix[0]),
-                              FBOX(pProjectionMatrix[1]),
-                              FBOX(pProjectionMatrix[2]),
-                              FBOX(pProjectionMatrix[3]),
-                              FBOX(pProjectionMatrix[4]),
-                              FBOX(pProjectionMatrix[5]),
-                              FBOX(pProjectionMatrix[6]),
-                              FBOX(pProjectionMatrix[7]),
-                              FBOX(pProjectionMatrix[8]),
-                              FBOX(pProjectionMatrix[9]),
-                              FBOX(pProjectionMatrix[10]),
-                              FBOX(pProjectionMatrix[11]),
-                              FBOX(pProjectionMatrix[12]),
-                              FBOX(pProjectionMatrix[13]),
-                              FBOX(pProjectionMatrix[14]),
-                              FBOX(pProjectionMatrix[15])]
+        @"position":
+            @[FBOX(position[0]), FBOX(position[1]), FBOX(position[2])],
+        @"orientation":
+            @[FBOX(pOrientationQuat[0]), FBOX(pOrientationQuat[1]),
+            FBOX(pOrientationQuat[2]), FBOX(pOrientationQuat[3])],
+        @"viewMatrix":
+            @[FBOX(pViewMatrix[0]), FBOX(pViewMatrix[1]),
+            FBOX(pViewMatrix[2]), FBOX(pViewMatrix[3]),
+            FBOX(pViewMatrix[4]), FBOX(pViewMatrix[5]),
+            FBOX(pViewMatrix[6]), FBOX(pViewMatrix[7]),
+            FBOX(pViewMatrix[8]), FBOX(pViewMatrix[9]),
+            FBOX(pViewMatrix[10]), FBOX(pViewMatrix[11]),
+            FBOX(pViewMatrix[12]), FBOX(pViewMatrix[13]),
+            FBOX(pViewMatrix[14]), FBOX(pViewMatrix[15])],
+        @"projectionMatrix":
+            @[FBOX(pProjectionMatrix[0]),
+            FBOX(pProjectionMatrix[1]),
+            FBOX(pProjectionMatrix[2]),
+            FBOX(pProjectionMatrix[3]),
+            FBOX(pProjectionMatrix[4]),
+            FBOX(pProjectionMatrix[5]),
+            FBOX(pProjectionMatrix[6]),
+            FBOX(pProjectionMatrix[7]),
+            FBOX(pProjectionMatrix[8]),
+            FBOX(pProjectionMatrix[9]),
+            FBOX(pProjectionMatrix[10]),
+            FBOX(pProjectionMatrix[11]),
+            FBOX(pProjectionMatrix[12]),
+            FBOX(pProjectionMatrix[13]),
+            FBOX(pProjectionMatrix[14]),
+            FBOX(pProjectionMatrix[15])]
         ,@"cameraFrame":base64ImageString
     };
     // Pass the dictionary to JSON and back to a string.
     NSError* error;
-    NSData* jsonData = [NSJSONSerialization dataWithJSONObject:jsonDictionary options:NSJSONWritingPrettyPrinted error:&error];
-    NSString* jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+    NSData* jsonData =
+        [NSJSONSerialization dataWithJSONObject:jsonDictionary
+        options:NSJSONWritingPrettyPrinted error:&error];
+    NSString* jsonString = [[NSString alloc] initWithData:jsonData
+        encoding:NSUTF8StringEncoding];
   
 //    NSLog(@"jsonString = %@", jsonString);
 
@@ -1065,12 +1075,10 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
     [wkWebView
      evaluateJavaScript:jsCode
      completionHandler:^(id data, NSError *error) {
-         if (error) {
-             [self showAlertDialog:
-              [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@",
-               error]
-                 completionHandler:^{
-                 }];
+       if (error) {
+         [self showAlertDialog:
+             [NSString stringWithFormat:@"ERROR: Evaluating jscode: %@", error]
+             completionHandler:^{ }];
          }
      }];
 
@@ -1079,11 +1087,10 @@ didRemoveAnchors:(nonnull NSArray<ARAnchor *> *)anchors {
     if (updateWindowSize) {
         int width = wkWebView.frame.size.width;
         int height = wkWebView.frame.size.height;
-        NSString *updateWindowSizeJsCode = [NSString
-                                            stringWithFormat:
-                                            @"if(window.WebARonARKitSetWindowSize)"
-                                            @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
-                                            width, height];
+        NSString *updateWindowSizeJsCode =
+            [NSString stringWithFormat: @"if(window.WebARonARKitSetWindowSize)"
+            @"WebARonARKitSetWindowSize({\"width\":%i,\"height\":%i});",
+            width, height];
         [wkWebView
          evaluateJavaScript:updateWindowSizeJsCode
          completionHandler:^(id data, NSError *error) {
@@ -1383,11 +1390,11 @@ cameraDidChangeTrackingState:(ARCamera *)camera {
   // Apply a scaling transformation to the CIImage and get a new one
   CGAffineTransform scaleTransform =
   CGAffineTransformScale(CGAffineTransformIdentity,
-                         CAMERA_FRAME_SCALE_FACTOR, CAMERA_FRAME_SCALE_FACTOR);
+      CAMERA_FRAME_SCALE_FACTOR, CAMERA_FRAME_SCALE_FACTOR);
   CIImage* resizedCIImage = [ciImage imageByApplyingTransform:scaleTransform];
   // Create a CGImage from the CIImage
   CGImageRef cgImage = [ciContext createCGImage:resizedCIImage
-                                       fromRect:resizedCIImage.extent];
+      fromRect:resizedCIImage.extent];
   if (cgImage) {
     // Create an UIImage from the CGImage
     UIImage* uiImage = [UIImage imageWithCGImage:cgImage];
@@ -1401,7 +1408,7 @@ cameraDidChangeTrackingState:(ARCamera *)camera {
       // Transform the JPEG data into a base64 format so it can be
       // passed to the JS side as a string.
       return [jpegImageData base64EncodedStringWithOptions:
-              NSDataBase64Encoding64CharacterLineLength];
+          NSDataBase64Encoding64CharacterLineLength];
     }
   }
   return nil;
