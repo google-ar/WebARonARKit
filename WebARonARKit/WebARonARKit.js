@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 (function() {
 
   if (window.VRDisplay !== undefined) {
@@ -328,6 +329,35 @@
     this.submitFrame = function(pose) {
       // TODO: Learn fom the WebVR Polyfill how to make the barrel distortion.
     };
+
+    if (window.WebARonARKitUsesCameraFrames) {
+      // On WebARonARKit, the pass through camera can be simulated using an
+      // image.
+      this.passThroughCameraImage_ = document.createElement("img");
+      this.passThroughCameraImage_.focalLengthX = 0;
+      this.passThroughCameraImage_.focalLengthY = 0;
+      this.passThroughCameraImage_.pointX = 0;
+      this.passThroughCameraImage_.pointX = 0;
+      this.passThroughCameraImage_.orientation = 90;
+
+      this.passThroughCameraImage_.addEventListener("load", function(event) {
+        event.target.videoTextureWidth = event.target.width; 
+        event.target.videoTextureHeight = event.target.height;
+
+        // Now we can call the callbacks as we know that the camera frame is
+        // loaded in the image. This makes the synchronization to be "perfect".
+        callRafCallbacks();
+
+        // Now we can advance a frame
+        nativeAdvanceFrame();
+      });
+
+      /**
+      */
+      this.getPassThroughCamera = function() {
+        return this.passThroughCameraImage_;
+      };
+    }
 
     /**
      * Get intersection array with planes ARKit detected for the screen coords.
@@ -1019,11 +1049,21 @@
       WebARonARKitVRDisplay.projectionMatrix_[i] = data.projectionMatrix[i];
     }
 
-    // Only on iOS!
-    if (!window.ARCore) {
-      callRafCallbacks();
-      nativeAdvanceFrame();
+    // Did the native side pass the camera frame? Then update the image!
+    if (window.WebARonARKitUsesCameraFrames && data.cameraFrame !== "") {
+      WebARonARKitVRDisplay.passThroughCameraImage_.src = data.cameraFrame;
+      // The raf callbacks and the advance of the frame will be done once the
+      // image is loaded (see the image load event above)
     }
+    else {
+      // Only on iOS and when there is no camera frame, call the raf callbacks
+      // and advance a frame
+      if (!window.ARCore) {
+        callRafCallbacks();
+        nativeAdvanceFrame();
+      }
+    }
+
   };
 
   window.WebARonARKitDispatchARDisplayEvent = function(events) {
