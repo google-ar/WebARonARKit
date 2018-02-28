@@ -65,11 +65,6 @@ NSString *deviceName() {
 // Set this value to true or false to enable the passing of the camera
 // frame from the native side to the JS side in each frame.
 bool SEND_CAMERA_FRAME_TO_JS = false;
-// On iOS 11.3 the webgl context transparency does not work any longer.
-// This flag checks the iOS version and forces to use the camera frames
-// in iOS 11.3 and beyond (this flag and check might disappear once the
-// webview problem is resolved by Apple).
-const bool FORCE_SEND_CAMERA_FRAME_TO_JS_ON_IOS_11_3_AND_ABOVE = true;
 // Use these values to control the camera frame quality
 const float CAMERA_FRAME_SCALE_FACTOR = 0.4;
 const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
@@ -265,13 +260,6 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
 - (void)viewDidLoad {
     [super viewDidLoad];
 
-    // If the iOS version is 11.3 or above and the flag to force the use of
-    // the camera frames is set, force the use of the camera frames.
-    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"11.3") &&
-        FORCE_SEND_CAMERA_FRAME_TO_JS_ON_IOS_11_3_AND_ABOVE) {
-      SEND_CAMERA_FRAME_TO_JS = true;
-    }
-  
     [self deviceCheck];
 
     near = 0.01f;
