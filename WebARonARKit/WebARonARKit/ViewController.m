@@ -64,7 +64,7 @@ NSString *deviceName() {
 
 // Set this value to true or false to enable the passing of the camera
 // frame from the native side to the JS side in each frame.
-bool SEND_CAMERA_FRAME_TO_JS = false;
+const bool SEND_CAMERA_FRAME_TO_JS = false;
 // Use these values to control the camera frame quality
 const float CAMERA_FRAME_SCALE_FACTOR = 0.4;
 const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
