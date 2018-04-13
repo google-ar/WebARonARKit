@@ -354,6 +354,10 @@ const float CAMERA_FRAME_JPEG_COMPRESSION_FACTOR = 0.5;
     WKWebViewConfiguration *wkWebViewConfig =
     [[WKWebViewConfiguration alloc] init];
     wkWebViewConfig.userContentController = userContentController;
+    
+    wkWebViewConfig.allowsInlineMediaPlayback = true;
+    wkWebViewConfig.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypeNone;
+    
     // Create the WKWebView using the configuration/script injection and add it to
     // the top of the view graph
     wkWebView = [[WKWebView alloc] initWithFrame:self.view.frame
