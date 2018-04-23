@@ -36,7 +36,7 @@ WebARonARKit은 다음과 같은 환경과 조건에서 빌드되어야 합니�
 
 1. WebARonARKit 깃헙 저장소를 복사하세요.
 2. Xcode9를 실행하세요.
-3. 복사한 WebARonARKit 저장소안에 있는 Xcode 프로젝트를 (.xcodeproj) Xcode9를 통해 여세요.
+3. 복사한 WebARonARKit 저장소안에 있는 Xcode 프로젝트를 (.xcodeproj) Xcode9로 실행하세요.
 4. 프로젝트 네비게이션 (왼쪽 행에 있는 윗쪽의 파란 아이콘)에서 WebARonARKit 프로젝트를 선택하세요. 그리고 WebARonARKit의 target을 `Targets`아래 것으로 선택해주세요.
 
 - ![GIF showing how to set the project target.](https://media.giphy.com/media/xUOxfc84FVlNqqeJeU/giphy.gif)
