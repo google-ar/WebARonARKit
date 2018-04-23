@@ -50,7 +50,7 @@ WebARonARKit은 다음과 같은 환경과 조건에서 빌드되어야 합니�
 
 ### <a name="예제보기">2. 예제보기</a>
 
-WebARonARKit 및 WebARonARCore](https://github.com/google-ar/WebARonARCore)과 호환되는 [예제 장면 목록들](https://developers.google.com/ar/develop/web/getting-started#examples)은  [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples)에서 사용할 수 있습니다.
+WebARonARKit 및 [WebARonARCore](https://github.com/google-ar/WebARonARCore)과 호환되는 [예제 장면 목록들](https://developers.google.com/ar/develop/web/getting-started#examples)은  [developers.google.com](https://developers.google.com/ar/develop/web/getting-started#examples)에서 사용할 수 있습니다.
 
 ### <a name="당신만의장면을만드는것">3. 당신만의 장면을 만드는 것</a>
 
