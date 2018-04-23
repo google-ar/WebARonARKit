@@ -54,7 +54,7 @@ WebARonARKit 및 WebARonARCore](https://github.com/google-ar/WebARonARCore)과 �
 
 ### <a name="당신만의장면을만드는것">3. 당신만의 장면을 만드는 것</a>
 
-WebARonARKit 및 [Android 용 WebARonARCore](https://github.com/google-ar/WebARonARCore)과 함께 작동하는 AR 웹 환경을 구축하기 위해, 인기있는 WebGL 프레임워크인 [three.js](http://threejs.org)과 함께 작동하는 헬퍼 라이브러리인 **[three.ar.js](https://github.com/google-ar/three.ar.js)**를 추천합니다. **[three.ar.js](https://github.com/google-ar/three.ar.js)**는 현실 세계의 표면 위에 그리는 가시적 십자선과 같은 일반적인 AR구성 요소와 예제 장면들을 제공합니다.
+WebARonARKit 및 [Android 용 WebARonARCore](https://github.com/google-ar/WebARonARCore)과 함께 작동하는 AR 웹 환경을 구축하기 위해, 인기있는 WebGL 프레임워크인 [three.js](http://threejs.org)과 함께 작동하는 헬퍼 라이브러리인 [three.ar.js](https://github.com/google-ar/three.ar.js)를 추천합니다. [three.ar.js](https://github.com/google-ar/three.ar.js)는 현실 세계의 표면 위에 그리는 가시적 십자선과 같은 일반적인 AR구성 요소와 예제 장면들을 제공합니다.
 
 ### <a name="디버깅">4. 디버깅 </a>
 
