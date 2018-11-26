@@ -314,7 +314,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 8BB88LDFV7;
+				DEVELOPMENT_TEAM = ETH8NG5FR9;
 				INFOPLIST_FILE = "$(SRCROOT)/WebARonARKit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Google.AR.WebARonARKit;
@@ -327,7 +327,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				DEVELOPMENT_TEAM = 8BB88LDFV7;
+				DEVELOPMENT_TEAM = ETH8NG5FR9;
 				INFOPLIST_FILE = "$(SRCROOT)/WebARonARKit/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = Google.AR.WebARonARKit;
