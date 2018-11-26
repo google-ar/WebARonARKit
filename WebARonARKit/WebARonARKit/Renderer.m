@@ -522,7 +522,7 @@ static const float kImagePlaneVertexData[16] = {
     if (status == kCVReturnSuccess) {
         mtlTexture = CVMetalTextureGetTexture(texture);
         CFRelease(texture);
-    }
+    } 
 
     return mtlTexture;
 }
