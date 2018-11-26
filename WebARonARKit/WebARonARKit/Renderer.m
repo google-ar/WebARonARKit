@@ -513,7 +513,7 @@ static const float kImagePlaneVertexData[16] = {
 
     const size_t width = CVPixelBufferGetWidthOfPlane(pixelBuffer, planeIndex);
     const size_t height = CVPixelBufferGetHeightOfPlane(pixelBuffer, planeIndex);
-
+  
     CVMetalTextureRef texture = NULL;
     CVReturn status = CVMetalTextureCacheCreateTextureFromImage(
         NULL, _capturedImageTextureCache, pixelBuffer, NULL, pixelFormat, width, height, planeIndex,
@@ -522,7 +522,7 @@ static const float kImagePlaneVertexData[16] = {
     if (status == kCVReturnSuccess) {
         mtlTexture = CVMetalTextureGetTexture(texture);
         CFRelease(texture);
-    } 
+    }
 
     return mtlTexture;
 }
