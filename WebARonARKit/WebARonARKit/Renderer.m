@@ -63,7 +63,8 @@ static const float kImagePlaneVertexData[16] = {
     id<MTLTexture> _capturedImageTextureCbCr;
 
     // Captured image texture cache
-    CVMetalTextureCacheRef _capturedImageTextureCache;
+     CVMetalTextureCacheRef _capturedImageTextureCache;
+    
 
     // Metal vertex descriptor specifying how vertices will by laid out for input
     // into our
@@ -275,7 +276,7 @@ static const float kImagePlaneVertexData[16] = {
         [_device newDepthStencilStateWithDescriptor:capturedImageDepthStateDescriptor];
 
     // Create captured image texture cache
-    CVMetalTextureCacheCreate(NULL, NULL, _device, NULL, &_capturedImageTextureCache);
+    CVMetalTextureCacheCreate(kCFAllocatorDefault, NULL, _device, NULL, &_capturedImageTextureCache);
 
     id<MTLFunction> anchorGeometryVertexFunction =
         [defaultLibrary newFunctionWithName:@"anchorGeometryVertexTransform"];
