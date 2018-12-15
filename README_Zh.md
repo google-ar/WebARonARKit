@@ -4,7 +4,7 @@
 
 <img alt="Spawn-at-Camera example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtCamera-1.gif" style="float: left; object-fit: cover; width: 45%; height: 20em; margin-right: 1em; "><img alt="Spawn-at-Surface example" src="https://github.com/google-ar/three.ar.js/raw/master/examples/screencaps/20170829-arkit-spawnAtSurface-1.gif" style="width: 45%; height: 20em; object-fit: cover;">
 
-**注意:**这不是一个正式的谷歌产品。它也不是一个功能齐全的web浏览器。即没有启用JavaScript api的标准，也没有标准化路径。WebARonARKit只支持开发人员试验。有关WebARonARKit体系结构的详细信息，请参见[How WebARonARKit works](#HowWebARonARKitWorks)。
+**注意:** 这不是一个正式的谷歌产品。它也不是一个功能齐全的web浏览器。即没有启用JavaScript api的标准，也没有标准化路径。WebARonARKit只支持开发人员试验。有关WebARonARKit体系结构的详细信息，请参见[How WebARonARKit works](#HowWebARonARKitWorks)。
 
 ## 准备工作
 
