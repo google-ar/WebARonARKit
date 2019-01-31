@@ -1157,7 +1157,7 @@ didFailNavigation:(WKNavigation *)navigation
     [self completeAndHideProgressViewErrored:wkWebView.estimatedProgress];
 }
 
-- (void)webViewDidFinishLoad:(UIWebView *)webView {
+- (void)webViewDidFinishLoad:(WKWebView *)webView {
     [self restartSession];
     [self completeAndHideProgressViewSuccessful];
 }
