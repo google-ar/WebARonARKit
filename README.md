@@ -54,8 +54,8 @@ WebARonARKit injects a script (WebARonARKit.js) as soon as a page is loaded into
 
 When running, WebARonARKit layers a fullscreen camera feed in the background with a transparent WKWebView on top. This arrangement creates a fairly seamless result between "real world" and rendered web content, but comes with a few limitations:
 
-* In pass-through camera-based AR, the time stamp based syncrhonization of the camera frame and the 6DOF pose needs to be as accurate as possible. Beause of the nature of this two-layer system, WebARonARKit is not able to ensure the proper synchronization. This contributes to perceptible "drift" between virtual objects and the real world seen in with the camera feed, especially on iPhones.
-* The bidirectional communciation bridge between the native side and the JavaScript side in always asynchronous. WebARonARKit tries to resolve this limitation as much as possible using various techniques (like for hitTest, that has to be synchronous).
+* In pass-through camera-based AR, the time stamp based synchronization of the camera frame and the 6DOF pose needs to be as accurate as possible. Because of the nature of this two-layer system, WebARonARKit is not able to ensure the proper synchronization. This contributes to perceptible "drift" between virtual objects and the real world seen in with the camera feed, especially on iPhones.
+* The bidirectional communcation bridge between the native side and the JavaScript side in always asynchronous. WebARonARKit tries to resolve this limitation as much as possible using various techniques (like for hitTest, that has to be synchronous).
 * In the current version of WebARonARKit the camera feed is always rendered in the native side, underneath the WKWebView that runs the web content. Not being able to expose the video frame to the web side prevents interesting use cases such as reflections, refractions, environment mapping, or simply rendering the video in a specific location or size (in current builds it is always fullscreen). Rendering the video feed in the web side would also resolve the synchronization problems mentioned earlier.
 
 ## <a name="KnownIssues">Known issues</a>
